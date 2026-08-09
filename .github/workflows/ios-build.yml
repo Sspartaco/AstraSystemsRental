@@ -16,6 +16,11 @@ jobs:
     # GitHub da runners macOS gratis en repos publicos; en privados consumen minutos x10.
     runs-on: macos-15
 
+    env:
+      # `secrets` no se puede evaluar dentro de un `if:` de step, asi que se
+      # promueve a variable de entorno y la condicion mira `env`.
+      HAS_SIGNING: ${{ secrets.APPLE_CERTIFICATE_P12 != '' }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -28,18 +33,18 @@ jobs:
       - name: Instalar workload de MAUI para iOS
         run: dotnet workload install maui-ios --skip-sign-check
 
-      # Sin certificado de firma se genera un .app para simulador, util para revisar la UI.
-      # Para instalar en un iPhone real hacen falta los secretos de firma de la seccion de abajo.
-      - name: Compilar (sin firma)
-        if: ${{ !secrets.APPLE_CERTIFICATE_P12 }}
+      # Sin certificado de firma se compila para simulador: sirve para confirmar que
+      # el proyecto compila en iOS y revisar la UI, pero NO se instala en un iPhone.
+      - name: Compilar para simulador (sin firma)
+        if: env.HAS_SIGNING != 'true'
         run: |
-          dotnet publish AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj \
+          dotnet build AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj \
             -f net10.0-ios -c ${{ inputs.configuration }} \
             -p:RuntimeIdentifier=iossimulator-arm64 \
             -p:CodesignKey=""
 
       - name: Importar certificado de firma
-        if: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        if: env.HAS_SIGNING == 'true'
         env:
           CERT_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
           CERT_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -51,23 +56,25 @@ jobs:
           security unlock-keychain -p runner build.keychain
           security import /tmp/cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k runner build.keychain
+          rm -f /tmp/cert.p12
 
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           echo "$PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/astra.mobileprovision
 
       - name: Compilar IPA firmado
-        if: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        if: env.HAS_SIGNING == 'true'
         run: |
           dotnet publish AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj \
             -f net10.0-ios -c ${{ inputs.configuration }} \
             -p:RuntimeIdentifier=ios-arm64 \
+            -p:ArchiveOnBuild=true \
             -p:CodesignProvision="${{ secrets.APPLE_PROVISIONING_PROFILE_NAME }}" \
             -p:CodesignKey="${{ secrets.APPLE_SIGNING_IDENTITY }}"
 
       - name: Publicar artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: astrasystems-ios
+          name: astrasystems-ios-${{ inputs.configuration }}
           path: |
             **/bin/${{ inputs.configuration }}/net10.0-ios/**/*.ipa
             **/bin/${{ inputs.configuration }}/net10.0-ios/**/*.app
