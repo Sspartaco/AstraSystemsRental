@@ -1,0 +1,54 @@
+@{
+    ViewData["Title"] = "Vehículos";
+}
+
+<div class="space-y-6 max-w-5xl mx-auto">
+    <div class="text-center pt-4">
+        <h2 class="text-2xl font-display">Cotización de vehículos</h2>
+        <p class="text-sm text-content-soft mt-1">Digita la placa y obtén la valoración del vehículo desde múltiples fuentes del mercado colombiano.</p>
+    </div>
+
+    <form hx-post="/fleet/quotes" hx-target="#quote-result" hx-swap="innerHTML"
+          hx-indicator="#search-indicator"
+          class="astra-panel p-6 max-w-xl mx-auto">
+        <label for="plate-input" class="astra-label">Placa del vehículo</label>
+        <div class="flex items-stretch gap-3">
+            <div class="relative flex-1">
+                <input id="plate-input" name="PlateNumber" type="text" maxlength="10" required
+                       placeholder="ABC123" autocomplete="off" spellcheck="false"
+                       class="astra-input text-lg tracking-[0.25em] font-display uppercase text-center py-3" />
+                <span id="plate-check" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-accent">
+                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                </span>
+            </div>
+            <button type="submit" class="astra-btn-primary px-6">
+                <span id="search-indicator" class="htmx-indicator">
+                    <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9" class="opacity-25" />
+                        <path d="M21 12a9 9 0 0 0-9-9" />
+                    </svg>
+                </span>
+                Cotizar
+            </button>
+        </div>
+        <p class="text-xs text-content-muted mt-2.5">Placas de vehículo (ABC123), moto (ABC12D) o maquinaria (numérica).</p>
+    </form>
+
+    <div id="quote-result">
+        <div class="text-center py-10 text-content-muted">
+            <svg class="h-10 w-10 mx-auto mb-3 opacity-40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2.75 6.75A1.75 1.75 0 0 1 4.5 5h8.75a1.75 1.75 0 0 1 1.75 1.75V15H3.5a.75.75 0 0 1-.75-.75V6.75Z" />
+                <path d="M15 8.5h2.94a1.75 1.75 0 0 1 1.55.94l1.56 3a1.75 1.75 0 0 1 .2.81V15H15V8.5Z" />
+                <circle cx="7" cy="17" r="1.75" />
+                <circle cx="17.5" cy="17" r="1.75" />
+            </svg>
+            <p class="text-sm">El resultado de la cotización aparecerá aquí.</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/fleet.js" asp-append-version="true"></script>
+}

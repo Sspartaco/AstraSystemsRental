@@ -1,0 +1,116 @@
+@model AstraSystemsRental.Front.Features.Fleet.QuoteResultVm?
+
+@if (Model is null)
+{
+    <div class="astra-alert-error max-w-xl mx-auto">No se pudo consultar el estado de la cotización. Intenta de nuevo.</div>
+    return;
+}
+
+@{
+    var summary = Model.Summary;
+    var culture = new System.Globalization.CultureInfo("es-CO");
+    var pollAttributes = Model.IsRunning
+        ? $"hx-get=\"/fleet/quotes/{Model.RequestId}\" hx-trigger=\"every 1.5s\" hx-target=\"#quote-result\" hx-swap=\"innerHTML\""
+        : string.Empty;
+}
+
+<div id="quote-result-body" class="space-y-5" @Html.Raw(pollAttributes)>
+
+    <div class="astra-panel p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+            <div class="flex items-start gap-4">
+                <div class="shrink-0 h-20 w-28 rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.07] flex items-center justify-center">
+                    @if (Model.Vehicle?.ImageUrl is { Length: > 0 } imageUrl)
+                    {
+                        <img src="@imageUrl" alt="@Model.Vehicle.Brand @Model.Vehicle.Line" loading="lazy"
+                             class="h-full w-full object-cover" title="@Model.Vehicle.ImageAttribution" />
+                    }
+                    else
+                    {
+                        <svg class="h-8 w-8 text-content-muted/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2.75 6.75A1.75 1.75 0 0 1 4.5 5h8.75a1.75 1.75 0 0 1 1.75 1.75V15H3.5a.75.75 0 0 1-.75-.75V6.75Z" />
+                            <path d="M15 8.5h2.94a1.75 1.75 0 0 1 1.55.94l1.56 3a1.75 1.75 0 0 1 .2.81V15H15V8.5Z" />
+                            <circle cx="7" cy="17" r="1.75" />
+                            <circle cx="17.5" cy="17" r="1.75" />
+                        </svg>
+                    }
+                </div>
+
+                <div>
+                    <div class="flex items-center gap-3">
+                        <span class="font-display text-2xl tracking-[0.2em]">@Model.PlateNumber</span>
+                        @if (Model.IsRunning)
+                        {
+                            <span class="astra-badge bg-brand/15 text-brand-bright">
+                                <svg class="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <circle cx="12" cy="12" r="9" class="opacity-25" />
+                                    <path d="M21 12a9 9 0 0 0-9-9" />
+                                </svg>
+                                Consultando fuentes…
+                            </span>
+                        }
+                        else if (Model.Status == "CompletedWithErrors")
+                        {
+                            <span class="astra-badge bg-warn/15 text-warn">Completado con fuentes no disponibles</span>
+                        }
+                        else
+                        {
+                            <span class="astra-badge bg-accent/15 text-accent">Cotización completa</span>
+                        }
+                    </div>
+                    @if (Model.Vehicle is { } v)
+                    {
+                        <p class="text-sm text-content mt-2">@v.Brand @v.Line @(v.ModelYear?.ToString() ?? "")</p>
+                        @if (!string.IsNullOrEmpty(v.FullLine))
+                        {
+                            <p class="text-xs text-content-muted mt-0.5">@v.FullLine</p>
+                        }
+                        <div class="flex gap-2 mt-2">
+                            @if (!string.IsNullOrEmpty(v.VehicleClass))
+                            {
+                                <span class="astra-badge bg-white/[0.06] text-content-soft">@v.VehicleClass</span>
+                            }
+                            @if (!string.IsNullOrEmpty(v.Engine))
+                            {
+                                <span class="astra-badge bg-white/[0.06] text-content-soft">Motor @v.Engine</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="text-left md:text-right shrink-0">
+                @if (summary.SuccessCount > 0)
+                {
+                    <p class="text-xs text-content-soft uppercase tracking-wide">Valor estimado</p>
+                    <p class="font-display text-3xl text-content mt-1">$@summary.Avg?.ToString("N0", culture)</p>
+                    @if (summary.Min is not null && summary.Max is not null && summary.Min != summary.Max)
+                    {
+                        <p class="text-xs text-content-muted mt-1">Rango: $@summary.Min?.ToString("N0", culture) – $@summary.Max?.ToString("N0", culture)</p>
+                    }
+                    <span class="astra-badge mt-2 @(summary.SuccessCount >= 3 ? "bg-accent/15 text-accent" : summary.SuccessCount == 2 ? "bg-warn/15 text-warn" : "bg-danger/15 text-danger")">
+                        Confianza @(summary.SuccessCount >= 3 ? "alta" : summary.SuccessCount == 2 ? "media" : "baja") · @summary.SuccessCount de @summary.TotalSources fuentes
+                    </span>
+                }
+                else if (!Model.IsRunning)
+                {
+                    <p class="text-sm text-content-muted">Ninguna fuente devolvió un valor para este vehículo.</p>
+                }
+                else
+                {
+                    <div class="animate-pulse space-y-2">
+                        <div class="h-3 w-24 rounded bg-white/[0.08] md:ml-auto"></div>
+                        <div class="h-8 w-40 rounded bg-white/[0.08] md:ml-auto"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        @foreach (var source in Model.Sources)
+        {
+            @await Html.PartialAsync("_SourceCard", source)
+        }
+    </div>
+</div>

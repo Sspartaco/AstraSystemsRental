@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             xmlns:vm="clr-namespace:AstraSystemsRental.Mobile.ViewModels"
+             x:Class="AstraSystemsRental.Mobile.Views.RoutinesPage"
+             Title="Rutinas de Mantenimiento">
+
+    <Grid Background="{StaticResource GradientMesh}">
+
+        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16" Spacing="10">
+
+                    <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
+                           IsVisible="{Binding HasError}" />
+
+                    <Border Style="{StaticResource Panel}" IsVisible="{Binding IsEmpty}">
+                        <Label Text="Sin rutinas configuradas." Style="{StaticResource MutedLabel}" HorizontalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" FontSize="15" />
+                                        <Label Text="{Binding Description}" Style="{StaticResource MutedLabel}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

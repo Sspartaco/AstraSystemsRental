@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Gradientes portados de tailwind.config.js del Front -->
+
+    <LinearGradientBrush x:Key="GradientBrand" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#6e93ff" Offset="0.0" />
+        <GradientStop Color="#4f7cff" Offset="0.45" />
+        <GradientStop Color="#2d4ed8" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="GradientTitle" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#ffffff" Offset="0.0" />
+        <GradientStop Color="#c7d0ec" Offset="0.5" />
+        <GradientStop Color="#7e93d6" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Equivalente al gradient-mesh del body de la web -->
+    <!-- gradient-mesh de la web: radial azul MUY tenue (16% alpha) sobre negro puro.
+         Antes usaba #1a2547 opaco, que lavaba el fondo y lo alejaba del Front. -->
+    <RadialGradientBrush x:Key="GradientMesh" Center="0.75,0.18" Radius="0.85">
+        <GradientStop Color="#141c33" Offset="0.0" />
+        <GradientStop Color="#0a0c14" Offset="0.55" />
+        <GradientStop Color="#08090d" Offset="1.0" />
+    </RadialGradientBrush>
+
+    <!-- La web usa color plano en cards y panels (bg-card / bg-panel), NO gradiente.
+         Un gradiente propio introducia un tinte verdoso que no existe en el Front. -->
+
+    <!-- Tipografia -->
+
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
+        <Setter Property="BackgroundColor" Value="{StaticResource Bg}" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="FontSize" Value="14" />
+    </Style>
+
+    <Style x:Key="TitleLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="23" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="CharacterSpacing" Value="-0.5" />
+    </Style>
+
+    <Style x:Key="SectionLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+    </Style>
+
+    <Style x:Key="SubtitleLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{StaticResource ContentSoft}" />
+    </Style>
+
+    <Style x:Key="MutedLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="TextColor" Value="{StaticResource ContentMuted}" />
+    </Style>
+
+    <Style x:Key="KpiLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="10" />
+        <Setter Property="TextColor" Value="{StaticResource ContentMuted}" />
+        <Setter Property="CharacterSpacing" Value="1.2" />
+    </Style>
+
+    <Style x:Key="KpiValue" TargetType="Label">
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="CharacterSpacing" Value="-1" />
+    </Style>
+
+    <Style x:Key="PlateLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="CharacterSpacing" Value="2" />
+    </Style>
+
+    <!-- Contenedores -->
+
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource BgCard}" />
+        <Setter Property="Stroke" Value="#12FFFFFF" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 14" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#000000" Offset="0,4" Radius="18" Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="Panel" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource BgPanel}" />
+        <Setter Property="Stroke" Value="#12FFFFFF" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="18" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 18" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#000000" Offset="0,10" Radius="30" Opacity="0.6" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Circulo con gradiente de marca: el equivalente al icono del logo en la web -->
+    <Style x:Key="BrandOrb" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource GradientBrand}" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="WidthRequest" Value="44" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 13" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#4f7cff" Offset="0,6" Radius="20" Opacity="0.45" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="IconBadge" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="#141a28" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="WidthRequest" Value="36" />
+        <Setter Property="HeightRequest" Value="36" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 11" />
+    </Style>
+
+    <!-- Botones -->
+
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource GradientBrand}" />
+        <Setter Property="TextColor" Value="White" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="HeightRequest" Value="50" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#4f7cff" Offset="0,6" Radius="22" Opacity="0.4" />
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="GhostButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="#0d0f16" />
+        <Setter Property="TextColor" Value="{StaticResource ContentSoft}" />
+        <Setter Property="BorderColor" Value="{StaticResource Border}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="HeightRequest" Value="44" />
+    </Style>
+
+    <Style x:Key="DangerButton" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="#1d1013" />
+        <Setter Property="TextColor" Value="{StaticResource Danger}" />
+        <Setter Property="BorderColor" Value="#3a1c22" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="HeightRequest" Value="44" />
+    </Style>
+
+    <!-- Entradas -->
+
+    <Style TargetType="Entry">
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource ContentMuted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="HeightRequest" Value="46" />
+    </Style>
+
+    <Style x:Key="InputShell" TargetType="Border">
+        <Setter Property="BackgroundColor" Value="{StaticResource Bg2}" />
+        <Setter Property="Stroke" Value="#17FFFFFF" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Padding" Value="14,0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+    </Style>
+
+    <Style TargetType="Picker">
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="TitleColor" Value="{StaticResource ContentMuted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style TargetType="DatePicker">
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style TargetType="TimePicker">
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="FontSize" Value="15" />
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{StaticResource BrandBright}" />
+    </Style>
+
+    <Style TargetType="RefreshView">
+        <Setter Property="RefreshColor" Value="{StaticResource BrandBright}" />
+    </Style>
+
+    <Style TargetType="SearchBar">
+        <Setter Property="TextColor" Value="{StaticResource Content}" />
+        <Setter Property="PlaceholderColor" Value="{StaticResource ContentMuted}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="CancelButtonColor" Value="{StaticResource BrandBright}" />
+    </Style>
+
+</ResourceDictionary>

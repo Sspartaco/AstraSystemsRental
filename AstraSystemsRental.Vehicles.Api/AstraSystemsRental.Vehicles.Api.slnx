@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AstraSystemsRental.Vehicles.Api/AstraSystemsRental.Vehicles.Api.csproj" />
+  </Folder>
+</Solution>

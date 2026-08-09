@@ -1,0 +1,171 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-bg text-content font-body antialiased;
+    background-image: theme("backgroundImage.gradient-mesh");
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display font-semibold tracking-tight text-content;
+  }
+
+  ::selection {
+    @apply bg-brand/30 text-white;
+  }
+
+  .htmx-indicator {
+    display: none;
+  }
+
+  .htmx-request .htmx-indicator,
+  .htmx-request.htmx-indicator {
+    display: inline-flex;
+  }
+
+  [astra-loading] {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+}
+
+@layer components {
+  .astra-card {
+    @apply rounded-lg bg-bg-card/80 border border-white/[0.07] shadow-card backdrop-blur-sm;
+  }
+
+  .astra-panel {
+    @apply rounded-xl bg-bg-panel border border-white/[0.07] shadow-panel;
+  }
+
+  .astra-btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2.5 text-sm font-medium
+           transition duration-150 ease-spring focus:outline-none focus:ring-2 focus:ring-brand/50 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .astra-btn-primary {
+    @apply astra-btn bg-gradient-brand text-white shadow-brand hover:brightness-110 active:brightness-95;
+  }
+
+  .astra-btn-ghost {
+    @apply astra-btn bg-white/[0.03] text-content-soft border border-white/[0.07] hover:bg-white/[0.06] hover:text-content;
+  }
+
+  .astra-input {
+    @apply w-full rounded-md bg-bg-2/60 border border-white/[0.09] px-3.5 py-2.5 text-sm text-content
+           placeholder:text-content-muted transition focus:outline-none focus:border-brand/50 focus:ring-2 focus:ring-brand/20;
+  }
+
+  .astra-label {
+    @apply block text-xs font-medium text-content-soft mb-1.5;
+  }
+
+  .astra-link {
+    @apply text-brand-bright hover:text-brand transition;
+  }
+
+  .astra-sidebar-item {
+    @apply relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm text-content-soft
+           transition-all duration-150 hover:bg-white/[0.05] hover:text-content;
+  }
+
+  .astra-sidebar-item:hover .astra-sidebar-marker {
+    @apply bg-white/20 h-4;
+  }
+
+  .astra-sidebar-marker {
+    @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-r-full
+           bg-transparent transition-all duration-200;
+  }
+
+  .astra-sidebar-item.active {
+    @apply bg-brand/[0.12] text-content font-medium;
+  }
+
+  .astra-sidebar-item.active .astra-sidebar-marker {
+    @apply bg-brand-bright h-5 shadow-[0_0_8px_theme(colors.brand.bright)];
+  }
+
+  .astra-sidebar-item.active svg {
+    @apply text-brand-bright;
+  }
+
+  .astra-sidebar-collapse {
+    @apply flex items-center gap-3 mx-3 mb-3 rounded-md px-3 py-2.5 text-sm text-content-muted
+           border border-white/[0.06] transition hover:bg-white/[0.05] hover:text-content;
+  }
+
+  .astra-kpi {
+    @apply astra-card p-5 flex flex-col gap-2;
+  }
+
+  .astra-kpi-link {
+    @apply transition-all duration-200 hover:border-brand/30 hover:-translate-y-0.5 hover:shadow-brand/10;
+  }
+
+  .astra-kpi-label {
+    @apply text-2xs uppercase tracking-wider text-content-muted;
+  }
+
+  .astra-kpi-value {
+    @apply font-display text-3xl leading-none;
+  }
+
+  .astra-meter {
+    @apply h-1 w-full rounded-full bg-white/[0.06] overflow-hidden mt-1;
+  }
+
+  .astra-meter-fill {
+    @apply h-full rounded-full;
+    animation: astra-grow 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .astra-row {
+    @apply flex items-center gap-3 rounded-md px-3 py-2.5 border border-transparent
+           transition-all duration-150 hover:bg-white/[0.04] hover:border-white/[0.07];
+  }
+
+  .astra-dot {
+    @apply h-2 w-2 rounded-full shrink-0;
+  }
+
+  .astra-photo-button {
+    @apply inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-white/[0.08]
+           px-3 py-1.5 text-xs text-content-soft transition
+           hover:border-brand/30 hover:bg-brand/10 hover:text-brand-bright;
+  }
+
+  .astra-quick-action {
+    @apply flex items-center justify-center gap-2 rounded-b-lg border border-t-0 border-white/[0.07]
+           bg-bg-2/60 px-4 py-2.5 text-xs text-content-soft transition
+           hover:bg-brand/10 hover:text-brand-bright hover:border-brand/30;
+  }
+
+  .astra-alert-error {
+    @apply rounded-md border border-danger/30 bg-danger/10 px-3.5 py-2.5 text-sm text-danger;
+  }
+
+  .astra-badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-2xs font-medium;
+  }
+}
+
+@keyframes astra-grow {
+  from { width: 0; }
+}
+
+@keyframes astra-fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .astra-meter-fill { animation: none; }
+}

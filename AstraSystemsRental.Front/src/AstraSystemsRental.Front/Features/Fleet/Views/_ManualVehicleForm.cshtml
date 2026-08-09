@@ -1,0 +1,47 @@
+@model AstraSystemsRental.Front.Features.Fleet.ManualVehicleVm
+
+<div class="astra-panel p-6 max-w-xl mx-auto space-y-4">
+    <div>
+        <div class="flex items-center gap-3">
+            <span class="font-display text-xl tracking-[0.2em]">@Model.PlateNumber</span>
+            <span class="astra-badge bg-warn/15 text-warn">No está en el catálogo</span>
+        </div>
+        <p class="text-sm text-content-soft mt-2">Completa los datos del vehículo para poder cotizarlo. Quedará registrado para futuras consultas.</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="astra-alert-error">@Model.Error</div>
+    }
+
+    <form hx-post="/fleet/vehicles" hx-target="#quote-result" hx-swap="innerHTML" class="space-y-4">
+        <input type="hidden" name="PlateNumber" value="@Model.PlateNumber" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <label class="astra-label" for="mv-brand">Marca *</label>
+                <input id="mv-brand" name="Brand" type="text" required maxlength="80" placeholder="Toyota" class="astra-input" />
+            </div>
+            <div>
+                <label class="astra-label" for="mv-line">Línea *</label>
+                <input id="mv-line" name="Line" type="text" required maxlength="120" placeholder="Prado" class="astra-input" />
+            </div>
+            <div>
+                <label class="astra-label" for="mv-year">Modelo (año)</label>
+                <input id="mv-year" name="ModelYear" type="number" min="1980" max="@(DateTime.UtcNow.Year + 1)" placeholder="2015" class="astra-input" />
+            </div>
+            <div>
+                <label class="astra-label" for="mv-class">Clase</label>
+                <input id="mv-class" name="VehicleClass" type="text" maxlength="60" placeholder="Campero" class="astra-input" />
+            </div>
+            <div class="sm:col-span-2">
+                <label class="astra-label" for="mv-engine">Motor</label>
+                <input id="mv-engine" name="Engine" type="text" maxlength="60" placeholder="4.0" class="astra-input" />
+            </div>
+        </div>
+
+        <div class="flex justify-end gap-3">
+            <button type="submit" class="astra-btn-primary">Registrar y cotizar</button>
+        </div>
+    </form>
+</div>

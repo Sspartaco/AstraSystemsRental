@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             xmlns:vm="clr-namespace:AstraSystemsRental.Mobile.ViewModels"
+             x:Class="AstraSystemsRental.Mobile.Views.ReservationsPage"
+             Title="Reservas de Taller">
+
+    <Grid Background="{StaticResource GradientMesh}">
+
+        <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="10">
+
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                <Label Grid.Column="0" Text="Agenda de taller" Style="{StaticResource TitleLabel}" VerticalOptions="Center" />
+                <Button Grid.Column="1" Text="Nueva" Command="{Binding ToggleCreateCommand}"
+                        Style="{StaticResource PrimaryButton}" HeightRequest="40" FontSize="13" />
+            </Grid>
+
+            <Border Grid.Row="1" Style="{StaticResource Panel}" IsVisible="{Binding ShowCreate}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Vehículo" Style="{StaticResource MutedLabel}" />
+                    <Picker ItemsSource="{Binding Vehicles}" SelectedItem="{Binding NewVehicle}"
+                            ItemDisplayBinding="{Binding Plate}" Title="Elegí un vehículo…" />
+
+                    <Label Text="Fecha programada" Style="{StaticResource MutedLabel}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <DatePicker Grid.Column="0" Date="{Binding ScheduledDate}" Format="yyyy-MM-dd" />
+                        <TimePicker Grid.Column="1" Time="{Binding ScheduledTime}" TextColor="{StaticResource Content}"
+                                    BackgroundColor="{StaticResource Bg2}" />
+                    </Grid>
+
+                    <Label Text="Fin estimado" Style="{StaticResource MutedLabel}" />
+                    <DatePicker Date="{Binding ExpectedEndDate}" Format="yyyy-MM-dd" />
+
+                    <Label Text="Kilometraje al ingresar (opcional)" Style="{StaticResource MutedLabel}" />
+                    <Entry Text="{Binding Mileage}" Keyboard="Numeric" />
+
+                    <Button Text="Crear reserva" Command="{Binding CreateCommand}" Style="{StaticResource PrimaryButton}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="10">
+
+                        <Border Style="{StaticResource Card}" BackgroundColor="#161206" IsVisible="{Binding IsOffline}">
+                            <Label FontSize="12" TextColor="{StaticResource Warn}"
+                                   Text="Sin conexión: las reservas y fotos se guardan y se envían al recuperar la red." />
+                        </Border>
+
+                        <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
+                               IsVisible="{Binding HasError}" />
+
+                        <Border Style="{StaticResource Panel}" IsVisible="{Binding IsEmpty}">
+                            <Label Text="No hay reservas." Style="{StaticResource MutedLabel}" HorizontalOptions="Center" />
+                        </Border>
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="10">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ReservationItem">
+                                    <Border Style="{StaticResource Card}">
+                                        <VerticalStackLayout Spacing="8">
+
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <VerticalStackLayout Grid.Column="0">
+                                                    <Label Text="{Binding Plate}" FontAttributes="Bold" FontSize="16" />
+                                                    <Label Text="{Binding Provider}" Style="{StaticResource MutedLabel}" />
+                                                    <Label Text="{Binding When}" Style="{StaticResource MutedLabel}" FontSize="11" />
+                                                </VerticalStackLayout>
+                                                <Label Grid.Column="1" Text="{Binding Status}" FontSize="11" VerticalOptions="Start"
+                                                       TextColor="{Binding Status, Converter={StaticResource StatusColor}}" />
+                                            </Grid>
+
+                                            <Label Text="{Binding PhotoLabel}" Style="{StaticResource MutedLabel}" FontSize="11" />
+
+                                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                                <Button Grid.Column="0" Text="Tomar foto" FontSize="12" HeightRequest="40"
+                                                        Style="{StaticResource GhostButton}"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ReservationsViewModel}}, Path=TakePhotoCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                <Button Grid.Column="1" Text="Galería" FontSize="12" HeightRequest="40"
+                                                        Style="{StaticResource GhostButton}"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ReservationsViewModel}}, Path=PickPhotoCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                            </Grid>
+
+                                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                                <Button Grid.Column="0" Text="{Binding NextLabel}" FontSize="12" HeightRequest="40"
+                                                        IsVisible="{Binding CanAdvance}" Style="{StaticResource PrimaryButton}"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ReservationsViewModel}}, Path=AdvanceCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                                <Button Grid.Column="1" Text="Cancelar" FontSize="12" HeightRequest="40"
+                                                        IsVisible="{Binding CanCancel}" Style="{StaticResource DangerButton}"
+                                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ReservationsViewModel}}, Path=CancelCommand}"
+                                                        CommandParameter="{Binding .}" />
+                                            </Grid>
+
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </RefreshView>
+
+        </Grid>
+
+    </Grid>
+</ContentPage>

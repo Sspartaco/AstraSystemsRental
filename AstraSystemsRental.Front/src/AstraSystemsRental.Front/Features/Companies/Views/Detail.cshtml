@@ -1,0 +1,12 @@
+@model AstraSystemsRental.Front.Features.Companies.CompanyDetailVm
+@{
+    ViewData["Title"] = "Compañía";
+}
+
+<div class="space-y-6 max-w-3xl">
+    <a href="/companies" class="astra-link text-sm">&larr; Mis compañías</a>
+
+    <div id="company-detail">
+        @await Html.PartialAsync("_CompanyDetail", Model)
+    </div>
+</div>

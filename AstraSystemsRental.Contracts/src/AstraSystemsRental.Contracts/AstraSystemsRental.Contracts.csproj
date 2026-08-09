@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>AstraSystemsRental.Contracts</RootNamespace>
+    <AssemblyName>AstraSystemsRental.Contracts</AssemblyName>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.0</Version>
+    <IsPackable>true</IsPackable>
+    <PackageId>AstraSystemsRental.Contracts</PackageId>
+    <Description>DTOs compartidos entre las APIs, el Front y la app movil.</Description>
+  </PropertyGroup>
+
+</Project>

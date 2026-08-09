@@ -1,0 +1,3 @@
+<Project>
+  <!-- El Directory.Build.props raiz fija net10.0; MAUI necesita multi-target propio -->
+</Project>

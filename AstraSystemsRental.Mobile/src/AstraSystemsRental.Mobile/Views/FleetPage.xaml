@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             xmlns:vm="clr-namespace:AstraSystemsRental.Mobile.ViewModels"
+             x:Class="AstraSystemsRental.Mobile.Views.FleetPage"
+             Title="Mi Flota">
+
+    <Grid Background="{StaticResource GradientMesh}">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16,10,16,10" RowSpacing="11">
+
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="9">
+                <Border Grid.Column="0" Style="{StaticResource InputShell}" Padding="12,0">
+                    <Grid ColumnDefinitions="22,*">
+                        <Path Grid.Column="0" Data="{x:Static local:Icons.Search}" Stroke="{StaticResource ContentMuted}"
+                              StrokeThickness="1.7" HeightRequest="16" WidthRequest="16" Aspect="Uniform"
+                              VerticalOptions="Center" />
+                        <Entry Grid.Column="1" Text="{Binding Search}" Placeholder="Buscar por placa…"
+                               ReturnCommand="{Binding SearchCommand}" Margin="6,0,0,0" />
+                    </Grid>
+                </Border>
+                <Button Grid.Column="1" Text="+" Command="{Binding ToggleCreateCommand}"
+                        Style="{StaticResource PrimaryButton}" WidthRequest="52" HeightRequest="48" FontSize="22" />
+            </Grid>
+
+            <Border Grid.Row="1" Style="{StaticResource Panel}" IsVisible="{Binding ShowCreate}">
+                <VerticalStackLayout Spacing="12">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <Border Grid.Column="0" Style="{StaticResource IconBadge}">
+                            <Path Data="{x:Static local:Icons.Truck}" Fill="{StaticResource BrandBright}"
+                                  HeightRequest="18" WidthRequest="18" Aspect="Uniform"
+                                  HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Border>
+                        <VerticalStackLayout Grid.Column="1" Margin="11,0,0,0" VerticalOptions="Center">
+                            <Label Text="Registrar vehículo" FontAttributes="Bold" FontSize="15" />
+                            <Label Text="Con la placa alcanza." Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                        </VerticalStackLayout>
+                    </Grid>
+                    <Border Style="{StaticResource InputShell}">
+                        <Entry Text="{Binding NewPlate}" Placeholder="ABC123" MaxLength="10" />
+                    </Border>
+                    <Button Text="Guardar" Command="{Binding CreateCommand}" Style="{StaticResource PrimaryButton}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <RefreshView Grid.Row="2" IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+                <ScrollView>
+                    <VerticalStackLayout Spacing="9">
+
+                        <Border IsVisible="{Binding HasError}" BackgroundColor="#150e10" Stroke="#2e161c"
+                                StrokeThickness="1" Padding="13" StrokeShape="RoundRectangle 11">
+                            <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="12.5" />
+                        </Border>
+
+                        <Border Style="{StaticResource Card}" IsVisible="{Binding IsEmpty}">
+                            <VerticalStackLayout Spacing="8" Padding="0,12">
+                                <Path Data="{x:Static local:Icons.Truck}" Fill="{StaticResource ContentFaint}"
+                                      HeightRequest="32" WidthRequest="32" Aspect="Uniform" HorizontalOptions="Center" />
+                                <Label Text="No hay vehículos que coincidan." Style="{StaticResource MutedLabel}"
+                                       HorizontalOptions="Center" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="9">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:VehicleListItem">
+                                    <Border Style="{StaticResource Card}" Padding="14">
+                                        <Border.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FleetViewModel}}, Path=OpenCommand}"
+                                                CommandParameter="{Binding .}" />
+                                        </Border.GestureRecognizers>
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Grid.Column="0" Style="{StaticResource IconBadge}">
+                                                <Path Data="{x:Static local:Icons.Truck}" Fill="{StaticResource BrandBright}"
+                                                      HeightRequest="17" WidthRequest="17" Aspect="Uniform"
+                                                      HorizontalOptions="Center" VerticalOptions="Center" />
+                                            </Border>
+                                            <VerticalStackLayout Grid.Column="1" Margin="12,0,0,0" VerticalOptions="Center">
+                                                <Label Text="{Binding Plate}" Style="{StaticResource PlateLabel}" />
+                                                <Label Text="{Binding Detail}" Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                                            </VerticalStackLayout>
+                                            <Border Grid.Column="2" BackgroundColor="#141a28" StrokeThickness="0"
+                                                    Padding="9,5" StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                                <Label Text="{Binding Status}" FontSize="10.5"
+                                                       TextColor="{Binding Status, Converter={StaticResource StatusColor}}" />
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                    </VerticalStackLayout>
+                </ScrollView>
+            </RefreshView>
+
+            <Grid Grid.Row="3" ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0" Text="Anterior" Command="{Binding PreviousPageCommand}"
+                        Style="{StaticResource GhostButton}" FontSize="12" HeightRequest="38" Padding="14,0" />
+                <Label Grid.Column="1" Text="{Binding PageLabel}" Style="{StaticResource MutedLabel}"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+                <Button Grid.Column="2" Text="Siguiente" Command="{Binding NextPageCommand}"
+                        Style="{StaticResource GhostButton}" FontSize="12" HeightRequest="38" Padding="14,0" />
+            </Grid>
+
+        </Grid>
+    </Grid>
+
+</ContentPage>

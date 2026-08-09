@@ -1,0 +1,20 @@
+@model AstraSystemsRental.Front.Shared.Security.AstraPrincipal
+@{
+    ViewData["Title"] = "Suscripción vencida";
+    Layout = "_LayoutAuth";
+}
+
+<div class="text-center">
+    <div class="mx-auto h-12 w-12 rounded-full bg-warn/15 border border-warn/30 flex items-center justify-center mb-5">
+        <svg class="h-6 w-6 text-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 4.5h.008M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+        </svg>
+    </div>
+    <h1 class="text-2xl mb-2">Tu suscripción ha vencido</h1>
+    <p class="text-sm text-content-soft mb-6">
+        Renueva tu plan para recuperar el acceso a los módulos de tu flota. Contacta a tu administrador o escríbenos.
+    </p>
+    <form asp-controller="Auth" asp-action="Logout" method="post">
+        <button type="submit" class="astra-btn-ghost w-full">Cerrar sesión</button>
+    </form>
+</div>

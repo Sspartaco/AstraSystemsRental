@@ -1,0 +1,12 @@
+@model AstraSystemsRental.Front.Features.VehicleRegistry.FleetVehicleDetailVm
+@{
+    ViewData["Title"] = Model.PlateNumber;
+}
+
+<div class="max-w-3xl mx-auto space-y-6">
+    <a href="/vehicle-registry" class="astra-link text-sm">&larr; Mi Flota</a>
+
+    <div id="vehicle-detail">
+        @await Html.PartialAsync("_VehicleDetail", Model)
+    </div>
+</div>

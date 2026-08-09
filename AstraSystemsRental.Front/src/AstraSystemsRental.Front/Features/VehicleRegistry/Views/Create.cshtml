@@ -1,0 +1,143 @@
+@{
+    ViewData["Title"] = "Registrar vehículo";
+    var error = ViewData["Error"] as string;
+}
+
+<div class="max-w-2xl mx-auto space-y-6" x-data="{ step: 1 }">
+    <div>
+        <a href="/vehicle-registry" class="astra-link text-sm">&larr; Mi Flota</a>
+        <h2 class="text-2xl mt-2">Registrar vehículo</h2>
+    </div>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="astra-alert-error">@error</div>
+    }
+
+    <div class="flex items-center gap-2 text-xs text-content-soft">
+        <span :class="step === 1 ? 'text-brand-bright' : ''">1. Identificación</span>
+        <span>&rarr;</span>
+        <span :class="step === 2 ? 'text-brand-bright' : ''">2. Configuración técnica</span>
+        <span>&rarr;</span>
+        <span :class="step === 3 ? 'text-brand-bright' : ''">3. Operación</span>
+    </div>
+
+    <form method="post" action="/vehicle-registry" class="astra-panel p-6 space-y-5" data-astra-submit-spinner>
+        <div x-show="step === 1" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
+            <div>
+                <label class="astra-label" for="cv-plate">Placa *</label>
+                <input id="cv-plate" name="PlateNumber" type="text" required maxlength="10" class="astra-input uppercase" placeholder="ABC123" autocomplete="off" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="astra-label" for="cv-brand">Marca</label>
+                    <input id="cv-brand" name="Brand" type="text" maxlength="80" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-line">Línea</label>
+                    <input id="cv-line" name="Line" type="text" maxlength="120" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-year">Modelo (año)</label>
+                    <input id="cv-year" name="ModelYear" type="number" min="1980" max="@(DateTime.UtcNow.Year + 1)" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-class">Clase</label>
+                    <input id="cv-class" name="VehicleClass" type="text" maxlength="60" class="astra-input" />
+                </div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <p class="text-xs text-content-muted">Con la placa alcanza para registrarlo. El resto lo podés completar después.</p>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="submit" id="cv-quick-save" class="astra-btn-ghost">Guardar solo con la placa</button>
+                    <button type="button" @@click="step = 2" class="astra-btn-primary">Siguiente</button>
+                </div>
+            </div>
+        </div>
+
+        <div x-show="step === 2" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
+            <p class="text-xs text-content-muted">Estos campos avanzados no aplican si tu plan es Demo.</p>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="astra-label" for="cv-body">Carrocería</label>
+                    <input id="cv-body" name="BodyType" type="text" maxlength="60" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-color">Color</label>
+                    <input id="cv-color" name="Color" type="text" maxlength="40" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-service">Servicio</label>
+                    <input id="cv-service" name="ServiceType" type="text" maxlength="40" class="astra-input" placeholder="Particular / Público" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-fuel">Combustible</label>
+                    <input id="cv-fuel" name="FuelType" type="text" maxlength="40" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-transmission">Transmisión</label>
+                    <input id="cv-transmission" name="Transmission" type="text" maxlength="40" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-license">Licencia de tránsito</label>
+                    <input id="cv-license" name="TransitLicenseNumber" type="text" maxlength="40" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-vin">VIN</label>
+                    <input id="cv-vin" name="Vin" type="text" maxlength="32" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-engine">Número de motor</label>
+                    <input id="cv-engine" name="EngineNumber" type="text" maxlength="32" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-serial">Número de serie</label>
+                    <input id="cv-serial" name="SerialNumber" type="text" maxlength="32" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-chassis">Número de chasis</label>
+                    <input id="cv-chassis" name="ChassisNumber" type="text" maxlength="32" class="astra-input" />
+                </div>
+            </div>
+            <div class="flex justify-between">
+                <button type="button" @@click="step = 1" class="astra-btn-ghost">Atrás</button>
+                <button type="button" @@click="step = 3" class="astra-btn-primary">Siguiente</button>
+            </div>
+        </div>
+
+        <div x-show="step === 3" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="astra-label" for="cv-invoice">Factura de compra</label>
+                    <input id="cv-invoice" name="PurchaseInvoiceNumber" type="text" maxlength="40" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="cv-purchase-date">Fecha de compra</label>
+                    <input id="cv-purchase-date" name="PurchaseDate" type="date" class="astra-input" />
+                </div>
+                <div class="col-span-2">
+                    <label class="astra-label" for="cv-purchase-value">Valor de compra</label>
+                    <input id="cv-purchase-value" name="PurchaseValue" type="number" step="0.01" class="astra-input" />
+                </div>
+                <div class="col-span-2">
+                    <label class="astra-label" for="cv-notes">Notas</label>
+                    <textarea id="cv-notes" name="Notes" maxlength="1000" rows="3" class="astra-input"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-between">
+                <button type="button" @@click="step = 2" class="astra-btn-ghost">Atrás</button>
+                <button type="submit" class="astra-btn-primary gap-2">
+                    <svg class="h-4 w-4 animate-spin hidden astra-submit-spinner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="9" class="opacity-25" />
+                        <path d="M21 12a9 9 0 0 0-9-9" />
+                    </svg>
+                    <span>Registrar vehículo</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script src="~/js/form-submit-spinner.js" asp-append-version="true"></script>
+}

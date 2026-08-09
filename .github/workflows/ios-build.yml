@@ -1,0 +1,74 @@
+name: iOS build (macOS en la nube)
+
+# Compila el IPA en un runner macOS de GitHub Actions, sin necesidad de tener una Mac.
+# Ejecucion manual desde la pestania Actions del repositorio.
+on:
+  workflow_dispatch:
+    inputs:
+      configuration:
+        description: Configuracion de compilacion
+        default: Release
+        type: choice
+        options: [Release, Debug]
+
+jobs:
+  build:
+    # GitHub da runners macOS gratis en repos publicos; en privados consumen minutos x10.
+    runs-on: macos-15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: preview
+
+      - name: Instalar workload de MAUI para iOS
+        run: dotnet workload install maui-ios --skip-sign-check
+
+      # Sin certificado de firma se genera un .app para simulador, util para revisar la UI.
+      # Para instalar en un iPhone real hacen falta los secretos de firma de la seccion de abajo.
+      - name: Compilar (sin firma)
+        if: ${{ !secrets.APPLE_CERTIFICATE_P12 }}
+        run: |
+          dotnet publish AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj \
+            -f net10.0-ios -c ${{ inputs.configuration }} \
+            -p:RuntimeIdentifier=iossimulator-arm64 \
+            -p:CodesignKey=""
+
+      - name: Importar certificado de firma
+        if: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        env:
+          CERT_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+          CERT_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          PROVISIONING_PROFILE: ${{ secrets.APPLE_PROVISIONING_PROFILE }}
+        run: |
+          echo "$CERT_P12" | base64 --decode > /tmp/cert.p12
+          security create-keychain -p runner build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p runner build.keychain
+          security import /tmp/cert.p12 -k build.keychain -P "$CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k runner build.keychain
+
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          echo "$PROVISIONING_PROFILE" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/astra.mobileprovision
+
+      - name: Compilar IPA firmado
+        if: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        run: |
+          dotnet publish AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj \
+            -f net10.0-ios -c ${{ inputs.configuration }} \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:CodesignProvision="${{ secrets.APPLE_PROVISIONING_PROFILE_NAME }}" \
+            -p:CodesignKey="${{ secrets.APPLE_SIGNING_IDENTITY }}"
+
+      - name: Publicar artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: astrasystems-ios
+          path: |
+            **/bin/${{ inputs.configuration }}/net10.0-ios/**/*.ipa
+            **/bin/${{ inputs.configuration }}/net10.0-ios/**/*.app
+          if-no-files-found: warn

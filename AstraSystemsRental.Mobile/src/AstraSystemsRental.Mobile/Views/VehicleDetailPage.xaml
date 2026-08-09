@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             x:Class="AstraSystemsRental.Mobile.Views.VehicleDetailPage"
+             Title="{Binding Plate}">
+
+    <Grid Background="{StaticResource GradientMesh}">
+
+        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16" Spacing="12">
+
+                    <Border Style="{StaticResource Panel}">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Plate}" Style="{StaticResource TitleLabel}" />
+                            <Label Text="{Binding Detail}" Style="{StaticResource SubtitleLabel}" />
+                            <Label Text="{Binding Status}" FontSize="12"
+                                   TextColor="{Binding Status, Converter={StaticResource StatusColor}}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                        <Border Grid.Column="0" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="KILOMETRAJE" Style="{StaticResource MutedLabel}" FontSize="10" />
+                                <Label Text="{Binding CurrentMileage}" FontSize="18" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </Border>
+                        <Border Grid.Column="1" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="2">
+                                <Label Text="PRÓXIMO MTTO." Style="{StaticResource MutedLabel}" FontSize="10" />
+                                <Label Text="{Binding NextThreshold}" FontSize="18" FontAttributes="Bold" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="2">
+                            <Label Text="RUTINA ASIGNADA" Style="{StaticResource MutedLabel}" FontSize="10" />
+                            <Label Text="{Binding RoutineName}" FontSize="14" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
+                           IsVisible="{Binding HasError}" />
+
+                    <Label Text="Historial de recorrido" FontAttributes="Bold" Margin="0,8,0,0" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Readings}" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label FontAttributes="Bold" Text="{Binding Value, StringFormat='{0:N0} km'}" />
+                                            <Label Style="{StaticResource MutedLabel}" Text="{Binding ReadingDate}" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding Source}" Style="{StaticResource MutedLabel}"
+                                               FontSize="11" VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

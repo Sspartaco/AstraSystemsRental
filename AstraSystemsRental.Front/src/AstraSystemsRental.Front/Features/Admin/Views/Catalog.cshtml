@@ -1,0 +1,15 @@
+@model AstraSystemsRental.Front.Features.Admin.CatalogViewModel
+@{
+    ViewData["Title"] = "Planes y nodos";
+}
+
+<div class="space-y-6">
+    <div>
+        <h2 class="text-2xl">Planes y nodos</h2>
+        <p class="text-sm text-content-soft mt-1">Gestiona los módulos (nodos) que incluye cada plan.</p>
+    </div>
+
+    <div id="plans-grid">
+        @await Html.PartialAsync("_PlansGrid", Model)
+    </div>
+</div>

@@ -1,0 +1,99 @@
+{
+  "info": {
+    "name": "AstraSystemsRental.Users",
+    "description": "Users API — registration, email confirmation and login (RS256).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{usersBaseUrl}}/apiUsers/health",
+          "host": ["{{usersBaseUrl}}"],
+          "path": ["apiUsers", "health"]
+        }
+      }
+    },
+    {
+      "name": "Create User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.userId) { pm.collectionVariables.set('userId', json.data.userId); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstNames\": \"Jonathan\",\n  \"lastNames\": \"Codalea\",\n  \"address\": \"Main St 100\",\n  \"personType\": \"Natural\",\n  \"documentNumber\": \"CC123456\",\n  \"companySize\": null,\n  \"email\": \"jonathan@codalea.app\"\n}"
+        },
+        "url": {
+          "raw": "{{usersBaseUrl}}/apiUsers/users",
+          "host": ["{{usersBaseUrl}}"],
+          "path": ["apiUsers", "users"]
+        }
+      }
+    },
+    {
+      "name": "Confirm Email",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{confirmationToken}}\",\n  \"password\": \"Sup3rSecret!\"\n}"
+        },
+        "url": {
+          "raw": "{{usersBaseUrl}}/apiUsers/users/confirm",
+          "host": ["{{usersBaseUrl}}"],
+          "path": ["apiUsers", "users", "confirm"]
+        }
+      }
+    },
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json && json.data && json.data.accessToken) { pm.collectionVariables.set('accessToken', json.data.accessToken); }"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"jonathan@codalea.app\",\n  \"password\": \"Sup3rSecret!\"\n}"
+        },
+        "url": {
+          "raw": "{{usersBaseUrl}}/apiUsers/auth/login",
+          "host": ["{{usersBaseUrl}}"],
+          "path": ["apiUsers", "auth", "login"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "usersBaseUrl", "value": "http://localhost:5001" },
+    { "key": "confirmationToken", "value": "" },
+    { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "" }
+  ]
+}

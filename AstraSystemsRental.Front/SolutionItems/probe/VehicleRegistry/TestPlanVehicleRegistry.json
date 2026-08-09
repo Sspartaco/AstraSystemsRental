@@ -1,0 +1,503 @@
+{
+  "name": "vehicle-registry",
+  "baseUrl": "https://localhost:8444",
+  "defaultTimeoutMs": 15000,
+  "stopOnFailure": false,
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "steps": [
+    {
+      "action": "goto",
+      "url": "/auth/login",
+      "description": "=== BLOQUE 1: AUTENTICACIÓN ==="
+    },
+    {
+      "action": "wait",
+      "selector": "#email"
+    },
+    {
+      "action": "fill",
+      "selector": "#email",
+      "value": "${PROBE_USERNAME}"
+    },
+    {
+      "action": "fill",
+      "selector": "#password",
+      "value": "${PROBE_PASSWORD}",
+      "secret": true
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "wait",
+      "selector": "nav",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "goto",
+      "url": "/vehicle-registry",
+      "description": "=== BLOQUE 2: LISTADO ==="
+    },
+    {
+      "action": "expect",
+      "selector": "#fleet-table",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "input[name=search]",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "select[name=status]",
+      "state": "visible"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque asistente de alta - paso 1')",
+      "description": "=== BLOQUE 3: ALTA EN 3 PASOS (camino feliz) ==="
+    },
+    {
+      "action": "click",
+      "selector": "a[href='/vehicle-registry/create']"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-plate",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = 'PRB' + Math.floor(Math.random() * 900 + 100); sessionStorage.setItem('__probePlacaFlota', window.__probePlacaFlota); console.error('PROBE_PLACA_FLOTA: ' + window.__probePlacaFlota)",
+      "description": "sessionStorage sobrevive a goto (misma pestaña, mismo origen); window.__x se pierde en cada navegación completa"
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = window.__probePlacaFlota || sessionStorage.getItem('__probePlacaFlota'); document.querySelector('#cv-plate').value = window.__probePlacaFlota; document.querySelector('#cv-plate').dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-brand",
+      "value": "Chevrolet"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-line",
+      "value": "Tracker"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-year",
+      "value": "2023"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-class",
+      "value": "Camioneta"
+    },
+    {
+      "action": "click",
+      "selector": "button:visible:has-text('Siguiente')",
+      "description": "Paso 1 -> Paso 2 (transición Alpine con x-transition). Hay 2 botones 'Siguiente' en el DOM (uno por cada x-show de paso); :visible filtra al único realmente clickeable"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-vin",
+      "state": "visible",
+      "timeoutMs": 5000,
+      "description": "Paso 2: configuración técnica"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-body",
+      "value": "SUV"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-color",
+      "value": "Blanco"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-vin",
+      "value": "8AGTR1234PROBE001"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-engine",
+      "value": "MOT-PROBE-001"
+    },
+    {
+      "action": "click",
+      "selector": "button:visible:has-text('Siguiente')",
+      "description": "Paso 2 -> Paso 3"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-invoice",
+      "state": "visible",
+      "timeoutMs": 5000,
+      "description": "Paso 3: operación"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-notes",
+      "value": "Vehículo registrado por Odiseo (prueba automatizada)"
+    },
+    {
+      "action": "click",
+      "selector": "button:has-text('Registrar vehículo')"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-detail-body",
+      "state": "visible",
+      "timeoutMs": 15000,
+      "description": "Redirect al detalle tras crear (HttpMethod.Post -> Redirect(f\"/vehicle-registry/{id}\"))"
+    },
+    {
+      "action": "eval",
+      "script": "window.__probeVehicleUrl = window.location.pathname; console.error('PROBE_URL_DETALLE_VEHICULO: ' + window.__probeVehicleUrl)"
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = window.__probePlacaFlota || sessionStorage.getItem('__probePlacaFlota'); console.error('PROBE_PLACA_EN_DETALLE: ' + document.querySelector('#vehicle-detail-body').textContent.includes(window.__probePlacaFlota))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_ESTADO_INICIAL: ' + document.querySelector('#vehicle-detail-body').textContent.includes('Draft'))",
+      "description": "Todo vehículo nuevo arranca en estado Draft"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque validacion de longitud y tipos de dato')",
+      "description": "=== BLOQUE 3B: VALIDACIÓN DE DATOS EN EL ASISTENTE (longitud, tipo, rango de año) ==="
+    },
+    {
+      "action": "goto",
+      "url": "/vehicle-registry/create"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-plate",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#cv-plate'); el.value = 'PLACADEMASIADOLARGA1234'; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_PLACA_TRUNCADA_POR_MAXLENGTH: ' + el.value + ' (len=' + el.value.length + ')')",
+      "description": "cv-plate tiene maxlength=10 (coincide con VARCHAR(10) del schema); el navegador debe truncar en vivo, no el backend"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#cv-brand'); el.value = 'M'.repeat(200); el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_MARCA_LEN_TRAS_MAXLENGTH: ' + el.value.length + ' (maxlength HTML=80, columna SQL NVARCHAR(80))')"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#cv-line'); el.value = 'L'.repeat(300); el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_LINEA_LEN_TRAS_MAXLENGTH: ' + el.value.length + ' (maxlength HTML=120, columna SQL NVARCHAR(120))')"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#cv-year'); el.value = '1899'; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_ANIO_BAJO_RANGO_VALIDITY: ' + el.validity.rangeUnderflow + ' (min HTML=1950)')",
+      "description": "cv-year es type=number min=1950 max=2030; un año fuera de rango debe marcar rangeUnderflow/rangeOverflow, pero NO hay validación equivalente en el backend (FleetVehicleService solo valida PlateNumber y Kilometers>=0)"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#cv-year'); el.value = '2099'; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_ANIO_SOBRE_RANGO_VALIDITY: ' + el.validity.rangeOverflow + ' (max HTML=2030)')"
+    },
+    {
+      "action": "goto",
+      "url": "/vehicle-registry",
+      "description": "No se envía este formulario (solo se prueba validez de campos); se vuelve al listado para reabrir el vehículo ya creado en el BLOQUE 3. Una navegación real (goto) es más confiable que reasignar window.location.href por eval, que no espera a que la nueva página cargue antes de continuar al siguiente paso"
+    },
+    {
+      "action": "wait",
+      "selector": "#fleet-table",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = window.__probePlacaFlota || sessionStorage.getItem('__probePlacaFlota'); const card = [...document.querySelectorAll('#fleet-table a[href^=\"/vehicle-registry/\"]')].find(a => a.textContent.includes(window.__probePlacaFlota)); if (!card) throw new Error('Card no encontrada para ' + window.__probePlacaFlota); card.click(); console.error('PROBE_REABRIR_DETALLE: click en card de ' + window.__probePlacaFlota)",
+      "description": "La placa es generada en runtime (window.__probePlacaFlota), por eso se busca la fila por JS en vez de un selector declarativo con ${VAR} (el motor solo resuelve variables de plataforma, no variables del navegador)"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-detail-body",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque tab documentos')",
+      "description": "=== BLOQUE 5: TAB DOCUMENTOS ==="
+    },
+    {
+      "action": "click",
+      "selector": "button:has-text('Documentos')"
+    },
+    {
+      "action": "wait",
+      "delayMs": 300,
+      "description": "Margen para que Alpine (x-data reinicializado en cada swap htmx de #vehicle-detail) procese la transición de tab antes de interactuar"
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Documentos'); if (!btn.classList.contains('border-brand')) { btn.click(); console.error('PROBE_TAB_DOCUMENTOS_REINTENTO: click no tomó efecto la primera vez'); } else { console.error('PROBE_TAB_DOCUMENTOS_OK: activo a la primera'); }",
+      "description": "Verificación defensiva: si el primer click no activó el tab (visto en runs previos), reintentar antes de interactuar con el formulario oculto"
+    },
+    {
+      "action": "wait",
+      "selector": "#doc-type",
+      "state": "visible",
+      "timeoutMs": 5000
+    },
+    {
+      "action": "select",
+      "selector": "#doc-type",
+      "value": "SOAT"
+    },
+    {
+      "action": "fill",
+      "selector": "#doc-number",
+      "value": "SOAT-PROBE-001"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#doc-expires'); console.error('PROBE_DOC_EXPIRES_TIENE_MIN: ' + (el.min !== '') + ' PROBE_DOC_EXPIRES_TIENE_MAX: ' + (el.max !== ''))",
+      "description": "doc-expires es type=date sin atributos min/max en HTML; no hay tope de rango declarado en el navegador ni CHECK de fecha en el schema SQL (05_schema_fleet_vehicles.sql), a diferencia de od-km que sí tiene min=0 en las 3 capas"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#doc-expires'); el.value = '2099-12-31'; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_FECHA_ABSURDAMENTE_FUTURA_ACEPTADA_POR_UI: ' + el.validity.valid + ' valor=' + el.value)",
+      "description": "Confirma que una fecha de vencimiento a 70+ años no es rechazada por el input; documenta una brecha real, no un comportamiento esperado a corregir en este plan"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#doc-expires'); el.value = '2020-01-01'; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_FECHA_VENCIDA_SETEADA: ' + el.value)",
+      "description": "Fecha en el pasado a propósito, para validar que el backend calcula Status=Expired"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='/documents'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-detail-body",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_DOCUMENTO_EXPIRADO: ' + document.querySelector('#vehicle-detail-body').textContent.includes('Expired'))",
+      "description": "ResolveDocumentStatus debe marcar Expired porque ExpiresDate ya pasó"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque cambio de estado')",
+      "description": "=== BLOQUE 6: TRANSICIÓN DE ESTADO ==="
+    },
+    {
+      "action": "select",
+      "selector": "select[name=NewStatus]",
+      "value": "Active"
+    },
+    {
+      "action": "click",
+      "selector": "button:has-text('Cambiar')"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-detail-body",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_ESTADO_ACTIVO: ' + document.querySelector('#vehicle-detail-body').textContent.includes('Active'))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque tab historial')",
+      "description": "=== BLOQUE 7: TAB HISTORIAL (debe reflejar el cambio Draft -> Active) ==="
+    },
+    {
+      "action": "click",
+      "selector": "button:has-text('Historial')"
+    },
+    {
+      "action": "wait",
+      "delayMs": 500
+    },
+    {
+      "action": "eval",
+      "script": "const rows = document.querySelectorAll('#vehicle-detail-body table tbody tr'); console.error('PROBE_FILAS_HISTORIAL: ' + rows.length)"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_HISTORIAL_MUESTRA_CAMBIO: ' + (document.querySelector('#vehicle-detail-body').textContent.includes('Draft') && document.querySelector('#vehicle-detail-body').textContent.includes('Active')))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque busqueda y filtro en listado')",
+      "description": "=== BLOQUE 8: LISTADO — BÚSQUEDA Y FILTRO ==="
+    },
+    {
+      "action": "goto",
+      "url": "/vehicle-registry"
+    },
+    {
+      "action": "fill",
+      "selector": "input[name=search]",
+      "value": "PRB"
+    },
+    {
+      "action": "wait",
+      "delayMs": 700,
+      "description": "Debounce de 400ms declarado en hx-trigger"
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = window.__probePlacaFlota || sessionStorage.getItem('__probePlacaFlota'); console.error('PROBE_BUSQUEDA_ENCUENTRA_VEHICULO: ' + document.querySelector('#fleet-table').textContent.includes(window.__probePlacaFlota))"
+    },
+    {
+      "action": "eval",
+      "script": "document.querySelector('input[name=search]').value = ''; document.querySelector('input[name=search]').dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "select",
+      "selector": "select[name=status]",
+      "value": "Active"
+    },
+    {
+      "action": "wait",
+      "delayMs": 700
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = window.__probePlacaFlota || sessionStorage.getItem('__probePlacaFlota'); console.error('PROBE_FILTRO_ESTADO_ACTIVO: ' + document.querySelector('#fleet-table').textContent.includes(window.__probePlacaFlota))",
+      "description": "El vehículo de prueba quedó en estado Active en el bloque 6; debe seguir apareciendo con el filtro"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque duplicado de placa')",
+      "description": "=== BLOQUE 9: NO PERMITE PLACA DUPLICADA PARA EL MISMO PROPIETARIO ==="
+    },
+    {
+      "action": "goto",
+      "url": "/vehicle-registry/create"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-plate",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "window.__probePlacaFlota = window.__probePlacaFlota || sessionStorage.getItem('__probePlacaFlota'); document.querySelector('#cv-plate').value = window.__probePlacaFlota; document.querySelector('#cv-plate').dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-brand",
+      "value": "Chevrolet"
+    },
+    {
+      "action": "fill",
+      "selector": "#cv-line",
+      "value": "Tracker"
+    },
+    {
+      "action": "click",
+      "selector": "button:visible:has-text('Siguiente')"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-vin",
+      "state": "visible",
+      "timeoutMs": 5000
+    },
+    {
+      "action": "click",
+      "selector": "button:visible:has-text('Siguiente')"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-invoice",
+      "state": "visible",
+      "timeoutMs": 5000
+    },
+    {
+      "action": "click",
+      "selector": "button:has-text('Registrar vehículo')"
+    },
+    {
+      "action": "wait",
+      "selector": ".astra-alert-error",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "UX_FleetVehicles_Owner_Plate debe rechazar el duplicado con Conflict('A vehicle with this plate is already registered.')"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque rango de ModelYear')",
+      "description": "=== BLOQUE 10: EL RANGO DE ModelYear COINCIDE CON EL SERVIDOR (mejora 1.2) ==="
+    },
+    {
+      "action": "goto",
+      "url": "/vehicle-registry/create"
+    },
+    {
+      "action": "wait",
+      "selector": "#cv-plate",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "description": "El HTML permitia 1950-2030 pero el servidor acepta 1980-(anio+1): el cliente dejaba pasar valores que el backend rechazaba",
+      "script": "const el=document.querySelector('#cv-year'); const min=parseInt(el.min,10); const max=parseInt(el.max,10); const expectedMax=new Date().getFullYear()+1; if(min!==1980) throw new Error('min esperado 1980, encontrado '+min); if(max!==expectedMax) throw new Error('max esperado '+expectedMax+', encontrado '+max); console.error('PROBE_MODELYEAR_RANGO: ' + min + '-' + max)"
+    },
+    {
+      "action": "eval",
+      "description": "Un anio por debajo del minimo del servidor debe quedar invalido tambien en el cliente",
+      "script": "const el=document.querySelector('#cv-year'); el.value='1979'; el.dispatchEvent(new Event('input',{bubbles:true})); if(el.checkValidity()) throw new Error('El cliente acepta 1979, que el servidor rechaza'); console.error('PROBE_MODELYEAR_1979_RECHAZADO: ok'); el.value=''"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque alta rapida')",
+      "description": "=== BLOQUE 11: ALTA RAPIDA SOLO CON LA PLACA (mejora 1.5) ==="
+    },
+    {
+      "action": "eval",
+      "description": "El servidor solo exige PlateNumber; el asistente pedia 18 campos",
+      "script": "const btn=document.querySelector('#cv-quick-save'); if(!btn) throw new Error('No existe el boton de alta rapida'); if(btn.type!=='submit') throw new Error('El boton de alta rapida no envia el formulario'); console.error('PROBE_ALTA_RAPIDA_PRESENTE: ok')"
+    },
+    {
+      "action": "eval",
+      "script": "const p='QCK'+Math.floor(Math.random()*900+100); sessionStorage.setItem('__probeQuickPlate',p); const el=document.querySelector('#cv-plate'); el.value=p; el.dispatchEvent(new Event('input',{bubbles:true})); console.error('PROBE_PLACA_RAPIDA: '+p)"
+    },
+    {
+      "action": "click",
+      "selector": "#cv-quick-save"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-detail",
+      "state": "visible",
+      "timeoutMs": 15000,
+      "description": "Tras el alta rapida el controller redirige al detalle del vehiculo creado"
+    },
+    {
+      "action": "eval",
+      "description": "El vehiculo debe existir habiendo llenado un solo campo",
+      "script": "const p=sessionStorage.getItem('__probeQuickPlate'); if(!document.body.textContent.includes(p)) throw new Error('El vehiculo creado solo con placa no aparece: '+p); console.error('PROBE_ALTA_RAPIDA_OK: '+p)"
+    }
+  ]
+}

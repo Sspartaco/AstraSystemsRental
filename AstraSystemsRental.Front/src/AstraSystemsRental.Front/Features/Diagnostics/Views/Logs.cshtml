@@ -1,0 +1,48 @@
+@model AstraSystemsRental.Front.Features.Diagnostics.LogsIndexVm
+@{
+    ViewData["Title"] = "Logs del sistema";
+    var levels = new[] { "Error", "Warning", "Information" };
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-display">Logs del sistema</h2>
+            <p class="text-sm text-content-soft mt-1">Errores y advertencias registrados por los servicios.</p>
+        </div>
+        <span class="astra-badge bg-white/[0.06] text-content-soft">@Model.TotalCount registros</span>
+    </div>
+
+    <form hx-get="/diagnostics/logs" hx-target="#logs-table" hx-swap="innerHTML"
+          hx-trigger="submit, change from:select[name=level], change from:select[name=service], keyup changed delay:400ms from:input[name=search]"
+          class="astra-panel p-4 grid grid-cols-1 sm:grid-cols-4 gap-3">
+        <div class="sm:col-span-2">
+            <label class="astra-label" for="lg-search">Buscar</label>
+            <input id="lg-search" name="search" type="search" value="@Model.Search" placeholder="Mensaje, ruta o TraceId…" class="astra-input" />
+        </div>
+        <div>
+            <label class="astra-label" for="lg-level">Nivel</label>
+            <select id="lg-level" name="level" class="astra-input">
+                <option value="">Todos</option>
+                @foreach (var l in levels)
+                {
+                    <option value="@l" selected="@(Model.Level == l)">@l</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label class="astra-label" for="lg-service">Servicio</label>
+            <select id="lg-service" name="service" class="astra-input">
+                <option value="">Todos</option>
+                @foreach (var s in Model.Services)
+                {
+                    <option value="@s" selected="@(Model.Service == s)">@s</option>
+                }
+            </select>
+        </div>
+    </form>
+
+    <div id="logs-table">
+        @await Html.PartialAsync("_LogsTable", Model)
+    </div>
+</div>

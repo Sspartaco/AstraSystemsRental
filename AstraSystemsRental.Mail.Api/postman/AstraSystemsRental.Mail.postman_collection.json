@@ -1,0 +1,44 @@
+{
+  "info": {
+    "name": "AstraSystemsRental.Mail",
+    "description": "Mail API — welcome email delivery through Gmail SMTP.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{mailBaseUrl}}/apiMail/health",
+          "host": ["{{mailBaseUrl}}"],
+          "path": ["apiMail", "health"]
+        }
+      }
+    },
+    {
+      "name": "Send Welcome",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-Internal-Api-Key", "value": "{{internalApiKey}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"toEmail\": \"user@codalea.app\",\n  \"displayName\": \"Jonathan\",\n  \"confirmationUrl\": \"https://astra.local/confirm?token=sample-token\"\n}"
+        },
+        "url": {
+          "raw": "{{mailBaseUrl}}/apiMail/mail/welcome",
+          "host": ["{{mailBaseUrl}}"],
+          "path": ["apiMail", "mail", "welcome"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "mailBaseUrl", "value": "http://localhost:5006" },
+    { "key": "internalApiKey", "value": "dev-internal-key" }
+  ]
+}

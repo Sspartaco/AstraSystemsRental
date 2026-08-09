@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>AstraSystemsRental.Mail.Api</RootNamespace>
+    <AssemblyName>AstraSystemsRental.Mail.Api</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AstraSystemsRental.Base" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Scalar.AspNetCore" />
+    <PackageReference Include="MailKit" />
+    <PackageReference Include="RazorLight" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="Views\Emails\**\*.cshtml" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

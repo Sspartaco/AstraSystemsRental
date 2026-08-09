@@ -1,0 +1,101 @@
+@model AstraSystemsRental.Front.Features.Admin.UsersPage
+@{
+    var roles = new[] { "Demo", "Standard", "SuperUser", "SysAdmin" };
+    var plans = new[] { "DEMO", "BASIC", "FULL" };
+    var search = Model.Search;
+}
+
+<div class="overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="text-left text-content-muted border-b border-white/[0.07]">
+                <th class="px-5 py-3 font-medium">Usuario</th>
+                <th class="px-5 py-3 font-medium">Estado</th>
+                <th class="px-5 py-3 font-medium">Empresa</th>
+                <th class="px-5 py-3 font-medium">Plan</th>
+                <th class="px-5 py-3 font-medium">Vence</th>
+                <th class="px-5 py-3 font-medium">Rol</th>
+                <th class="px-5 py-3 font-medium text-right">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Items.Count == 0)
+            {
+                <tr><td colspan="7" class="px-5 py-8 text-center text-content-muted">No hay usuarios que mostrar.</td></tr>
+            }
+            @foreach (var user in Model.Items)
+            {
+                <tr class="border-b border-white/[0.04] hover:bg-white/[0.02] transition">
+                    <td class="px-5 py-3">
+                        <div class="font-medium text-content">@user.FullName</div>
+                        <div class="text-xs text-content-muted">@user.Email</div>
+                    </td>
+                    <td class="px-5 py-3">
+                        @if (user.IsActive && user.IsConfirmed)
+                        {
+                            <span class="astra-badge bg-accent/15 text-accent">Activo</span>
+                        }
+                        else if (!user.IsConfirmed)
+                        {
+                            <span class="astra-badge bg-warn/15 text-warn">Sin confirmar</span>
+                        }
+                        else
+                        {
+                            <span class="astra-badge bg-content-muted/15 text-content-muted">Inactivo</span>
+                        }
+                    </td>
+                    <td class="px-5 py-3 text-content-soft">@(user.Company ?? "—")</td>
+                    <td class="px-5 py-3">
+                        <form hx-post="/admin/users/plan?page=@Model.PageNumber&search=@search" hx-target="#users-table" hx-swap="innerHTML">
+                            <input type="hidden" name="UserId" value="@user.UserId" />
+                            <select name="PlanCode" class="astra-input py-1.5 text-xs w-28" onchange="this.form.requestSubmit()">
+                                <option value="">Sin plan</option>
+                                @foreach (var plan in plans)
+                                {
+                                    <option value="@plan" selected="@(string.Equals(user.Plan, plan, StringComparison.OrdinalIgnoreCase))">@plan</option>
+                                }
+                            </select>
+                        </form>
+                    </td>
+                    <td class="px-5 py-3 text-content-soft">@(user.SubscriptionEndsAtUtc?.ToString("yyyy-MM-dd") ?? "—")</td>
+                    <td class="px-5 py-3">
+                        <form hx-post="/admin/users/role?page=@Model.PageNumber&search=@search" hx-target="#users-table" hx-swap="innerHTML" class="flex items-center gap-2">
+                            <input type="hidden" name="UserId" value="@user.UserId" />
+                            <select name="RoleCode" class="astra-input py-1.5 text-xs w-36" onchange="this.form.requestSubmit()">
+                                @foreach (var role in roles)
+                                {
+                                    <option value="@role" selected="@(role == user.Role)">@StatusText.Role(role)</option>
+                                }
+                            </select>
+                        </form>
+                    </td>
+                    <td class="px-5 py-3 text-right">
+                        <form hx-post="/admin/users/active?page=@Model.PageNumber&search=@search" hx-target="#users-table" hx-swap="innerHTML" class="inline">
+                            <input type="hidden" name="UserId" value="@user.UserId" />
+                            <input type="hidden" name="IsActive" value="@((!user.IsActive).ToString().ToLower())" />
+                            <button type="submit" class="astra-btn-ghost py-1.5 px-3 text-xs @(user.IsActive ? "text-danger hover:text-danger" : "text-accent hover:text-accent")">
+                                @(user.IsActive ? "Inhabilitar" : "Activar")
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="flex items-center justify-between px-5 py-3 border-t border-white/[0.07] text-sm">
+    <span class="text-content-muted">
+        @Model.TotalCount usuario@(Model.TotalCount == 1 ? "" : "s") · página @Model.PageNumber de @(Model.TotalPages == 0 ? 1 : Model.TotalPages)
+    </span>
+    <div class="flex items-center gap-2">
+        <button class="astra-btn-ghost py-1.5 px-3 text-xs @(Model.PageNumber <= 1 ? "opacity-40 pointer-events-none" : "")"
+                hx-get="/admin/users?page=@(Model.PageNumber - 1)&search=@search" hx-target="#users-table" hx-swap="innerHTML">
+            Anterior
+        </button>
+        <button class="astra-btn-ghost py-1.5 px-3 text-xs @(Model.PageNumber >= Model.TotalPages ? "opacity-40 pointer-events-none" : "")"
+                hx-get="/admin/users?page=@(Model.PageNumber + 1)&search=@search" hx-target="#users-table" hx-swap="innerHTML">
+            Siguiente
+        </button>
+    </div>
+</div>

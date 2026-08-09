@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>AstraSystemsRental.Front</RootNamespace>
+    <AssemblyName>AstraSystemsRental.Front</AssemblyName>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AstraSystemsRental.Base" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\css\app.css" CopyToOutputDirectory="Never" Pack="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\AstraSystemsRental.Contracts\src\AstraSystemsRental.Contracts\AstraSystemsRental.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

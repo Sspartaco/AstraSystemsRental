@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             xmlns:vm="clr-namespace:AstraSystemsRental.Mobile.ViewModels"
+             x:Class="AstraSystemsRental.Mobile.Views.TrackingPage"
+             Title="Control de Recorrido">
+
+    <Grid Background="{StaticResource GradientMesh}">
+
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+
+                <Label Text="Registrar kilometraje" Style="{StaticResource TitleLabel}" />
+
+                <Border Style="{StaticResource Card}" BackgroundColor="#161206" IsVisible="{Binding IsOffline}">
+                    <Label FontSize="12" TextColor="{StaticResource Warn}"
+                           Text="Sin conexión: la lectura se guarda y se envía al recuperar la red." />
+                </Border>
+
+                <Border Style="{StaticResource Panel}">
+                    <VerticalStackLayout Spacing="12">
+
+                        <Label Text="Vehículo" Style="{StaticResource MutedLabel}" />
+                        <Picker ItemsSource="{Binding Vehicles}" SelectedItem="{Binding SelectedVehicle}"
+                                ItemDisplayBinding="{Binding Plate}" Title="Elegí un vehículo…" />
+
+                        <Label Text="Kilómetros" Style="{StaticResource MutedLabel}" />
+                        <Entry Text="{Binding Value}" Keyboard="Numeric" Placeholder="0" />
+
+                        <Label Text="{Binding BoundsHint}" Style="{StaticResource MutedLabel}"
+                               TextColor="{StaticResource BrandBright}" FontSize="11" />
+
+                        <Label Text="Fecha" Style="{StaticResource MutedLabel}" />
+                        <DatePicker Date="{Binding ReadingDate}" MaximumDate="{Binding MaxDate}" Format="yyyy-MM-dd" />
+
+                        <Label Text="Notas (opcional)" Style="{StaticResource MutedLabel}" />
+                        <Entry Text="{Binding Notes}" MaxLength="400" />
+
+                        <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
+                               IsVisible="{Binding HasError}" />
+
+                        <Button Text="Registrar lectura" Command="{Binding SaveCommand}"
+                                Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsNotBusy}" />
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label Text="Últimas lecturas" Style="{StaticResource TitleLabel}" FontSize="16" Margin="0,8,0,0"
+                       IsVisible="{Binding HasReadings}" />
+
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Readings}" Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Grid.Column="0">
+                                        <Label FontAttributes="Bold" Text="{Binding Value, StringFormat='{0:N0} km'}" />
+                                        <Label Style="{StaticResource MutedLabel}" Text="{Binding ReadingDate}" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1" Text="{Binding Source}" FontSize="11"
+                                           Style="{StaticResource MutedLabel}" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+
+            </VerticalStackLayout>
+        </ScrollView>
+
+    </Grid>
+</ContentPage>

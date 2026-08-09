@@ -1,0 +1,108 @@
+{
+  "name": "routine-assignment",
+  "baseUrl": "https://localhost:8444",
+  "defaultTimeoutMs": 15000,
+  "stopOnFailure": false,
+  "viewport": { "width": 1440, "height": 900 },
+  "steps": [
+    {
+      "action": "goto",
+      "url": "/auth/login",
+      "description": "=== BLOQUE 1: AUTENTICACIÓN ==="
+    },
+    { "action": "wait", "selector": "#email" },
+    { "action": "fill", "selector": "#email", "value": "${PROBE_USERNAME}" },
+    { "action": "fill", "selector": "#password", "value": "${PROBE_PASSWORD}", "secret": true },
+    { "action": "click", "selector": "#login-submit" },
+    { "action": "wait", "selector": "nav", "state": "visible", "timeoutMs": 15000 },
+
+    {
+      "action": "goto",
+      "url": "/maintenance/routines",
+      "description": "=== BLOQUE 2: SETUP - crear dos rutinas para poder reasignar ==="
+    },
+    { "action": "wait", "selector": "#rt-name", "state": "visible", "timeoutMs": 10000 },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineA = 'RutA PRB' + Math.floor(Math.random() * 900 + 100); sessionStorage.setItem('__probeRoutineA', window.__probeRoutineA); const el = document.querySelector('#rt-name'); el.value = window.__probeRoutineA; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_RUTINA_A: ' + window.__probeRoutineA)"
+    },
+    { "action": "click", "selector": "form[action='/maintenance/routines'] button[type=submit]" },
+    { "action": "wait", "selector": "#rp-unit", "state": "visible", "timeoutMs": 15000 },
+    { "action": "select", "selector": "#rp-unit", "value": "Kilometers" },
+    { "action": "fill", "selector": "#rp-starts", "value": "0" },
+    { "action": "fill", "selector": "#rp-repeats", "value": "10000" },
+    { "action": "click", "selector": "form[action*='/periodicities'] button[type=submit]" },
+    { "action": "wait", "selector": "#routine-periodicities", "state": "visible", "timeoutMs": 15000 },
+
+    { "action": "goto", "url": "/maintenance/routines" },
+    { "action": "wait", "selector": "#rt-name", "state": "visible", "timeoutMs": 10000 },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineB = 'RutB PRB' + Math.floor(Math.random() * 900 + 100); sessionStorage.setItem('__probeRoutineB', window.__probeRoutineB); const el = document.querySelector('#rt-name'); el.value = window.__probeRoutineB; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_RUTINA_B: ' + window.__probeRoutineB)"
+    },
+    { "action": "click", "selector": "form[action='/maintenance/routines'] button[type=submit]" },
+    { "action": "wait", "selector": "#rp-unit", "state": "visible", "timeoutMs": 15000 },
+
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque abrir ficha de vehiculo')",
+      "description": "=== BLOQUE 3: ABRIR FICHA DE MANTENIMIENTO ==="
+    },
+    { "action": "goto", "url": "/maintenance" },
+    { "action": "wait", "selector": "#maintenance-vehicles", "state": "visible", "timeoutMs": 15000 },
+    {
+      "action": "eval",
+      "script": "const card = document.querySelector('#maintenance-vehicles a[href^=\"/maintenance/vehicle/\"]'); if (!card) throw new Error('No hay vehiculos en la flota'); sessionStorage.setItem('__probeVehicleUrl', card.getAttribute('href')); card.click(); console.error('PROBE_ABRIR_FICHA: ok')"
+    },
+    { "action": "wait", "selector": "#vehicle-maintenance-body", "state": "visible", "timeoutMs": 15000 },
+    { "action": "expect", "selector": "#ma-routine", "state": "visible" },
+
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque asignar rutina A')",
+      "description": "=== BLOQUE 4: ASIGNAR RUTINA ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineA = window.__probeRoutineA || sessionStorage.getItem('__probeRoutineA'); const select = document.querySelector('#ma-routine'); const option = [...select.options].find(o => o.textContent.trim() === window.__probeRoutineA); if (!option) throw new Error('Rutina A no esta en el combo'); select.value = option.value; select.dispatchEvent(new Event('change', {bubbles:true})); console.error('PROBE_SELECCION_RUTINA_A: ' + option.value)"
+    },
+    { "action": "click", "selector": "form[hx-post*='assign-routine'] button[type=submit]" },
+    { "action": "wait", "selector": "#vehicle-maintenance-body", "state": "visible", "timeoutMs": 15000 },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineA = window.__probeRoutineA || sessionStorage.getItem('__probeRoutineA'); console.error('PROBE_RUTINA_A_ASIGNADA: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes(window.__probeRoutineA))"
+    },
+
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque reasignar a rutina B')",
+      "description": "=== BLOQUE 5: REASIGNAR (genera historial) ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineB = window.__probeRoutineB || sessionStorage.getItem('__probeRoutineB'); const select = document.querySelector('#ma-routine'); const option = [...select.options].find(o => o.textContent.trim() === window.__probeRoutineB); if (!option) throw new Error('Rutina B no esta en el combo'); select.value = option.value; select.dispatchEvent(new Event('change', {bubbles:true}))"
+    },
+    { "action": "click", "selector": "form[hx-post*='assign-routine'] button[type=submit]" },
+    { "action": "wait", "selector": "#vehicle-maintenance-body", "state": "visible", "timeoutMs": 15000 },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineB = window.__probeRoutineB || sessionStorage.getItem('__probeRoutineB'); console.error('PROBE_RUTINA_B_ASIGNADA: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes(window.__probeRoutineB))"
+    },
+
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque historial de rutinas')",
+      "description": "=== BLOQUE 6: HISTORIAL DE REASIGNACIONES ==="
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Historial de rutinas'); if (!btn) throw new Error('Tab historial no encontrado'); btn.click()"
+    },
+    { "action": "wait", "delayMs": 400 },
+    {
+      "action": "eval",
+      "script": "window.__probeRoutineA = window.__probeRoutineA || sessionStorage.getItem('__probeRoutineA'); window.__probeRoutineB = window.__probeRoutineB || sessionStorage.getItem('__probeRoutineB'); const text = document.querySelector('#vehicle-maintenance-body').textContent; console.error('PROBE_HISTORIAL_MUESTRA_AMBAS: ' + (text.includes(window.__probeRoutineA) && text.includes(window.__probeRoutineB)))",
+      "description": "El historial debe mostrar la transición RutinaA -> RutinaB (RoutineAssignmentHistory)"
+    }
+  ]
+}

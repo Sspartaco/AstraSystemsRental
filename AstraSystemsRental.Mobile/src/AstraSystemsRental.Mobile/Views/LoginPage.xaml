@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             x:Class="AstraSystemsRental.Mobile.Views.LoginPage"
+             Shell.NavBarIsVisible="False">
+
+    <Grid Background="{StaticResource GradientMesh}">
+        <ScrollView>
+            <VerticalStackLayout Padding="26,70,26,30" Spacing="0">
+
+                <!-- Logo: el mismo orbe con gradiente que la web usa en el sidebar -->
+                <Border x:Name="LogoOrb" Style="{StaticResource BrandOrb}" WidthRequest="66" HeightRequest="66"
+                        StrokeShape="RoundRectangle 20" HorizontalOptions="Center" Opacity="0">
+                    <Path Data="{x:Static local:Icons.Truck}" Fill="White"
+                          HeightRequest="32" WidthRequest="32" Aspect="Uniform"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+
+                <Label x:Name="BrandTitle" Text="AstraSystems" FontSize="30" FontAttributes="Bold"
+                       HorizontalOptions="Center" Margin="0,18,0,0" CharacterSpacing="-0.5" Opacity="0">
+                    <Label.TextColor>#e7e9f0</Label.TextColor>
+                </Label>
+
+                <Label x:Name="BrandSub" Text="Gestión de flota" FontSize="13" Opacity="0"
+                       TextColor="{StaticResource ContentMuted}" HorizontalOptions="Center" Margin="0,4,0,30" />
+
+                <Border x:Name="LoginCard" Style="{StaticResource Panel}" Opacity="0" TranslationY="18">
+                    <VerticalStackLayout Spacing="16">
+
+                        <Label Text="Bienvenido de nuevo" Style="{StaticResource TitleLabel}" FontSize="21" />
+                        <Label Text="Iniciá sesión para continuar" Style="{StaticResource MutedLabel}" Margin="0,-10,0,0" />
+
+                        <VerticalStackLayout Spacing="7">
+                            <Label Text="CORREO ELECTRÓNICO" Style="{StaticResource KpiLabel}" />
+                            <Border Style="{StaticResource InputShell}">
+                                <Grid ColumnDefinitions="24,*">
+                                    <Path Grid.Column="0" Data="{x:Static local:Icons.User}"
+                                          Stroke="{StaticResource ContentMuted}" StrokeThickness="1.6"
+                                          HeightRequest="17" WidthRequest="17" Aspect="Uniform"
+                                          VerticalOptions="Center" />
+                                    <Entry Grid.Column="1" Text="{Binding Email}" Keyboard="Email"
+                                           Placeholder="tu@empresa.com" Margin="8,0,0,0" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <VerticalStackLayout Spacing="7">
+                            <Label Text="CONTRASEÑA" Style="{StaticResource KpiLabel}" />
+                            <Border Style="{StaticResource InputShell}">
+                                <Grid ColumnDefinitions="24,*">
+                                    <Path Grid.Column="0" Data="M6 11V8a6 6 0 0 1 12 0v3 M5 11h14v10H5Z"
+                                          Stroke="{StaticResource ContentMuted}" StrokeThickness="1.6"
+                                          HeightRequest="17" WidthRequest="17" Aspect="Uniform"
+                                          VerticalOptions="Center" />
+                                    <Entry Grid.Column="1" Text="{Binding Password}" IsPassword="True"
+                                           Placeholder="••••••••" Margin="8,0,0,0" />
+                                </Grid>
+                            </Border>
+                        </VerticalStackLayout>
+
+                        <Border IsVisible="{Binding HasError}" BackgroundColor="#150e10" Stroke="#2e161c"
+                                StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 10">
+                            <Grid ColumnDefinitions="22,*">
+                                <Path Grid.Column="0" Data="{x:Static local:Icons.Alert}"
+                                      Stroke="{StaticResource Danger}" StrokeThickness="1.8"
+                                      HeightRequest="16" WidthRequest="16" Aspect="Uniform" VerticalOptions="Start" />
+                                <Label Grid.Column="1" Text="{Binding Error}" TextColor="{StaticResource Danger}"
+                                       FontSize="12.5" Margin="6,0,0,0" />
+                            </Grid>
+                        </Border>
+
+                        <Button Text="Iniciar sesión" Command="{Binding LoginCommand}"
+                                Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsNotBusy}"
+                                Margin="0,4,0,0" />
+
+                        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
+                                           HeightRequest="22" />
+
+                    </VerticalStackLayout>
+                </Border>
+
+                <Label Text="Plataforma de gestión de flota" Style="{StaticResource MutedLabel}"
+                       FontSize="11" HorizontalOptions="Center" Margin="0,26,0,0" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+
+</ContentPage>

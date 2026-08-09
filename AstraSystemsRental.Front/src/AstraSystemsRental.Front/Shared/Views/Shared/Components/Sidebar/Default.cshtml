@@ -1,0 +1,45 @@
+@model IReadOnlyList<AstraSystemsRental.Front.Services.CatalogNode>
+@{
+    var currentPath = ViewContext.HttpContext.Request.Path.Value ?? "/";
+
+    bool IsActive(string href)
+    {
+        if (href == "/")
+            return currentPath == "/";
+
+        return currentPath.Equals(href, StringComparison.OrdinalIgnoreCase)
+            || currentPath.StartsWith(href + "/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    var resolved = Model
+        .Select(node =>
+        {
+            var parts = node.Route.Split('/', 2);
+            var controller = parts.Length > 0 ? parts[0] : "Home";
+            var action = parts.Length > 1 ? parts[1] : "Index";
+            return new { Node = node, Href = Url.Action(action, controller) ?? "/" };
+        })
+        .ToList();
+
+    var bestMatch = resolved
+        .Where(x => IsActive(x.Href))
+        .OrderByDescending(x => x.Href.Length)
+        .Select(x => x.Href)
+        .FirstOrDefault();
+}
+<nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+    @foreach (var item in resolved)
+    {
+        var isActive = item.Href == bestMatch;
+        <a href="@item.Href" class="astra-sidebar-item @(isActive ? "active" : "")"
+           :class="collapsed ? 'justify-center px-0' : ''"
+           :title="collapsed ? '@item.Node.Label' : ''"
+           aria-current="@(isActive ? "page" : null)">
+            <span class="astra-sidebar-marker" aria-hidden="true"></span>
+            <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                @Html.Raw(item.Node.Icon)
+            </svg>
+            <span x-show="!collapsed" x-cloak class="whitespace-nowrap">@item.Node.Label</span>
+        </a>
+    }
+</nav>

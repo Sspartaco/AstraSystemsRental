@@ -1,0 +1,38 @@
+services:
+  api-users:
+    build:
+      context: ..
+      dockerfile: AstraSystemsRental.Users.Api/Dockerfile
+    image: astra-api-users:latest
+    container_name: astra-api-users
+    ports:
+      - "5001:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__Default=${USERS_CONNECTION_STRING}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PrivateKeyPath=/run/secrets/jwt-private.pem
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - Confirmation__BaseUrl=${CONFIRMATION_BASE_URL}
+      - MailApi__BaseUrl=${MAIL_API_BASE_URL}
+      - MailApi__InternalApiKey=${INTERNAL_API_KEY}
+    volumes:
+      - ../keys/jwt-private.pem:/run/secrets/jwt-private.pem:ro
+      - ../keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - astra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/apiUsers/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  astra:
+    name: astra
+    driver: bridge

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] ?? "AstraSystemsRental")</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/dist/app.min.css" asp-append-version="true" />
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div id="astra-progress" class="htmx-indicator fixed top-0 left-0 right-0 h-0.5 z-50 bg-gradient-brand animate-pulse"></div>
+    <div class="w-full max-w-md">
+        <div class="flex items-center justify-center gap-2.5 mb-8">
+            <div class="h-10 w-10 rounded-lg bg-gradient-brand shadow-brand flex items-center justify-center">
+                <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M2.75 6.75A1.75 1.75 0 0 1 4.5 5h8.75a1.75 1.75 0 0 1 1.75 1.75V15H3.5a.75.75 0 0 1-.75-.75V6.75Z" />
+                    <path d="M15 8.5h2.94a1.75 1.75 0 0 1 1.55.94l1.56 3a1.75 1.75 0 0 1 .2.81V15H15V8.5Z" />
+                    <circle cx="7" cy="17" r="1.75" />
+                    <circle cx="17.5" cy="17" r="1.75" />
+                    <path d="M8.75 17H15" />
+                </svg>
+            </div>
+            <span class="font-display text-xl font-semibold text-content">AstraSystemsRental</span>
+        </div>
+        <div class="astra-panel p-8">
+            @RenderBody()
+        </div>
+        <p class="text-center text-xs text-content-muted mt-6">Plataforma de gestión de flota</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
+    <script src="~/js/htmx-progress.js" asp-append-version="true"></script>
+    <style>[x-cloak]{display:none!important;}</style>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             x:Class="AstraSystemsRental.Mobile.Views.DashboardPage"
+             Title="Panel">
+
+    <Grid Background="{StaticResource GradientMesh}">
+        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+            <ScrollView>
+                <VerticalStackLayout x:Name="Root" Padding="16,10,16,24" Spacing="14">
+
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="{Binding Greeting}" Style="{StaticResource TitleLabel}" />
+                        <Label Text="Esto es lo que está pasando en tu flota hoy." Style="{StaticResource SubtitleLabel}" />
+                    </VerticalStackLayout>
+
+                    <Border IsVisible="{Binding HasPending}" BackgroundColor="#161206" Stroke="#2b2410"
+                            StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <Grid ColumnDefinitions="26,*,Auto">
+                            <Path Grid.Column="0" Data="{x:Static local:Icons.Offline}" Stroke="{StaticResource Warn}"
+                                  StrokeThickness="1.8" HeightRequest="18" WidthRequest="18" Aspect="Uniform"
+                                  VerticalOptions="Center" />
+                            <Label Grid.Column="1" VerticalOptions="Center" TextColor="{StaticResource Warn}" FontSize="13"
+                                   Margin="8,0,0,0" Text="{Binding PendingCount, StringFormat='{0} sin enviar'}" />
+                            <Button Grid.Column="2" Text="Enviar" Command="{Binding SyncCommand}"
+                                    Style="{StaticResource GhostButton}" HeightRequest="34" FontSize="12" Padding="12,0" />
+                        </Grid>
+                    </Border>
+
+                    <Border IsVisible="{Binding IsOffline}" BackgroundColor="#161206" Stroke="#2b2410"
+                            StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <Grid ColumnDefinitions="26,*">
+                            <Path Grid.Column="0" Data="{x:Static local:Icons.Offline}" Stroke="{StaticResource Warn}"
+                                  StrokeThickness="1.8" HeightRequest="18" WidthRequest="18" Aspect="Uniform"
+                                  VerticalOptions="Start" />
+                            <Label Grid.Column="1" FontSize="12.5" TextColor="{StaticResource Warn}" Margin="8,0,0,0"
+                                   Text="Sin conexión. Podés registrar kilometraje, reservas y fotos: se envían al volver la red." />
+                        </Grid>
+                    </Border>
+
+                    <Border IsVisible="{Binding HasError}" BackgroundColor="#150e10" Stroke="#2e161c"
+                            StrokeThickness="1" Padding="14" StrokeShape="RoundRectangle 12">
+                        <Grid ColumnDefinitions="26,*">
+                            <Path Grid.Column="0" Data="{x:Static local:Icons.Alert}" Stroke="{StaticResource Danger}"
+                                  StrokeThickness="1.8" HeightRequest="18" WidthRequest="18" Aspect="Uniform"
+                                  VerticalOptions="Start" />
+                            <Label Grid.Column="1" Text="{Binding Error}" TextColor="{StaticResource Danger}"
+                                   FontSize="12.5" Margin="8,0,0,0" />
+                        </Grid>
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="11" RowSpacing="11">
+
+                        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0" Text="VEHÍCULOS ACTIVOS" Style="{StaticResource KpiLabel}" />
+                                    <Path Grid.Column="1" Data="{x:Static local:Icons.Truck}" Fill="{StaticResource Accent}"
+                                          HeightRequest="17" WidthRequest="17" Aspect="Uniform" />
+                                </Grid>
+                                <Label Text="{Binding ActiveVehicles}" Style="{StaticResource KpiValue}"
+                                       TextColor="{StaticResource Accent}" />
+                                <Label Style="{StaticResource MutedLabel}" FontSize="11"
+                                       Text="{Binding TotalVehicles, StringFormat='de {0} registrados'}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0" Text="EN TALLER" Style="{StaticResource KpiLabel}" />
+                                    <Path Grid.Column="1" Data="{x:Static local:Icons.Wrench}" Stroke="{StaticResource Warn}"
+                                          StrokeThickness="1.7" HeightRequest="17" WidthRequest="17" Aspect="Uniform" />
+                                </Grid>
+                                <Label Text="{Binding InWorkshop}" Style="{StaticResource KpiValue}"
+                                       TextColor="{StaticResource Warn}" />
+                                <Label Style="{StaticResource MutedLabel}" FontSize="11"
+                                       Text="{Binding ActiveReservations, StringFormat='{0} reservas activas'}" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0" Text="DOCS. VENCIDOS" Style="{StaticResource KpiLabel}" />
+                                    <Path Grid.Column="1" Data="{x:Static local:Icons.Alert}" Stroke="{StaticResource Danger}"
+                                          StrokeThickness="1.7" HeightRequest="17" WidthRequest="17" Aspect="Uniform" />
+                                </Grid>
+                                <Label Text="{Binding ExpiredDocuments}" Style="{StaticResource KpiValue}"
+                                       TextColor="{StaticResource Danger}" />
+                                <Label Text="SOAT y tecnomecánica" Style="{StaticResource MutedLabel}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+
+                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0" Text="COBERTURA" Style="{StaticResource KpiLabel}" />
+                                    <Path Grid.Column="1" Data="{x:Static local:Icons.Routine}" Stroke="{StaticResource BrandBright}"
+                                          StrokeThickness="1.7" HeightRequest="17" WidthRequest="17" Aspect="Uniform" />
+                                </Grid>
+                                <Label Style="{StaticResource KpiValue}" TextColor="{StaticResource BrandBright}"
+                                       Text="{Binding CoverageRatio, StringFormat='{0}%'}" />
+                                <Label Text="con rutina asignada" Style="{StaticResource MutedLabel}" FontSize="11" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+
+                    <Grid ColumnDefinitions="Auto,*" Margin="2,10,0,0">
+                        <Path Grid.Column="0" Data="{x:Static local:Icons.Calendar}" Stroke="{StaticResource BrandBright}"
+                              StrokeThickness="1.7" HeightRequest="17" WidthRequest="17" Aspect="Uniform"
+                              VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="Próximas reservas" Style="{StaticResource SectionLabel}"
+                               Margin="9,0,0,0" VerticalOptions="Center" />
+                    </Grid>
+
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding HasAgenda, Converter={StaticResource InverseBool}}">
+                        <VerticalStackLayout Spacing="8" Padding="0,10">
+                            <Path Data="{x:Static local:Icons.Calendar}" Stroke="{StaticResource ContentFaint}"
+                                  StrokeThickness="1.5" HeightRequest="30" WidthRequest="30" Aspect="Uniform"
+                                  HorizontalOptions="Center" />
+                            <Label Text="No hay reservas programadas." Style="{StaticResource MutedLabel}"
+                                   HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Agenda}" Spacing="9">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}" Padding="14">
+                                    <Grid ColumnDefinitions="54,*,Auto">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label Text="{Binding Day}" Style="{StaticResource MutedLabel}" FontSize="10.5" />
+                                            <Label Text="{Binding Time}" FontAttributes="Bold" FontSize="16"
+                                                   TextColor="{StaticResource BrandBright}" />
+                                        </VerticalStackLayout>
+                                        <VerticalStackLayout Grid.Column="1" Margin="10,0,0,0" VerticalOptions="Center">
+                                            <Label Text="{Binding Provider}" FontSize="14" />
+                                            <Label Text="{Binding Vehicle}" Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                                        </VerticalStackLayout>
+                                        <Border Grid.Column="2" BackgroundColor="#141a28" StrokeThickness="0"
+                                                Padding="9,5" StrokeShape="RoundRectangle 8" VerticalOptions="Center">
+                                            <Label Text="{Binding Status}" FontSize="10.5"
+                                                   TextColor="{Binding Status, Converter={StaticResource StatusColor}}" />
+                                        </Border>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Grid ColumnDefinitions="Auto,*" Margin="2,10,0,0" IsVisible="{Binding HasAttention}">
+                        <Path Grid.Column="0" Data="{x:Static local:Icons.Alert}" Stroke="{StaticResource Warn}"
+                              StrokeThickness="1.7" HeightRequest="17" WidthRequest="17" Aspect="Uniform"
+                              VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="Requieren atención" Style="{StaticResource SectionLabel}"
+                               Margin="9,0,0,0" VerticalOptions="Center" />
+                    </Grid>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Attention}" Spacing="9">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}" Padding="14">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <BoxView Grid.Column="0" WidthRequest="3" HeightRequest="34" CornerRadius="2"
+                                                 Color="{StaticResource Danger}" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" Margin="12,0,0,0" VerticalOptions="Center">
+                                            <Label Text="{Binding Plate}" Style="{StaticResource PlateLabel}" FontSize="15" />
+                                            <Label Text="{Binding DocumentType}" Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="2" Text="{Binding Detail}" FontSize="11"
+                                               TextColor="{StaticResource Danger}" VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+    </Grid>
+
+</ContentPage>

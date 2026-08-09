@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>UIDeviceFamily</key>
+	<array>
+		<integer>1</integer>
+		<integer>2</integer>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>XSAppIconAssets</key>
+	<string>Assets.xcassets/appicon.appiconset</string>
+
+	<!-- La app usa la camara para documentar el estado del vehiculo en el taller -->
+	<key>NSCameraUsageDescription</key>
+	<string>AstraSystems usa la cámara para adjuntar fotos del estado del vehículo en las reservas de taller.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>AstraSystems accede a tus fotos para adjuntar imágenes a las reservas de taller.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>AstraSystems guarda las fotos que tomás para las reservas de taller.</string>
+
+	<!-- Solo necesario mientras el Gateway corra en HTTP local. Quitar al pasar a HTTPS. -->
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+</dict>
+</plist>

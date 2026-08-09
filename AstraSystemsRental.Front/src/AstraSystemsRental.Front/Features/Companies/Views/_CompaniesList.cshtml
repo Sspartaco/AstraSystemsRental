@@ -1,0 +1,24 @@
+@model IReadOnlyList<AstraSystemsRental.Front.Features.Companies.CompanyVm>
+
+<div class="astra-panel divide-y divide-white/[0.06]">
+    @if (Model.Count == 0)
+    {
+        <p class="p-5 text-sm text-content-muted">Todavía no pertenecés a ninguna compañía.</p>
+    }
+    @foreach (var company in Model)
+    {
+        <a href="/companies/@company.CompanyId" class="flex items-center justify-between px-5 py-4 hover:bg-white/[0.03] transition">
+            <div>
+                <p class="text-sm text-content">@company.CompanyName</p>
+            </div>
+            @if (company.IsOwner)
+            {
+                <span class="astra-badge bg-brand/15 text-brand-bright">Owner</span>
+            }
+            else
+            {
+                <span class="astra-badge bg-white/[0.06] text-content-soft">Miembro</span>
+            }
+        </a>
+    }
+</div>

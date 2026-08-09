@@ -1,0 +1,38 @@
+@model AstraSystemsRental.Front.Features.VehicleRegistry.FleetVehiclesPageVm
+@{
+    ViewData["Title"] = "Mi Flota";
+    var statuses = new[] { "Draft", "Active", "Maintenance", "Blocked", "Inactive", "Sold" };
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl">Mi Flota</h2>
+            <p class="text-sm text-content-soft mt-1">Registro operativo de vehículos: identificación, kilometraje, documentos y estado.</p>
+        </div>
+        <a href="/vehicle-registry/create" class="astra-btn-primary">Registrar vehículo</a>
+    </div>
+
+    <form hx-get="/vehicle-registry" hx-target="#fleet-table" hx-swap="innerHTML"
+          hx-trigger="submit, keyup changed delay:400ms from:input[name=search], change from:select[name=status]"
+          class="astra-panel p-4 flex flex-col sm:flex-row gap-3">
+        <div class="relative flex-1">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-content-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input type="search" name="search" value="@Model.Search" placeholder="Buscar por placa…" class="astra-input pl-10" autocomplete="off" />
+        </div>
+        <select name="status" class="astra-input sm:w-52">
+            <option value="">Todos los estados</option>
+            @foreach (var s in statuses)
+            {
+                <option value="@s" selected="@(Model.Status == s)">@StatusText.Vehicle(s)</option>
+            }
+        </select>
+    </form>
+
+    <div id="fleet-table" class="space-y-4">
+        @await Html.PartialAsync("_FleetTable", Model)
+    </div>
+</div>

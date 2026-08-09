@@ -1,0 +1,229 @@
+@model AstraSystemsRental.Front.Features.Home.HomeViewModel
+@{
+    ViewData["Title"] = "Panel";
+    var fleet = Model.Dashboard?.Fleet;
+    var workshop = Model.Dashboard?.Workshop;
+    var name = Model.Principal.Email.Split('@')[0];
+
+    var greeting = DateTime.Now.Hour switch
+    {
+        < 12 => "Buenos días",
+        < 19 => "Buenas tardes",
+        _ => "Buenas noches"
+    };
+
+    string DayLabel(DateTime date)
+    {
+        var d = DateOnly.FromDateTime(date);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        if (d == today) return "Hoy";
+        if (d == today.AddDays(1)) return "Mañana";
+        return date.ToString("d MMM", new System.Globalization.CultureInfo("es-CO"));
+    }
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-display">@greeting, <span class="text-brand-bright">@name</span></h2>
+            <p class="text-sm text-content-soft mt-1">Esto es lo que está pasando en tu flota hoy.</p>
+        </div>
+        @if (Model.Dashboard is not null)
+        {
+            <p class="text-xs text-content-muted">
+                Actualizado @Model.Dashboard.GeneratedAtUtc.ToLocalTime().ToString("HH:mm")
+            </p>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="astra-alert-error">@Model.Error</div>
+    }
+
+    @if (!Model.CanSeeFleet && !Model.CanSeeWorkshop)
+    {
+        <div class="astra-panel p-10 text-center">
+            <p class="text-sm text-content-muted">Tu plan todavía no tiene módulos habilitados.</p>
+        </div>
+    }
+
+    @if (fleet is not null)
+    {
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="/vehicle-registry" class="astra-kpi astra-kpi-link group">
+                <div class="flex items-start justify-between">
+                    <span class="astra-kpi-label">Vehículos activos</span>
+                    <svg class="h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2.75 6.75A1.75 1.75 0 0 1 4.5 5h8.75a1.75 1.75 0 0 1 1.75 1.75V15H3.5a.75.75 0 0 1-.75-.75V6.75Z" />
+                        <path d="M15 8.5h2.94a1.75 1.75 0 0 1 1.55.94l1.56 3a1.75 1.75 0 0 1 .2.81V15H15V8.5Z" />
+                        <circle cx="7" cy="17" r="1.75" /><circle cx="17.5" cy="17" r="1.75" />
+                    </svg>
+                </div>
+                <p class="astra-kpi-value text-accent">@fleet.ActiveVehicles</p>
+                <p class="text-xs text-content-muted">de @fleet.TotalVehicles registrados</p>
+                <div class="astra-meter"><div class="astra-meter-fill bg-accent" style="width:@(Model.Dashboard!.UtilizationRatio)%"></div></div>
+            </a>
+
+            <a href="/maintenance/reservations" class="astra-kpi astra-kpi-link group">
+                <div class="flex items-start justify-between">
+                    <span class="astra-kpi-label">En taller</span>
+                    <svg class="h-4 w-4 text-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 21h18" /><path d="M5 21V7l7-4 7 4v14" /><path d="M9 21v-6h6v6" />
+                    </svg>
+                </div>
+                <p class="astra-kpi-value text-warn">@(workshop?.VehiclesInWorkshop ?? 0)</p>
+                <p class="text-xs text-content-muted">@(workshop?.ActiveReservations ?? 0) reservas activas</p>
+                <div class="astra-meter"><div class="astra-meter-fill bg-warn" style="width:@(fleet.TotalVehicles == 0 ? 0 : Math.Min(100, (workshop?.VehiclesInWorkshop ?? 0) * 100 / fleet.TotalVehicles))%"></div></div>
+            </a>
+
+            <a href="/vehicle-registry" class="astra-kpi astra-kpi-link group">
+                <div class="flex items-start justify-between">
+                    <span class="astra-kpi-label">Documentos vencidos</span>
+                    <svg class="h-4 w-4 @(fleet.ExpiredDocuments > 0 ? "text-danger" : "text-content-muted")" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 9v4" /><path d="M12 17h.01" />
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                    </svg>
+                </div>
+                <p class="astra-kpi-value @(fleet.ExpiredDocuments > 0 ? "text-danger" : "text-content")">@fleet.ExpiredDocuments</p>
+                <p class="text-xs text-content-muted">SOAT y tecnomecánica</p>
+                <div class="astra-meter"><div class="astra-meter-fill bg-danger" style="width:@(fleet.TotalVehicles == 0 ? 0 : Math.Min(100, fleet.ExpiredDocuments * 100 / Math.Max(1, fleet.TotalVehicles)))%"></div></div>
+            </a>
+
+            <a href="/maintenance" class="astra-kpi astra-kpi-link group">
+                <div class="flex items-start justify-between">
+                    <span class="astra-kpi-label">Cobertura de rutinas</span>
+                    <svg class="h-4 w-4 text-brand-bright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4.5 6.75h15" /><path d="M4.5 12h15" /><path d="M4.5 17.25h9" /><circle cx="18" cy="17.25" r="2.25" />
+                    </svg>
+                </div>
+                <p class="astra-kpi-value text-brand-bright">@(Model.Dashboard!.CoverageRatio)<span class="text-lg text-content-muted">%</span></p>
+                <p class="text-xs text-content-muted">@(workshop?.VehiclesWithRoutine ?? 0) con rutina asignada</p>
+                <div class="astra-meter"><div class="astra-meter-fill bg-brand-bright" style="width:@(Model.Dashboard!.CoverageRatio)%"></div></div>
+            </a>
+        </div>
+    }
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="astra-panel p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-display text-base flex items-center gap-2">
+                    <svg class="h-4 w-4 text-brand-bright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3.75" y="5.25" width="16.5" height="15" rx="1.75" /><path d="M8.25 3v4.5" /><path d="M15.75 3v4.5" /><path d="M3.75 10.5h16.5" />
+                    </svg>
+                    Próximas reservas
+                </h3>
+                <a href="/maintenance/reservations" class="text-xs text-brand-bright hover:underline">Ver agenda</a>
+            </div>
+
+            @if (Model.Agenda.Count == 0)
+            {
+                <p class="text-sm text-content-muted py-6 text-center">No hay reservas programadas.</p>
+            }
+            else
+            {
+                <div class="space-y-2">
+                    @foreach (var r in Model.Agenda)
+                    {
+                        <a href="/maintenance/vehicle/@r.FleetVehicleId" class="astra-row group">
+                            <div class="flex flex-col items-center justify-center w-14 shrink-0">
+                                <span class="text-xs text-content-muted">@DayLabel(r.ScheduledAtUtc)</span>
+                                <span class="font-display text-sm text-content">@r.ScheduledAtUtc.ToString("HH:mm")</span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm text-content truncate">@(r.ProviderName ?? "Taller sin asignar")</p>
+                                <p class="text-xs text-content-muted">Vehículo #@r.FleetVehicleId</p>
+                            </div>
+                            <span class="astra-badge bg-brand/15 text-brand-bright shrink-0">@StatusText.Reservation(r.Status)</span>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="astra-panel p-5 space-y-4">
+            <div class="flex items-center justify-between">
+                <h3 class="font-display text-base flex items-center gap-2">
+                    <svg class="h-4 w-4 text-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 9v4" /><path d="M12 17h.01" />
+                        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                    </svg>
+                    Requieren atención
+                </h3>
+                <a href="/vehicle-registry" class="text-xs text-brand-bright hover:underline">Ver flota</a>
+            </div>
+
+            @if (Model.Attention.Count == 0)
+            {
+                <div class="py-6 text-center space-y-2">
+                    <svg class="h-8 w-8 mx-auto text-accent/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                    <p class="text-sm text-content-muted">Todo al día. Sin documentos por vencer.</p>
+                </div>
+            }
+            else
+            {
+                <div class="space-y-2">
+                    @foreach (var d in Model.Attention.Take(6))
+                    {
+                        <a href="/vehicle-registry/@d.FleetVehicleId" class="astra-row group">
+                            <span class="astra-dot @(d.IsExpired ? "bg-danger" : "bg-warn")"></span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm text-content font-display tracking-wide">@d.PlateNumber</p>
+                                <p class="text-xs text-content-muted">@d.DocumentType</p>
+                            </div>
+                            <span class="astra-badge shrink-0 @(d.IsExpired ? "bg-danger/15 text-danger" : "bg-warn/15 text-warn")">
+                                @(d.IsExpired ? $"Vencido hace {Math.Abs(d.DaysRemaining)} d" : $"Vence en {d.DaysRemaining} d")
+                            </span>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (fleet is not null && fleet.TotalVehicles > 0)
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="astra-panel p-5 space-y-4">
+                <h3 class="font-display text-base">Estado de la flota</h3>
+                <div class="space-y-3">
+                    @foreach (var s in fleet.ByStatus)
+                    {
+                        var pct = fleet.TotalVehicles == 0 ? 0 : s.Count * 100 / fleet.TotalVehicles;
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-content-soft">@StatusText.Vehicle(s.Status)</span>
+                                <span class="text-content-muted">@s.Count · @pct%</span>
+                            </div>
+                            <div class="astra-meter">
+                                <div class="astra-meter-fill bg-brand" style="width:@pct%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="astra-panel p-5 space-y-4">
+                <h3 class="font-display text-base">Antigüedad</h3>
+                <p class="text-xs text-content-muted -mt-2">Promedio: @fleet.AverageAgeYears.ToString("0.#") años</p>
+                <div class="space-y-3">
+                    @foreach (var a in fleet.ByAge)
+                    {
+                        var pct = fleet.TotalVehicles == 0 ? 0 : a.Count * 100 / fleet.TotalVehicles;
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="text-content-soft">@a.Bucket</span>
+                                <span class="text-content-muted">@a.Count</span>
+                            </div>
+                            <div class="astra-meter">
+                                <div class="astra-meter-fill bg-brand-bright" style="width:@pct%"></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>

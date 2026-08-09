@@ -1,0 +1,34 @@
+services:
+  gateway:
+    build:
+      context: ..
+      dockerfile: AstraSystemsRental.Gateway/Dockerfile
+    image: astra-gateway:latest
+    container_name: astra-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - ReverseProxy__Clusters__users-cluster__Destinations__users__Address=${USERS_UPSTREAM}
+      - ReverseProxy__Clusters__mail-cluster__Destinations__mail__Address=${MAIL_UPSTREAM}
+    volumes:
+      - ../keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - astra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  astra:
+    name: astra
+    driver: bridge

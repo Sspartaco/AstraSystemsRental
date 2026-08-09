@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             xmlns:vm="clr-namespace:AstraSystemsRental.Mobile.ViewModels"
+             xmlns:svc="clr-namespace:AstraSystemsRental.Mobile.Services"
+             x:Class="AstraSystemsRental.Mobile.Views.ProfilePage"
+             Title="Mi cuenta">
+
+    <Grid Background="{StaticResource GradientMesh}">
+
+        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16" Spacing="12">
+
+                    <Border Style="{StaticResource Panel}">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                            <Border Grid.Column="0" Style="{StaticResource BrandOrb}" WidthRequest="58" HeightRequest="58"
+                                    StrokeShape="RoundRectangle 18" VerticalOptions="Center">
+                                <Path Data="{x:Static local:Icons.User}" Stroke="White" StrokeThickness="1.7"
+                                      HeightRequest="26" WidthRequest="26" Aspect="Uniform"
+                                      HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" VerticalOptions="Center">
+                                <Label Text="{Binding FullName}" FontSize="19" FontAttributes="Bold" />
+                                <Label Text="{Binding Email}" Style="{StaticResource MutedLabel}" />
+                                <Border BackgroundColor="#141a28" StrokeThickness="0" Padding="9,4"
+                                        StrokeShape="RoundRectangle 8" HorizontalOptions="Start" Margin="0,3,0,0">
+                                    <Label Text="{Binding Role}" TextColor="{StaticResource BrandBright}" FontSize="11" />
+                                </Border>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Plan y suscripción" FontAttributes="Bold" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Plan" Style="{StaticResource MutedLabel}" />
+                                <Label Grid.Column="1" Text="{Binding PlanName}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Vence" Style="{StaticResource MutedLabel}" />
+                                <Label Grid.Column="1" Text="{Binding Expiry}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label Grid.Column="0" Text="Documento" Style="{StaticResource MutedLabel}" />
+                                <Label Grid.Column="1" Text="{Binding Document}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" BackgroundColor="#161206" IsVisible="{Binding HasPending}">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Label Grid.Column="0" VerticalOptions="Center" TextColor="{StaticResource Warn}" FontSize="13"
+                                   Text="{Binding PendingCount, StringFormat='{0} sin enviar'}" />
+                            <Button Grid.Column="1" Text="Sincronizar" Command="{Binding SyncCommand}"
+                                    Style="{StaticResource GhostButton}" HeightRequest="36" FontSize="12" />
+                        </Grid>
+                    </Border>
+
+                    <Label Text="Conflictos de sincronización" FontAttributes="Bold" Margin="0,8,0,0"
+                           IsVisible="{Binding HasConflicts}" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Conflicts}" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="svc:PendingOperation">
+                                <Border Style="{StaticResource Card}" BackgroundColor="#150e10">
+                                    <VerticalStackLayout Spacing="6">
+                                        <Label Text="{Binding Label}" FontSize="13" />
+                                        <Label Text="{Binding LastError}" TextColor="{StaticResource Danger}" FontSize="11" />
+                                        <Button Text="Descartar" FontSize="12" HeightRequest="36"
+                                                Style="{StaticResource DangerButton}"
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ProfileViewModel}}, Path=DiscardCommand}"
+                                                CommandParameter="{Binding .}" />
+                                    </VerticalStackLayout>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Label Text="Módulos habilitados" FontAttributes="Bold" Margin="0,8,0,0" />
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Nodes}" Spacing="6">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}" Padding="13">
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <Path Grid.Column="0" Data="{x:Static local:Icons.Check}" Stroke="{StaticResource Accent}"
+                                              StrokeThickness="2" HeightRequest="14" WidthRequest="14" Aspect="Uniform"
+                                              VerticalOptions="Center" />
+                                        <Label Grid.Column="1" Text="{Binding Label}" FontSize="13.5" Margin="11,0,0,0"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                    <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
+                           IsVisible="{Binding HasError}" />
+
+                    <Button Text="Cerrar sesión" Command="{Binding LogoutCommand}"
+                            Style="{StaticResource DangerButton}" Margin="0,12,0,0" />
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

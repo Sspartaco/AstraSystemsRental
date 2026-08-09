@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.git/
+**/.env
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/*.user
+**/TestResults/
+**/tests/
+**/postman/

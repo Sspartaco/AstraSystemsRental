@@ -1,0 +1,337 @@
+@model AstraSystemsRental.Front.Features.Maintenance.VehicleMaintenanceVm
+
+@{
+    var vehicleId = Model.Vehicle.Id;
+    var today = DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+
+    string ReservationBadge(string status) => status switch
+    {
+        "Ready" => "bg-accent/15 text-accent",
+        "InWorkshop" => "bg-warn/15 text-warn",
+        "Pending" => "bg-brand/15 text-brand-bright",
+        "Cancelled" => "bg-danger/15 text-danger",
+        _ => "bg-white/[0.06] text-content-soft"
+    };
+
+    string NextStatus(string status) => status switch
+    {
+        "Pending" => "InWorkshop",
+        "InWorkshop" => "Ready",
+        "Ready" => "Collected",
+        _ => string.Empty
+    };
+
+    string NextStatusLabel(string status) => status switch
+    {
+        "Pending" => "Marcar en taller",
+        "InWorkshop" => "Marcar listo",
+        "Ready" => "Marcar retirado",
+        _ => string.Empty
+    };
+}
+
+<div id="vehicle-maintenance-body" class="space-y-5">
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="astra-alert-error">@Model.Error</div>
+}
+
+<div class="astra-panel p-6">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+        <div>
+            <span class="font-display text-2xl tracking-[0.15em]">@Model.Vehicle.PlateNumber</span>
+            <p class="text-sm text-content-soft mt-1">@Model.Vehicle.Brand @Model.Vehicle.Line</p>
+        </div>
+        <span class="astra-badge bg-white/[0.06] text-content-soft">@Model.Vehicle.Status</span>
+    </div>
+</div>
+
+@if (Model.NextMaintenance is { HasRoutine: true } next)
+{
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="astra-kpi">
+            <p class="astra-label mb-0">Rutina asignada</p>
+            <p class="text-content text-sm">@(next.RoutineName ?? "—")</p>
+        </div>
+        <div class="astra-kpi">
+            <p class="astra-label mb-0">Kilometraje actual</p>
+            <p class="font-display text-2xl text-content">@(next.CurrentValue?.ToString("N0") ?? "—")</p>
+            @if (next.LastReadingDate is { } lastDate)
+            {
+                <p class="text-xs text-content-muted">Último registro: @lastDate.ToString("yyyy-MM-dd")</p>
+            }
+        </div>
+        <div class="astra-kpi">
+            <p class="astra-label mb-0">Próximo mantenimiento</p>
+            @if (next.NextThreshold is { } threshold)
+            {
+                <p class="font-display text-2xl @(next.IsOverdue ? "text-danger" : "text-content")">@threshold.ToString("N0")</p>
+                @if (next.IsOverdue)
+                {
+                    <span class="astra-badge bg-danger/15 text-danger">Excedido por @next.Overdue?.ToString("N0")</span>
+                }
+                else
+                {
+                    <p class="text-xs text-content-muted">Faltan @next.Remaining?.ToString("N0") @(next.Unit == "Hours" ? "horas" : "km")</p>
+                }
+            }
+            else
+            {
+                <p class="text-sm text-content-muted">Sin periodicidad configurada</p>
+            }
+        </div>
+    </div>
+}
+
+<div x-data="{ tab: '@Model.InitialTab' }" class="space-y-4">
+    <div class="flex gap-1 border-b border-white/[0.07] overflow-x-auto">
+        <button type="button" @@click="tab = 'routine'" :class="tab === 'routine' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition whitespace-nowrap">Rutina asignada</button>
+        <button type="button" @@click="tab = 'readings'" :class="tab === 'readings' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition whitespace-nowrap">Historial de recorrido</button>
+        @if (Model.CanManageReservations)
+        {
+            <button type="button" @@click="tab = 'reservations'" :class="tab === 'reservations' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition whitespace-nowrap">Reservas de taller</button>
+        }
+        <button type="button" @@click="tab = 'history'" :class="tab === 'history' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition whitespace-nowrap">Historial de rutinas</button>
+    </div>
+
+    <div x-show="tab === 'routine'" x-cloak class="space-y-4">
+        @if (Model.CanManageRoutines)
+        {
+            <form hx-post="/maintenance/vehicle/@vehicleId/assign-routine" hx-target="#vehicle-maintenance" hx-swap="innerHTML"
+                  class="astra-panel p-5 flex flex-col sm:flex-row sm:items-end gap-4">
+                <div class="flex-1">
+                    <label class="astra-label" for="ma-routine">Rutina de mantenimiento</label>
+                    <select id="ma-routine" name="RoutineId" required class="astra-input">
+                        <option value="">Seleccioná una rutina…</option>
+                        @foreach (var routine in Model.AvailableRoutines)
+                        {
+                            <option value="@routine.Id" selected="@(Model.Assignment?.RoutineId == routine.Id)">@routine.Name</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="astra-btn-primary">Asignar</button>
+            </form>
+        }
+
+        @if (Model.Assignment is { } assignment)
+        {
+            <div class="astra-card p-5">
+                <p class="astra-label mb-1">Rutina activa</p>
+                <p class="font-display text-lg text-content">@assignment.RoutineName</p>
+                <p class="text-xs text-content-muted mt-1">Asignada el @assignment.AssignedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</p>
+            </div>
+        }
+        else
+        {
+            <div class="astra-panel p-8 text-center">
+                <p class="text-sm text-content-muted">Este vehículo todavía no tiene una rutina de mantenimiento asignada.</p>
+            </div>
+        }
+    </div>
+
+    <div x-show="tab === 'readings'" x-cloak class="space-y-4">
+        <form hx-post="/maintenance/vehicle/@vehicleId/readings" hx-target="#vehicle-maintenance" hx-swap="innerHTML"
+              class="astra-panel p-5 grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div>
+                <label class="astra-label" for="mr-value">Kilómetros</label>
+                <input id="mr-value" name="Value" type="number" min="0" required class="astra-input" />
+            </div>
+            <div>
+                <label class="astra-label" for="mr-date">Fecha</label>
+                <input id="mr-date" name="ReadingDate" type="date" required max="@today" value="@today" class="astra-input" />
+            </div>
+            <div class="sm:col-span-2">
+                <label class="astra-label" for="mr-notes">Notas</label>
+                <input id="mr-notes" name="Notes" type="text" maxlength="400" class="astra-input" />
+            </div>
+            <div class="sm:col-span-4 flex justify-end">
+                <button type="submit" class="astra-btn-primary">Registrar lectura</button>
+            </div>
+        </form>
+
+        @if (Model.Readings.Count == 0)
+        {
+            <div class="astra-panel p-8 text-center">
+                <p class="text-sm text-content-muted">Sin lecturas registradas todavía.</p>
+            </div>
+        }
+        else
+        {
+            <div id="mileage-readings" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                @foreach (var reading in Model.Readings)
+                {
+                    <div class="astra-card p-4 flex flex-col gap-2">
+                        <div class="flex items-center justify-between">
+                            <span class="font-display text-lg text-content">@reading.Value.ToString("N0")</span>
+                            <span class="astra-badge bg-white/[0.06] text-content-soft">@reading.Source</span>
+                        </div>
+                        <p class="text-xs text-content-muted">@reading.ReadingDate.ToString("yyyy-MM-dd")</p>
+                        @if (!string.IsNullOrEmpty(reading.Notes))
+                        {
+                            <p class="text-xs text-content-soft">@reading.Notes</p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (Model.CanManageReservations)
+    {
+        <div x-show="tab === 'reservations'" x-cloak class="space-y-4">
+            <form hx-post="/maintenance/vehicle/@vehicleId/reservations" hx-target="#vehicle-maintenance" hx-swap="innerHTML"
+                  class="astra-panel p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="astra-label" for="wr-scheduled">Fecha programada</label>
+                    <input id="wr-scheduled" name="ScheduledAtUtc" type="datetime-local" required class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="wr-end">Fin estimado</label>
+                    <input id="wr-end" name="ExpectedEndAtUtc" type="datetime-local" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="wr-provider">Taller</label>
+                    <select id="wr-provider" name="ProviderId" class="astra-input">
+                        <option value="">Sin asignar</option>
+                        @foreach (var provider in Model.Providers)
+                        {
+                            <option value="@provider.Id">@provider.Name</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="astra-label" for="wr-mileage">Kilometraje al ingresar</label>
+                    <input id="wr-mileage" name="MileageAtReservation" type="number" min="0" class="astra-input" />
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="astra-label" for="wr-notes">Notas</label>
+                    <input id="wr-notes" name="Notes" type="text" maxlength="1000" class="astra-input" />
+                </div>
+                <div class="sm:col-span-2 flex items-center justify-between">
+                    <label class="flex items-center gap-2 text-sm text-content-soft">
+                        <input name="IsWashOnly" type="checkbox" value="true" class="rounded bg-bg-2 border-white/[0.15]" />
+                        Solo lavado
+                    </label>
+                    <button type="submit" class="astra-btn-primary">Crear reserva</button>
+                </div>
+            </form>
+
+            @if (Model.Reservations.Count == 0)
+            {
+                <div class="astra-panel p-8 text-center">
+                    <p class="text-sm text-content-muted">Sin reservas de taller para este vehículo.</p>
+                </div>
+            }
+            else
+            {
+                <div id="workshop-reservations" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    @foreach (var reservation in Model.Reservations)
+                    {
+                        var nextStatus = NextStatus(reservation.Status);
+                        var canCancel = reservation.Status is "Pending" or "InWorkshop";
+                        <div class="astra-card p-5 flex flex-col gap-3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div>
+                                    <p class="text-sm text-content">@reservation.ScheduledAtUtc.ToString("yyyy-MM-dd HH:mm")</p>
+                                    <p class="text-xs text-content-muted mt-0.5">@(reservation.ProviderName ?? "Sin taller asignado")</p>
+                                </div>
+                                <span class="astra-badge @ReservationBadge(reservation.Status)">@StatusText.Reservation(reservation.Status)</span>
+                            </div>
+
+                            @if (reservation.MileageAtReservation is { } mileage)
+                            {
+                                <p class="text-xs text-content-soft">Kilometraje al ingresar: @mileage.ToString("N0")</p>
+                            }
+                            @if (reservation.IsWashOnly)
+                            {
+                                <span class="astra-badge bg-white/[0.06] text-content-soft w-fit">Solo lavado</span>
+                            }
+                            @if (!string.IsNullOrEmpty(reservation.Notes))
+                            {
+                                <p class="text-xs text-content-soft">@reservation.Notes</p>
+                            }
+
+                            @if (reservation.Photos.Count > 0)
+                            {
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach (var photo in reservation.Photos)
+                                    {
+                                        <a href="/maintenance/reservations/@reservation.Id/photos/@photo.Id" target="_blank"
+                                           class="relative block h-16 w-16 rounded-md overflow-hidden border border-white/[0.08] hover:border-brand/40 transition"
+                                           title="@StatusText.Reservation(photo.Status) · @photo.FileName">
+                                            <img src="/maintenance/reservations/@reservation.Id/photos/@photo.Id"
+                                                 alt="Foto en estado @StatusText.Reservation(photo.Status)"
+                                                 loading="lazy" class="h-full w-full object-cover" />
+                                        </a>
+                                    }
+                                </div>
+                            }
+
+                            <form hx-post="/maintenance/vehicle/@vehicleId/reservations/@reservation.Id/photos"
+                                  hx-target="#vehicle-maintenance" hx-swap="innerHTML"
+                                  hx-encoding="multipart/form-data"
+                                  class="flex items-center gap-2">
+                                <label class="astra-photo-button">
+                                    <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M3 8.5A1.5 1.5 0 0 1 4.5 7h2l1.2-2h8.6L17.5 7h2A1.5 1.5 0 0 1 21 8.5v9A1.5 1.5 0 0 1 19.5 19h-15A1.5 1.5 0 0 1 3 17.5v-9Z" />
+                                        <circle cx="12" cy="13" r="3.25" />
+                                    </svg>
+                                    Adjuntar foto
+                                    <input type="file" name="file" accept="image/jpeg,image/png,image/webp"
+                                           class="hidden" onchange="this.form.requestSubmit()" />
+                                </label>
+                            </form>
+
+                            @if (!string.IsNullOrEmpty(nextStatus) || canCancel)
+                            {
+                                <div class="mt-auto pt-3 border-t border-white/[0.06] flex items-center justify-end gap-2">
+                                    @if (canCancel)
+                                    {
+                                        <form hx-post="/maintenance/vehicle/@vehicleId/reservations/@reservation.Id/status" hx-target="#vehicle-maintenance" hx-swap="innerHTML"
+                                              hx-confirm="¿Cancelar esta reserva? No se puede deshacer.">
+                                            <input type="hidden" name="NewStatus" value="Cancelled" />
+                                            <button type="submit" class="astra-btn-ghost text-xs text-danger hover:text-danger">Cancelar</button>
+                                        </form>
+                                    }
+                                    @if (!string.IsNullOrEmpty(nextStatus))
+                                    {
+                                        <form hx-post="/maintenance/vehicle/@vehicleId/reservations/@reservation.Id/status" hx-target="#vehicle-maintenance" hx-swap="innerHTML">
+                                            <input type="hidden" name="NewStatus" value="@nextStatus" />
+                                            <button type="submit" class="astra-btn-ghost text-xs">@NextStatusLabel(reservation.Status)</button>
+                                        </form>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    <div x-show="tab === 'history'" x-cloak class="space-y-4">
+        @if (Model.History.Count == 0)
+        {
+            <div class="astra-panel p-8 text-center">
+                <p class="text-sm text-content-muted">Sin cambios de rutina registrados.</p>
+            </div>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                @foreach (var entry in Model.History)
+                {
+                    <div class="astra-card p-4 flex flex-col gap-1">
+                        <p class="text-sm text-content">
+                            @(entry.PreviousRoutineName ?? "Sin rutina") &rarr; @entry.NewRoutineName
+                        </p>
+                        <p class="text-xs text-content-muted">@entry.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm") UTC</p>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+</div>

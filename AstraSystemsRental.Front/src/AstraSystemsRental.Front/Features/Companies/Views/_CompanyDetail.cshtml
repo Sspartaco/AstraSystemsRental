@@ -1,0 +1,65 @@
+@model AstraSystemsRental.Front.Features.Companies.CompanyDetailVm
+
+<div id="company-detail-body" class="space-y-5">
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="astra-alert-error">@Model.Error</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.InviteToken))
+    {
+        <div class="astra-panel p-4 bg-accent/10 border-accent/30">
+            <p class="text-sm text-content">Invitación creada. Compartí este enlace con la persona invitada (solo se muestra una vez):</p>
+            <code class="block mt-2 text-xs text-accent break-all">/companies/invitations/@Model.InviteToken/accept</code>
+        </div>
+    }
+
+    <div class="astra-panel p-5">
+        <p class="astra-label mb-3">Invitar miembro</p>
+        <form hx-post="/companies/@Model.CompanyId/invitations" hx-target="#company-detail" hx-swap="innerHTML"
+              class="flex gap-3">
+            <input name="Email" type="email" required placeholder="correo@ejemplo.com" class="astra-input flex-1" />
+            <button type="submit" class="astra-btn-primary">Invitar</button>
+        </form>
+    </div>
+
+    <div class="astra-panel overflow-hidden">
+        <table class="w-full text-sm">
+            <thead class="text-left text-content-soft text-xs uppercase">
+                <tr>
+                    <th class="px-5 py-3">Miembro</th>
+                    <th class="px-5 py-3">Email</th>
+                    <th class="px-5 py-3">Rol</th>
+                    <th class="px-5 py-3"></th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/[0.06]">
+                @foreach (var member in Model.Members)
+                {
+                    <tr>
+                        <td class="px-5 py-3 text-content">@member.FullName</td>
+                        <td class="px-5 py-3 text-content-soft">@member.Email</td>
+                        <td class="px-5 py-3">
+                            @if (member.IsOwner)
+                            {
+                                <span class="astra-badge bg-brand/15 text-brand-bright">Owner</span>
+                            }
+                            else
+                            {
+                                <span class="astra-badge bg-white/[0.06] text-content-soft">Miembro</span>
+                            }
+                        </td>
+                        <td class="px-5 py-3 text-right">
+                            @if (member.UserId != Model.CurrentUserId)
+                            {
+                                <form hx-post="/companies/@Model.CompanyId/members/@member.UserId/remove" hx-target="#company-detail" hx-swap="innerHTML">
+                                    <button type="submit" class="astra-btn-ghost text-xs text-danger">Quitar</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

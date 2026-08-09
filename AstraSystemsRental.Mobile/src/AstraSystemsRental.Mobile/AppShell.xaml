@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+       xmlns:views="clr-namespace:AstraSystemsRental.Mobile.Views"
+       x:Class="AstraSystemsRental.Mobile.AppShell"
+       Shell.FlyoutBehavior="Disabled"
+       Shell.BackgroundColor="{StaticResource Bg2}"
+       Shell.ForegroundColor="{StaticResource Content}"
+       Shell.TitleColor="{StaticResource Content}"
+       Shell.TabBarBackgroundColor="{StaticResource Bg2}"
+       Shell.TabBarForegroundColor="{StaticResource BrandBright}"
+       Shell.TabBarUnselectedColor="{StaticResource ContentMuted}"
+       FlyoutBackgroundColor="{StaticResource Bg2}"
+       Title="AstraSystems">
+
+    <Shell.FlyoutHeader>
+        <Grid HeightRequest="150" BackgroundColor="{StaticResource Bg}">
+            <Border Style="{StaticResource BrandOrb}" HorizontalOptions="Start" VerticalOptions="Center"
+                    Margin="20,0,0,0" WidthRequest="52" HeightRequest="52">
+                <Path Data="{x:Static local:Icons.Truck}" Fill="White" HeightRequest="26" WidthRequest="26"
+                      Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+            <VerticalStackLayout VerticalOptions="Center" Margin="88,0,0,0" Spacing="2">
+                <Label Text="AstraSystems" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource Content}" />
+                <Label Text="Gestión de flota" FontSize="12" TextColor="{StaticResource ContentMuted}" />
+            </VerticalStackLayout>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <Shell.ItemTemplate>
+        <DataTemplate>
+            <Grid ColumnDefinitions="20,*" HeightRequest="52" Padding="20,0">
+                <BoxView Grid.Column="0" WidthRequest="4" HeightRequest="4" CornerRadius="2"
+                         Color="{StaticResource BrandBright}" VerticalOptions="Center" HorizontalOptions="Start" />
+                <Label Grid.Column="1" Text="{Binding Title}" FontSize="14.5" Margin="10,0,0,0"
+                       TextColor="{StaticResource Content}" VerticalOptions="Center" />
+            </Grid>
+        </DataTemplate>
+    </Shell.ItemTemplate>
+
+    <ShellContent x:Name="LoginItem"
+                  ContentTemplate="{DataTemplate views:LoginPage}"
+                  Route="login"
+                  Shell.NavBarIsVisible="False"
+                  Shell.FlyoutItemIsVisible="False" />
+
+    <!-- Las pestañas viven DENTRO de un FlyoutItem: asi el menu lateral siempre
+         puede volver aca, en vez de reemplazar la barra y dejar al usuario atrapado. -->
+    <FlyoutItem x:Name="MainItem" Title="Inicio" Route="main">
+        <Tab Title="Panel" Route="dashboard">
+            <ShellContent ContentTemplate="{DataTemplate views:DashboardPage}" />
+        </Tab>
+        <Tab Title="Flota" Route="fleet">
+            <ShellContent ContentTemplate="{DataTemplate views:FleetPage}" />
+        </Tab>
+        <Tab Title="Recorrido" Route="tracking">
+            <ShellContent ContentTemplate="{DataTemplate views:TrackingPage}" />
+        </Tab>
+        <Tab Title="Taller" Route="reservations">
+            <ShellContent ContentTemplate="{DataTemplate views:ReservationsPage}" />
+        </Tab>
+    </FlyoutItem>
+
+    <FlyoutItem x:Name="RoutinesItem" Title="Rutinas de Mantenimiento" Route="routines">
+        <ShellContent ContentTemplate="{DataTemplate views:RoutinesPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem x:Name="UsersItem" Title="Usuarios" Route="users">
+        <ShellContent ContentTemplate="{DataTemplate views:UsersPage}" />
+    </FlyoutItem>
+
+    <FlyoutItem x:Name="ProfileItem" Title="Mi cuenta" Route="profile">
+        <ShellContent ContentTemplate="{DataTemplate views:ProfilePage}" />
+    </FlyoutItem>
+
+</Shell>

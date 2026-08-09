@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
+             xmlns:vm="clr-namespace:AstraSystemsRental.Mobile.ViewModels"
+             x:Class="AstraSystemsRental.Mobile.Views.UsersPage"
+             Title="Usuarios">
+
+    <Grid Background="{StaticResource GradientMesh}">
+
+        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+            <ScrollView>
+                <VerticalStackLayout Padding="16" Spacing="10">
+
+                    <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
+                           IsVisible="{Binding HasError}" />
+
+                    <Border Style="{StaticResource Panel}" IsVisible="{Binding IsEmpty}">
+                        <Label Text="Sin usuarios." Style="{StaticResource MutedLabel}" HorizontalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Grid.Column="0">
+                                            <Label Text="{Binding Name}" FontAttributes="Bold" />
+                                            <Label Text="{Binding Email}" Style="{StaticResource MutedLabel}" />
+                                            <Label Text="{Binding Role}" Style="{StaticResource MutedLabel}" FontSize="11" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding State}" FontSize="11" VerticalOptions="Center"
+                                               TextColor="{Binding State, Converter={StaticResource StatusColor}}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+
+                </VerticalStackLayout>
+            </ScrollView>
+        </RefreshView>
+
+    </Grid>
+</ContentPage>

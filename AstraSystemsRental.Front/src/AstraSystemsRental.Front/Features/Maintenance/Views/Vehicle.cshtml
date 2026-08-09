@@ -1,0 +1,14 @@
+@model AstraSystemsRental.Front.Features.Maintenance.VehicleMaintenanceVm
+@{
+    ViewData["Title"] = $"Mantenimiento {Model.Vehicle.PlateNumber}";
+}
+
+<div class="space-y-5 max-w-5xl mx-auto">
+    <div>
+        <a href="/maintenance" class="astra-link text-sm">&larr; Control de Recorrido</a>
+    </div>
+
+    <div id="vehicle-maintenance">
+        @await Html.PartialAsync("_VehicleMaintenanceBody", Model)
+    </div>
+</div>

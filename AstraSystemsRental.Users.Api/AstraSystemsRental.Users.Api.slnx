@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AstraSystemsRental.Users.Api/AstraSystemsRental.Users.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AstraSystemsRental.Users.Api.Tests/AstraSystemsRental.Users.Api.Tests.csproj" />
+  </Folder>
+</Solution>

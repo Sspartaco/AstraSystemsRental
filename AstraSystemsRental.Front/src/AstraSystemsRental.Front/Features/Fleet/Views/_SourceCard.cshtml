@@ -1,0 +1,65 @@
+@model AstraSystemsRental.Front.Features.Fleet.SourceCardVm
+
+@{
+    var culture = new System.Globalization.CultureInfo("es-CO");
+    string FreshnessLabel(DateTime fetchedAtUtc)
+    {
+        var age = DateTime.UtcNow - fetchedAtUtc;
+        if (age.TotalHours < 24) return "Actualizado hoy";
+        if (age.TotalDays < 2) return "Actualizado ayer";
+        return $"Hace {(int)age.TotalDays} días";
+    }
+}
+
+<div class="astra-kpi">
+    <div class="flex items-center justify-between">
+        <span class="text-sm font-medium text-content">@Model.DisplayName</span>
+        @switch (Model.Status)
+        {
+            case "Success":
+                <span class="astra-badge bg-accent/15 text-accent">Disponible</span>
+                break;
+            case "Pending":
+                <span class="astra-badge bg-brand/15 text-brand-bright">
+                    <svg class="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <circle cx="12" cy="12" r="9" class="opacity-25" />
+                        <path d="M21 12a9 9 0 0 0-9-9" />
+                    </svg>
+                    Consultando
+                </span>
+                break;
+            case "NotFound":
+                <span class="astra-badge bg-warn/15 text-warn">Sin datos</span>
+                break;
+            default:
+                <span class="astra-badge bg-danger/15 text-danger">No disponible</span>
+                break;
+        }
+    </div>
+
+    @if (Model.Status == "Pending")
+    {
+        <div class="animate-pulse space-y-2 py-1">
+            <div class="h-6 w-32 rounded bg-white/[0.08]"></div>
+            <div class="h-3 w-24 rounded bg-white/[0.08]"></div>
+        </div>
+    }
+    else if (Model.Status == "Success")
+    {
+        <p class="font-display text-xl text-content">$@Model.ValueAvg?.ToString("N0", culture)</p>
+        @if (Model.ValueMin is not null && Model.ValueMax is not null && Model.ValueMin != Model.ValueMax)
+        {
+            <p class="text-xs text-content-muted">$@Model.ValueMin?.ToString("N0", culture) – $@Model.ValueMax?.ToString("N0", culture)</p>
+        }
+        @if (Model.FetchedAtUtc is { } fetched)
+        {
+            <span class="astra-badge @(DateTime.UtcNow - fetched < TimeSpan.FromDays(2) ? "bg-accent/15 text-accent" : "bg-warn/15 text-warn") self-start">
+                @FreshnessLabel(fetched)
+            </span>
+        }
+    }
+    else
+    {
+        <p class="text-xs text-content-muted py-1">@(Model.ErrorMessage ?? "Esta fuente no tiene información para este vehículo.")</p>
+    }
+</div>

@@ -1,0 +1,220 @@
+@model AstraSystemsRental.Front.Features.Reports.ReportsIndexVm
+@{
+    ViewData["Title"] = "Reportes";
+    var fleet = Model.Dashboard?.Fleet;
+    var workshop = Model.Dashboard?.Workshop;
+
+    string Money(decimal v) => v == 0 ? "—" : v.ToString("C0", new System.Globalization.CultureInfo("es-CO"));
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-display">Reportes</h2>
+            <p class="text-sm text-content-soft mt-1">Indicadores consolidados de flota y taller.</p>
+        </div>
+        @if (Model.Dashboard is not null)
+        {
+            <p class="text-xs text-content-muted">Generado @Model.Dashboard.GeneratedAtUtc.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</p>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="astra-alert-error">@Model.Error</div>
+    }
+
+    @if (fleet is not null)
+    {
+        <section class="space-y-4">
+            <h3 class="text-sm uppercase tracking-wider text-content-muted">Flota</h3>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Total vehículos</span>
+                    <p class="astra-kpi-value">@fleet.TotalVehicles</p>
+                </div>
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Antigüedad promedio</span>
+                    <p class="astra-kpi-value">@fleet.AverageAgeYears.ToString("0.#")<span class="text-lg text-content-muted"> años</span></p>
+                </div>
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Valor de compra</span>
+                    <p class="astra-kpi-value text-accent">@Money(fleet.TotalPurchaseValue)</p>
+                </div>
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Bloqueados</span>
+                    <p class="astra-kpi-value @(fleet.BlockedVehicles > 0 ? "text-danger" : "")">@fleet.BlockedVehicles</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="astra-panel p-5 space-y-4">
+                    <h4 class="font-display text-base">Distribución por estado</h4>
+                    @if (fleet.ByStatus.Count == 0)
+                    {
+                        <p class="text-sm text-content-muted py-4 text-center">Sin datos.</p>
+                    }
+                    else
+                    {
+                        <div class="space-y-3">
+                            @foreach (var s in fleet.ByStatus)
+                            {
+                                var pct = fleet.TotalVehicles == 0 ? 0 : s.Count * 100 / fleet.TotalVehicles;
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-content-soft">@StatusText.Vehicle(s.Status)</span>
+                                        <span class="text-content-muted">@s.Count · @pct%</span>
+                                    </div>
+                                    <div class="astra-meter"><div class="astra-meter-fill bg-brand" style="width:@pct%"></div></div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="astra-panel p-5 space-y-4">
+                    <h4 class="font-display text-base">Antigüedad del parque</h4>
+                    <div class="space-y-3">
+                        @foreach (var a in fleet.ByAge)
+                        {
+                            var pct = fleet.TotalVehicles == 0 ? 0 : a.Count * 100 / fleet.TotalVehicles;
+                            <div class="space-y-1.5">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-content-soft">@a.Bucket</span>
+                                    <span class="text-content-muted">@a.Count</span>
+                                </div>
+                                <div class="astra-meter"><div class="astra-meter-fill bg-brand-bright" style="width:@pct%"></div></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="astra-panel p-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h4 class="font-display text-base">Documentos por vencer</h4>
+                    <span class="astra-badge @(fleet.ExpiredDocuments > 0 ? "bg-danger/15 text-danger" : "bg-white/[0.06] text-content-soft")">
+                        @fleet.ExpiredDocuments vencidos
+                    </span>
+                </div>
+
+                @if (fleet.ExpiringSoon.Count == 0)
+                {
+                    <p class="text-sm text-content-muted py-4 text-center">Sin documentos próximos a vencer.</p>
+                }
+                else
+                {
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-xs text-content-muted border-b border-white/[0.07]">
+                                    <th class="text-left font-medium py-2 px-3">Placa</th>
+                                    <th class="text-left font-medium py-2 px-3">Documento</th>
+                                    <th class="text-left font-medium py-2 px-3">Vence</th>
+                                    <th class="text-right font-medium py-2 px-3">Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var d in fleet.ExpiringSoon)
+                                {
+                                    <tr class="border-b border-white/[0.04] hover:bg-white/[0.03] transition">
+                                        <td class="py-2.5 px-3">
+                                            <a href="/vehicle-registry/@d.FleetVehicleId" class="font-display tracking-wide text-content hover:text-brand-bright transition">@d.PlateNumber</a>
+                                        </td>
+                                        <td class="py-2.5 px-3 text-content-soft">@d.DocumentType</td>
+                                        <td class="py-2.5 px-3 text-content-muted">@(d.ExpiresDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                        <td class="py-2.5 px-3 text-right">
+                                            <span class="astra-badge @(d.IsExpired ? "bg-danger/15 text-danger" : "bg-warn/15 text-warn")">
+                                                @(d.IsExpired ? $"Vencido hace {Math.Abs(d.DaysRemaining)} d" : $"En {d.DaysRemaining} d")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+
+    @if (workshop is not null)
+    {
+        <section class="space-y-4">
+            <h3 class="text-sm uppercase tracking-wider text-content-muted">Taller y mantenimiento</h3>
+
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Reservas activas</span>
+                    <p class="astra-kpi-value text-warn">@workshop.ActiveReservations</p>
+                    <p class="text-xs text-content-muted">@workshop.ReservationsNext7Days en 7 días</p>
+                </div>
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Completadas (30 d)</span>
+                    <p class="astra-kpi-value text-accent">@workshop.CompletedLast30Days</p>
+                </div>
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Estadía promedio</span>
+                    <p class="astra-kpi-value">@workshop.AverageWorkshopDays.ToString("0.#")<span class="text-lg text-content-muted"> días</span></p>
+                </div>
+                <div class="astra-kpi">
+                    <span class="astra-kpi-label">Lecturas (30 d)</span>
+                    <p class="astra-kpi-value text-brand-bright">@workshop.ReadingsLast30Days</p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                <div class="astra-panel p-5 space-y-4">
+                    <h4 class="font-display text-base">Reservas por estado</h4>
+                    @if (workshop.ByStatus.Count == 0)
+                    {
+                        <p class="text-sm text-content-muted py-4 text-center">Sin reservas registradas.</p>
+                    }
+                    else
+                    {
+                        var totalRes = workshop.ByStatus.Sum(s => s.Count);
+                        <div class="space-y-3">
+                            @foreach (var s in workshop.ByStatus)
+                            {
+                                var pct = totalRes == 0 ? 0 : s.Count * 100 / totalRes;
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-content-soft">@StatusText.Reservation(s.Status)</span>
+                                        <span class="text-content-muted">@s.Count · @pct%</span>
+                                    </div>
+                                    <div class="astra-meter"><div class="astra-meter-fill bg-warn" style="width:@pct%"></div></div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="astra-panel p-5 space-y-4">
+                    <h4 class="font-display text-base">Carga por taller</h4>
+                    @if (workshop.ByWorkshop.Count == 0)
+                    {
+                        <p class="text-sm text-content-muted py-4 text-center">Sin talleres asignados todavía.</p>
+                    }
+                    else
+                    {
+                        var maxLoad = workshop.ByWorkshop.Max(w => w.Count);
+                        <div class="space-y-3">
+                            @foreach (var w in workshop.ByWorkshop)
+                            {
+                                var pct = maxLoad == 0 ? 0 : w.Count * 100 / maxLoad;
+                                <div class="space-y-1.5">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <span class="text-content-soft truncate">@w.ProviderName</span>
+                                        <span class="text-content-muted">@w.Count</span>
+                                    </div>
+                                    <div class="astra-meter"><div class="astra-meter-fill bg-accent" style="width:@pct%"></div></div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </section>
+    }
+</div>

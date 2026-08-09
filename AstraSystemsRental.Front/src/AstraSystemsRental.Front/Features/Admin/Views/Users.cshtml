@@ -1,0 +1,75 @@
+@model AstraSystemsRental.Front.Features.Admin.UsersPage
+@{
+    ViewData["Title"] = "Gestión de usuarios";
+    var created = TempData["UserCreated"] as string;
+    var error = TempData["UserError"] as string;
+}
+
+<div class="space-y-6" x-data="{ showForm: false }">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl">Gestión de usuarios</h2>
+            <p class="text-sm text-content-soft mt-1">Administra los usuarios del sistema, sus roles y suscripciones.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <form hx-get="/admin/users" hx-target="#users-table" hx-swap="innerHTML" hx-trigger="submit, keyup changed delay:400ms from:input[name=search]">
+                <input type="search" name="search" value="@Model.Search" placeholder="Buscar por nombre o correo…"
+                       class="astra-input py-2 w-64" autocomplete="off" />
+            </form>
+            <button type="button" id="new-user-toggle" @@click="showForm = !showForm" class="astra-btn-primary shrink-0">
+                <span x-show="!showForm">Nuevo usuario</span>
+                <span x-show="showForm" x-cloak>Cerrar</span>
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(created))
+    {
+        <div class="rounded-md border border-accent/30 bg-accent/10 px-3.5 py-2.5 text-sm text-accent">@created</div>
+    }
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="astra-alert-error">@error</div>
+    }
+
+    <form method="post" action="/admin/users/create" x-show="showForm" x-cloak
+          class="astra-panel p-5 grid grid-cols-1 sm:grid-cols-2 gap-4" data-astra-submit-spinner>
+        <div>
+            <label class="astra-label" for="nu-first">Nombres *</label>
+            <input id="nu-first" name="FirstNames" required maxlength="120" class="astra-input" />
+        </div>
+        <div>
+            <label class="astra-label" for="nu-last">Apellidos *</label>
+            <input id="nu-last" name="LastNames" required maxlength="120" class="astra-input" />
+        </div>
+        <div>
+            <label class="astra-label" for="nu-email">Correo *</label>
+            <input id="nu-email" name="Email" type="email" required maxlength="256" class="astra-input" />
+        </div>
+        <div>
+            <label class="astra-label" for="nu-doc">Documento *</label>
+            <input id="nu-doc" name="DocumentNumber" required maxlength="40" class="astra-input" />
+        </div>
+        <div>
+            <label class="astra-label" for="nu-type">Tipo de persona</label>
+            <select id="nu-type" name="PersonType" class="astra-input">
+                <option value="Natural">Natural</option>
+                <option value="Juridica">Jurídica</option>
+            </select>
+        </div>
+        <div>
+            <label class="astra-label" for="nu-address">Dirección</label>
+            <input id="nu-address" name="Address" maxlength="200" class="astra-input" />
+        </div>
+        <div class="sm:col-span-2 flex items-center justify-between">
+            <p class="text-xs text-content-muted">Se enviará un correo para que defina su contraseña.</p>
+            <button type="submit" class="astra-btn-primary">Crear usuario</button>
+        </div>
+    </form>
+
+    <div class="astra-panel overflow-hidden">
+        <div id="users-table">
+            @await Html.PartialAsync("_UsersTable", Model)
+        </div>
+    </div>
+</div>

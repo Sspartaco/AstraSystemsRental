@@ -1,0 +1,11 @@
+@{
+    ViewData["Title"] = "Iniciar sesión";
+    Layout = "_LayoutAuth";
+}
+
+<h1 class="text-2xl mb-1">Bienvenido de nuevo</h1>
+<p class="text-sm text-content-soft mb-6">Inicia sesión en tu cuenta de AstraSystemsRental.</p>
+
+<div id="login-container">
+    @await Html.PartialAsync("_LoginForm", new LoginForm(string.Empty, string.Empty, false))
+</div>

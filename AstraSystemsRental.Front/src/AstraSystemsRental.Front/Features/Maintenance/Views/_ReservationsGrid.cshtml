@@ -1,0 +1,105 @@
+@model AstraSystemsRental.Front.Features.Maintenance.ReservationsIndexVm
+
+@{
+    string StatusBadge(string status) => status switch
+    {
+        "Ready" => "bg-accent/15 text-accent",
+        "InWorkshop" => "bg-warn/15 text-warn",
+        "Pending" => "bg-brand/15 text-brand-bright",
+        "Cancelled" => "bg-danger/15 text-danger",
+        _ => "bg-white/[0.06] text-content-soft"
+    };
+
+    var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+    string DayLabel(DateOnly date)
+    {
+        if (date == today) return "Hoy";
+        if (date == today.AddDays(1)) return "Mañana";
+        if (date == today.AddDays(-1)) return "Ayer";
+        return date.ToString("dddd d 'de' MMMM", new System.Globalization.CultureInfo("es-CO"));
+    }
+}
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="astra-alert-error">@Model.Error</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="astra-panel p-10 flex flex-col items-center text-center gap-3">
+        <svg class="h-10 w-10 text-content-muted/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3.75" y="5.25" width="16.5" height="15" rx="1.75" />
+            <path d="M8.25 3v4.5" />
+            <path d="M15.75 3v4.5" />
+            <path d="M3.75 10.5h16.5" />
+        </svg>
+        <p class="text-sm text-content-muted">No hay reservas que coincidan con los filtros.</p>
+    </div>
+}
+else
+{
+    <div class="space-y-6">
+        @foreach (var day in Model.Agenda)
+        {
+            var isPast = day.Key < today;
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <h3 class="text-sm font-display @(day.Key == today ? "text-brand-bright" : isPast ? "text-content-muted" : "text-content")">
+                        @DayLabel(day.Key)
+                    </h3>
+                    <span class="text-xs text-content-muted">@day.Key.ToString("yyyy-MM-dd")</span>
+                    <span class="astra-badge bg-white/[0.06] text-content-soft">@day.Count()</span>
+                    <div class="flex-1 border-t border-white/[0.06]"></div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                    @foreach (var item in day.OrderBy(i => i.Reservation.ScheduledAtUtc))
+                    {
+                        var r = item.Reservation;
+                        <a href="/maintenance/vehicle/@r.FleetVehicleId" class="astra-card p-5 flex flex-col gap-3 group hover:border-brand/30 hover:-translate-y-0.5 transition">
+                            <div class="flex items-start justify-between gap-3">
+                                <span class="font-display text-2xl text-content">@r.ScheduledAtUtc.ToString("HH:mm")</span>
+                                <span class="astra-badge @StatusBadge(r.Status) shrink-0">@StatusText.Reservation(r.Status)</span>
+                            </div>
+
+                            <div>
+                                <p class="font-display text-base tracking-[0.15em] text-content">@(item.PlateNumber ?? $"#{r.FleetVehicleId}")</p>
+                                <p class="text-xs text-content-soft mt-0.5 truncate">@item.Brand @item.Line</p>
+                            </div>
+
+                            <div class="space-y-1 text-xs text-content-soft">
+                                @if (!string.IsNullOrEmpty(r.ProviderName))
+                                {
+                                    <p class="flex items-center gap-1.5">
+                                        <svg class="h-3.5 w-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M3 21h18" />
+                                            <path d="M5 21V7l7-4 7 4v14" />
+                                            <path d="M9 21v-6h6v6" />
+                                        </svg>
+                                        @r.ProviderName
+                                    </p>
+                                }
+                                @if (r.ExpectedEndAtUtc is { } end)
+                                {
+                                    <p>Fin estimado: @end.ToString("yyyy-MM-dd HH:mm")</p>
+                                }
+                                @if (r.IsWashOnly)
+                                {
+                                    <span class="astra-badge bg-white/[0.06] text-content-soft">Solo lavado</span>
+                                }
+                            </div>
+
+                            <div class="flex items-center gap-1.5 text-xs text-brand-bright mt-auto pt-3 border-t border-white/[0.06]">
+                                Gestionar en la ficha
+                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="m9 6 6 6-6 6" />
+                                </svg>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}

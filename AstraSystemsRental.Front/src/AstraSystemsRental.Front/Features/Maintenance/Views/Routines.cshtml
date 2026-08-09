@@ -1,0 +1,50 @@
+@model AstraSystemsRental.Front.Features.Maintenance.RoutinesIndexVm
+@{
+    ViewData["Title"] = "Rutinas de Mantenimiento";
+    var error = ViewData["Error"] as string;
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl">Rutinas de Mantenimiento</h2>
+            <p class="text-sm text-content-soft mt-1">Plantillas de mantenimiento preventivo que luego asignás a cada vehículo.</p>
+        </div>
+        <a href="/maintenance" class="astra-btn-ghost">Control de recorrido</a>
+    </div>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="astra-alert-error">@error</div>
+    }
+
+    <form method="post" action="/maintenance/routines" class="astra-panel p-5 grid grid-cols-1 sm:grid-cols-3 gap-4" data-astra-submit-spinner>
+        <div>
+            <label class="astra-label" for="rt-name">Nombre de la rutina *</label>
+            <input id="rt-name" name="Name" type="text" required maxlength="150" class="astra-input" placeholder="Rutina 5.000 km" />
+        </div>
+        <div class="sm:col-span-2">
+            <label class="astra-label" for="rt-description">Descripción</label>
+            <input id="rt-description" name="Description" type="text" maxlength="400" class="astra-input" />
+        </div>
+        <div class="sm:col-span-3 flex justify-end">
+            <button type="submit" class="astra-btn-primary">Crear rutina</button>
+        </div>
+    </form>
+
+    <form hx-get="/maintenance/routines" hx-target="#routines-grid" hx-swap="innerHTML"
+          hx-trigger="submit, keyup changed delay:400ms from:input[name=search]"
+          class="astra-panel p-4">
+        <div class="relative">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-content-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input type="search" name="search" value="@Model.Search" placeholder="Buscar rutina…" class="astra-input pl-10" autocomplete="off" />
+        </div>
+    </form>
+
+    <div id="routines-grid" class="space-y-4">
+        @await Html.PartialAsync("_RoutinesGrid", Model)
+    </div>
+</div>

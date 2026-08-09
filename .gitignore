@@ -1,0 +1,66 @@
+bin/
+obj/
+out/
+publish/
+.vs/
+*.user
+*.suo
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+
+TestResults/
+coverage/
+coverage*.xml
+coverage*.json
+*.coverage
+*.coveragexml
+
+*.log
+Logs/
+!**/Views/
+
+# ---- Secretos: NUNCA versionar ----
+.env
+appsettings.Development.json
+appsettings.Local.json
+LOCAL_SQL_CREDENTIALS.txt
+
+# Llaves JWT (la privada firma todos los tokens del sistema)
+keys/
+*.pem
+*.key
+
+# Certificados de desarrollo y de firma
+certs/
+*.pfx
+*.p12
+*.cer
+*.mobileprovision
+
+# Firma de Android
+*.keystore
+*.jks
+
+# ---- Artefactos de compilacion ----
+*.apk
+*.aab
+*.ipa
+*.app/
+
+# Paquetes NuGet locales: se regeneran con dotnet pack
+nuget-local/*.nupkg
+
+# ---- Resultados de pruebas E2E ----
+**/probe-results/
+
+# ---- Node ----
+node_modules/
+npm-debug.log*
+
+# ---- Editor / SO ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

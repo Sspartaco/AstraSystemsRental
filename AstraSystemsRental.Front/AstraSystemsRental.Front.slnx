@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AstraSystemsRental.Front/AstraSystemsRental.Front.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AstraSystemsRental.Front.Tests/AstraSystemsRental.Front.Tests.csproj" />
+  </Folder>
+</Solution>

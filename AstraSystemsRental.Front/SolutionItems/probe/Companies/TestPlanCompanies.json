@@ -1,0 +1,195 @@
+{
+  "name": "companies-autoservicio",
+  "baseUrl": "https://localhost:8444",
+  "defaultTimeoutMs": 15000,
+  "stopOnFailure": false,
+  "viewport": { "width": 1440, "height": 900 },
+  "steps": [
+    {
+      "action": "goto",
+      "url": "/auth/login",
+      "description": "=== BLOQUE 1: AUTENTICACIÓN ==="
+    },
+    {
+      "action": "wait",
+      "selector": "#email"
+    },
+    {
+      "action": "fill",
+      "selector": "#email",
+      "value": "${PROBE_USERNAME}"
+    },
+    {
+      "action": "fill",
+      "selector": "#password",
+      "value": "${PROBE_PASSWORD}",
+      "secret": true
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "wait",
+      "selector": "nav",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "goto",
+      "url": "/companies",
+      "description": "=== BLOQUE 2: CARGA DEL MÓDULO ==="
+    },
+    {
+      "action": "expect",
+      "selector": "#co-name",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#co-doc",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#companies-list",
+      "state": "visible"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque validacion de longitud y formato')",
+      "description": "=== BLOQUE 2B: VALIDACIÓN DE DATOS EN EL FORMULARIO (longitud, tipo email) ==="
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#co-name'); el.value = 'N'.repeat(500); el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_NOMBRE_LEN_TRAS_MAXLENGTH: ' + el.value.length + ' (maxlength HTML=160, columna SQL NVARCHAR(160))')"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#co-doc'); el.value = 'D'.repeat(200); el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_DOC_LEN_TRAS_MAXLENGTH: ' + el.value.length + ' (maxlength HTML=40, columna SQL VARCHAR(40))')"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#co-email'); el.value = 'no-es-un-email'; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_EMAIL_FORMATO_INVALIDO_VALIDITY: ' + el.validity.typeMismatch)",
+      "description": "co-email es type=email; un valor sin arroba debe marcar typeMismatch en el navegador. El backend (CompanySelfService.CreateAsync) no valida formato de email, solo NotEmpty si viene informado"
+    },
+    {
+      "action": "eval",
+      "script": "document.querySelector('#co-name').value = ''; document.querySelector('#co-doc').value = ''; document.querySelector('#co-email').value = ''; [...document.querySelectorAll('#co-name,#co-doc,#co-email')].forEach(el => el.dispatchEvent(new Event('input', {bubbles:true})))",
+      "description": "Limpiar antes de continuar con el camino feliz del BLOQUE 3"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque crear compania')",
+      "description": "=== BLOQUE 3: CREAR COMPAÑÍA (camino feliz) ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.__probeCompanyName = 'Probe Flota ' + Date.now(); window.__probeCompanyDoc = '9' + Math.floor(Math.random() * 900000000 + 100000000); console.error('PROBE_NOMBRE_COMPANIA: ' + window.__probeCompanyName)"
+    },
+    {
+      "action": "eval",
+      "script": "document.querySelector('#co-name').value = window.__probeCompanyName; document.querySelector('#co-name').dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "eval",
+      "script": "document.querySelector('#co-doc').value = window.__probeCompanyDoc; document.querySelector('#co-doc').dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post='/companies'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#companies-list a",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "La compañía recién creada aparece en el listado con badge Owner"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_COMPANIA_EN_LISTA: ' + document.querySelector('#companies-list').textContent.includes(window.__probeCompanyName))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque detalle y miembros')",
+      "description": "=== BLOQUE 4: DETALLE Y GESTIÓN DE MIEMBROS ==="
+    },
+    {
+      "action": "click",
+      "selector": "#companies-list a:first-child"
+    },
+    {
+      "action": "wait",
+      "selector": "#company-detail-body",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "expect",
+      "selector": "#company-detail-body",
+      "text": "${PROBE_USERNAME}",
+      "description": "El creador aparece como miembro Owner en la tabla"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque invitar miembro')",
+      "description": "=== BLOQUE 5: INVITAR MIEMBRO ==="
+    },
+    {
+      "action": "fill",
+      "selector": "form[hx-post*='invitations'] input[name=Email]",
+      "value": "probe-invitado@astralrental.test"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='invitations'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#company-detail-body",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INVITACION_TOKEN_MOSTRADO: ' + document.querySelector('#company-detail-body').textContent.includes('/companies/invitations/'))",
+      "description": "El token en claro se muestra una única vez tras crear la invitación; el backend solo persiste su hash"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque invitacion duplicada')",
+      "description": "=== BLOQUE 6: RATE-LIMIT DE INVITACIÓN (mismo email) ==="
+    },
+    {
+      "action": "fill",
+      "selector": "form[hx-post*='invitations'] input[name=Email]",
+      "value": "probe-invitado@astralrental.test"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='invitations'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#company-detail-body",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "El backend reutiliza la fila pendiente (SentCount++) en vez de crear una nueva invitación duplicada"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque quitar ultimo owner')",
+      "description": "=== BLOQUE 7: REGLA DE NEGOCIO — NO SE PUEDE QUITAR AL ÚLTIMO OWNER ==="
+    },
+    {
+      "action": "eval",
+      "script": "const rows = [...document.querySelectorAll('#company-detail-body table tbody tr')]; console.error('PROBE_FILAS_MIEMBROS: ' + rows.length)"
+    },
+    {
+      "action": "eval",
+      "script": "const removeButtons = document.querySelectorAll('#company-detail-body form[hx-post*=\"/members/\"] button'); console.error('PROBE_BOTONES_QUITAR_VISIBLES: ' + removeButtons.length)",
+      "description": "El propio usuario logueado (único owner) no debe tener botón 'Quitar' para sí mismo — la vista ya lo oculta condicionalmente"
+    }
+  ]
+}

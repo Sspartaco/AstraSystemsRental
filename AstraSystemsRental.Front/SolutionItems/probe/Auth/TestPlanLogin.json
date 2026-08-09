@@ -1,0 +1,137 @@
+{
+  "name": "auth-login",
+  "baseUrl": "https://localhost:8444",
+  "defaultTimeoutMs": 15000,
+  "stopOnFailure": false,
+  "viewport": { "width": 1440, "height": 900 },
+  "steps": [
+    {
+      "action": "goto",
+      "url": "/auth/login",
+      "description": "=== BLOQUE 1: CAMINO FELIZ ==="
+    },
+    {
+      "action": "wait",
+      "selector": "#email"
+    },
+    {
+      "action": "expect",
+      "selector": "#login-submit",
+      "state": "visible",
+      "description": "El botón de submit está visible antes de intentar loguear"
+    },
+    {
+      "action": "fill",
+      "selector": "#email",
+      "value": "${PROBE_USERNAME}"
+    },
+    {
+      "action": "fill",
+      "selector": "#password",
+      "value": "${PROBE_PASSWORD}",
+      "secret": true
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "wait",
+      "selector": "nav",
+      "state": "visible",
+      "timeoutMs": 15000,
+      "description": "El sidebar (nav) solo existe tras autenticarse; HX-Redirect lleva a '/'"
+    },
+    {
+      "action": "expect",
+      "selector": "body",
+      "state": "visible",
+      "description": "Confirmar que se salió del login"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_URL_POST_LOGIN: ' + window.location.pathname)"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque logout')",
+      "description": "=== BLOQUE 2: LOGOUT ==="
+    },
+    {
+      "action": "click",
+      "selector": "header .relative button",
+      "description": "Abre el menú de usuario (avatar) para acceder a Cerrar sesión"
+    },
+    {
+      "action": "wait",
+      "selector": "form[action*='Logout'] button, form button:has-text('Cerrar sesión')",
+      "state": "visible",
+      "timeoutMs": 5000,
+      "optional": true,
+      "description": "Menú desplegado por Alpine (x-show)"
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('form button')].find(b => b.textContent.includes('Cerrar sesión')); if (!btn) throw new Error('Boton de logout no encontrado'); btn.click(); console.error('PROBE_LOGOUT_CLICK: ok')",
+      "description": "Click directo por texto (evita depender de la clase exacta del botón)"
+    },
+    {
+      "action": "wait",
+      "selector": "#login-submit",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "Tras logout debe volver a la pantalla de login"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque credenciales invalidas')",
+      "description": "=== BLOQUE 3: CREDENCIALES INVÁLIDAS ==="
+    },
+    {
+      "action": "fill",
+      "selector": "#email",
+      "value": "${PROBE_USERNAME}"
+    },
+    {
+      "action": "fill",
+      "selector": "#password",
+      "value": "clave-incorrecta-a-proposito",
+      "secret": true
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "wait",
+      "selector": ".astra-alert-error",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "Debe mostrar 'Credenciales inválidas.' sin redirigir"
+    },
+    {
+      "action": "expect",
+      "selector": ".astra-alert-error",
+      "text": "Credenciales inválidas",
+      "description": "Mensaje de error explícito, no un fallo silencioso"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque campos vacios')",
+      "description": "=== BLOQUE 4: VALIDACIÓN HTML NATIVA ==="
+    },
+    {
+      "action": "eval",
+      "script": "const email = document.querySelector('#email'); email.value=''; const pass = document.querySelector('#password'); pass.value=''; console.error('PROBE_CAMPOS_LIMPIOS: ok')"
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "eval",
+      "script": "const email = document.querySelector('#email'); console.error('PROBE_VALIDEZ_EMAIL: ' + email.validity.valid)",
+      "description": "El input required debe impedir el submit y marcar validity.valid=false"
+    }
+  ]
+}

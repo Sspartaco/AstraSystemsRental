@@ -1,0 +1,173 @@
+@model AstraSystemsRental.Front.Features.Profile.ProfileIndexVm
+@{
+    ViewData["Title"] = "Mi cuenta";
+    var p = Model.Profile;
+    var initial = Model.Principal.Email.Length > 0 ? Model.Principal.Email[0].ToString().ToUpper() : "?";
+    var days = Model.DaysToExpiry;
+}
+
+<div class="space-y-6">
+    <div>
+        <h2 class="text-2xl font-display">Mi cuenta</h2>
+        <p class="text-sm text-content-soft mt-1">Tu información de usuario, plan y accesos.</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="astra-alert-error">@Model.Error</div>
+    }
+
+    <div class="astra-panel p-6 flex flex-col sm:flex-row sm:items-center gap-5">
+        <div class="h-16 w-16 shrink-0 rounded-full bg-gradient-brand shadow-brand flex items-center justify-center text-2xl font-display text-white">
+            @initial
+        </div>
+        <div class="min-w-0 flex-1">
+            <h3 class="font-display text-xl text-content">@(p?.FullName is { Length: > 0 } n ? n : Model.Principal.Email)</h3>
+            <p class="text-sm text-content-soft">@Model.Principal.Email</p>
+            <div class="flex flex-wrap items-center gap-2 mt-2">
+                <span class="astra-badge bg-brand/15 text-brand-bright">@StatusText.Role(p?.RoleCode ?? Model.Principal.Role)</span>
+                @if (p is not null)
+                {
+                    <span class="astra-badge @(p.IsActive ? "bg-accent/15 text-accent" : "bg-danger/15 text-danger")">
+                        @(p.IsActive ? "Activo" : "Inactivo")
+                    </span>
+                    @if (!p.IsConfirmed)
+                    {
+                        <span class="astra-badge bg-warn/15 text-warn">Sin confirmar</span>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="astra-panel p-5 space-y-4">
+            <h4 class="font-display text-base flex items-center gap-2">
+                <svg class="h-4 w-4 text-brand-bright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" />
+                </svg>
+                Datos personales
+            </h4>
+
+            @if (p is null)
+            {
+                <p class="text-sm text-content-muted py-4 text-center">Sin datos disponibles.</p>
+            }
+            else
+            {
+                <dl class="space-y-3 text-sm">
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-content-muted">Nombres</dt>
+                        <dd class="text-content text-right">@p.FirstNames</dd>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-content-muted">Apellidos</dt>
+                        <dd class="text-content text-right">@p.LastNames</dd>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-content-muted">Documento</dt>
+                        <dd class="text-content text-right">@p.DocumentNumber</dd>
+                    </div>
+                    <div class="flex justify-between gap-4">
+                        <dt class="text-content-muted">Tipo de persona</dt>
+                        <dd class="text-content text-right">@(p.PersonType == "Natural" ? "Natural" : "Jurídica")</dd>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(p.Address))
+                    {
+                        <div class="flex justify-between gap-4">
+                            <dt class="text-content-muted">Dirección</dt>
+                            <dd class="text-content text-right">@p.Address</dd>
+                        </div>
+                    }
+                    @if (p.CreatedAtUtc.Year > 1)
+                    {
+                        <div class="flex justify-between gap-4 pt-3 border-t border-white/[0.06]">
+                            <dt class="text-content-muted">Miembro desde</dt>
+                            <dd class="text-content text-right">@p.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy")</dd>
+                        </div>
+                    }
+                </dl>
+            }
+        </div>
+
+        <div class="astra-panel p-5 space-y-4">
+            <h4 class="font-display text-base flex items-center gap-2">
+                <svg class="h-4 w-4 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2.75" y="5.75" width="18.5" height="13" rx="2" /><path d="M2.75 10h18.5" />
+                </svg>
+                Plan y suscripción
+            </h4>
+
+            <div class="space-y-3 text-sm">
+                <div class="flex justify-between gap-4">
+                    <span class="text-content-muted">Plan</span>
+                    <span class="text-content text-right">@(p?.PlanName ?? Model.Principal.Plan ?? "Sin plan")</span>
+                </div>
+
+                @if (p?.SubscriptionEndsAtUtc is { } end)
+                {
+                    <div class="flex justify-between gap-4">
+                        <span class="text-content-muted">Vence</span>
+                        <span class="text-content text-right">@end.ToLocalTime().ToString("dd/MM/yyyy")</span>
+                    </div>
+
+                    @if (days is { } d)
+                    {
+                        <div class="pt-1">
+                            <div class="flex items-center justify-between text-xs mb-1.5">
+                                <span class="text-content-muted">Tiempo restante</span>
+                                <span class="@(d < 0 ? "text-danger" : d <= 15 ? "text-warn" : "text-accent")">
+                                    @(d < 0 ? $"Vencido hace {Math.Abs(d)} días" : $"{d} días")
+                                </span>
+                            </div>
+                            <div class="astra-meter">
+                                <div class="astra-meter-fill @(d < 0 ? "bg-danger" : d <= 15 ? "bg-warn" : "bg-accent")"
+                                     style="width:@(Math.Clamp(d < 0 ? 0 : d * 100 / 365, 0, 100))%"></div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-xs text-content-muted">Sin suscripción activa registrada.</p>
+                }
+
+                <div class="flex justify-between gap-4 pt-3 border-t border-white/[0.06]">
+                    <span class="text-content-muted">Compañías</span>
+                    <span class="text-content text-right">@(p?.CompanyCount ?? 0)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="astra-panel p-5 space-y-4">
+        <div class="flex items-center justify-between">
+            <h4 class="font-display text-base flex items-center gap-2">
+                <svg class="h-4 w-4 text-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                Módulos habilitados
+            </h4>
+            <span class="astra-badge bg-white/[0.06] text-content-soft">@Model.Nodes.Count</span>
+        </div>
+
+        @if (Model.Nodes.Count == 0)
+        {
+            <p class="text-sm text-content-muted py-4 text-center">Tu plan no tiene módulos habilitados.</p>
+        }
+        else
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                @foreach (var node in Model.Nodes)
+                {
+                    <div class="astra-row">
+                        <svg class="h-4 w-4 shrink-0 text-brand-bright" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                            @Html.Raw(node.Icon)
+                        </svg>
+                        <span class="text-sm text-content-soft truncate">@node.Label</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,34 @@
+@model IReadOnlyList<AstraSystemsRental.Front.Features.Companies.CompanyVm>
+@{
+    ViewData["Title"] = "Mis compañías";
+}
+
+<div class="space-y-6 max-w-3xl">
+    <div>
+        <h2 class="text-2xl">Mis compañías</h2>
+        <p class="text-sm text-content-soft mt-1">Creá una compañía para compartir flota de vehículos con tu equipo.</p>
+    </div>
+
+    <form hx-post="/companies" hx-target="#companies-list" hx-swap="innerHTML"
+          class="astra-panel p-5 grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+        <div class="sm:col-span-1">
+            <label class="astra-label" for="co-name">Nombre</label>
+            <input id="co-name" name="Name" type="text" required maxlength="160" class="astra-input" placeholder="Mi empresa S.A.S." />
+        </div>
+        <div class="sm:col-span-1">
+            <label class="astra-label" for="co-doc">NIT / Documento</label>
+            <input id="co-doc" name="DocumentNumber" type="text" required maxlength="40" class="astra-input" placeholder="900123456-7" />
+        </div>
+        <div class="sm:col-span-1 flex gap-3">
+            <div class="flex-1">
+                <label class="astra-label" for="co-email">Email (opcional)</label>
+                <input id="co-email" name="Email" type="email" maxlength="256" class="astra-input" />
+            </div>
+            <button type="submit" class="astra-btn-primary self-end">Crear</button>
+        </div>
+    </form>
+
+    <div id="companies-list">
+        @await Html.PartialAsync("_CompaniesList", Model)
+    </div>
+</div>

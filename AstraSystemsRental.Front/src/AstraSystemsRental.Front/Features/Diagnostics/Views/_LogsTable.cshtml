@@ -1,0 +1,100 @@
+@model AstraSystemsRental.Front.Features.Diagnostics.LogsIndexVm
+@{
+    string LevelBadge(string level) => level switch
+    {
+        "Error" => "bg-danger/15 text-danger",
+        "Warning" => "bg-warn/15 text-warn",
+        _ => "bg-brand/15 text-brand-bright"
+    };
+
+    var qs = "";
+    if (!string.IsNullOrWhiteSpace(Model.Level)) qs += $"&level={Uri.EscapeDataString(Model.Level)}";
+    if (!string.IsNullOrWhiteSpace(Model.Service)) qs += $"&service={Uri.EscapeDataString(Model.Service)}";
+    if (!string.IsNullOrWhiteSpace(Model.Search)) qs += $"&search={Uri.EscapeDataString(Model.Search)}";
+}
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="astra-alert-error">@Model.Error</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="astra-panel p-10 flex flex-col items-center text-center gap-3">
+        <svg class="h-10 w-10 text-accent/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6 9 17l-5-5" />
+        </svg>
+        <p class="text-sm text-content-muted">Sin registros que coincidan con los filtros.</p>
+    </div>
+}
+else
+{
+    <div class="space-y-2">
+        @foreach (var log in Model.Items)
+        {
+            <div class="astra-panel p-4 space-y-2" x-data="{ open: false }">
+                <div class="flex flex-wrap items-start gap-3">
+                    <span class="astra-badge shrink-0 @LevelBadge(log.Level)">@log.Level</span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm text-content break-words">@log.Message</p>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-content-muted">
+                            <span>@log.TimestampUtc.ToLocalTime().ToString("dd/MM HH:mm:ss")</span>
+                            <span class="text-content-soft">@log.Service</span>
+                            @if (!string.IsNullOrEmpty(log.RequestPath))
+                            {
+                                <span class="font-mono">@log.RequestMethod @log.RequestPath</span>
+                            }
+                            @if (log.StatusCode is { } code)
+                            {
+                                <span>HTTP @code</span>
+                            }
+                            @if (!string.IsNullOrEmpty(log.UserEmail))
+                            {
+                                <span>@log.UserEmail</span>
+                            }
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(log.ExceptionDetail))
+                    {
+                        <button type="button" @@click="open = !open" class="astra-btn-ghost shrink-0 text-xs">
+                            <span x-show="!open">Ver detalle</span>
+                            <span x-show="open" x-cloak>Ocultar</span>
+                        </button>
+                    }
+                </div>
+
+                @if (!string.IsNullOrEmpty(log.TraceId))
+                {
+                    <p class="text-2xs text-content-faint font-mono">TraceId: @log.TraceId</p>
+                }
+
+                @if (!string.IsNullOrEmpty(log.ExceptionDetail))
+                {
+                    <div x-show="open" x-cloak class="pt-2 border-t border-white/[0.06]">
+                        @if (!string.IsNullOrEmpty(log.ExceptionType))
+                        {
+                            <p class="text-xs text-danger font-mono mb-2">@log.ExceptionType</p>
+                        }
+                        <pre class="text-2xs text-content-soft font-mono whitespace-pre-wrap break-words max-h-80 overflow-y-auto bg-bg-2/60 rounded-md p-3">@log.ExceptionDetail</pre>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="flex items-center justify-between pt-4">
+            <p class="text-xs text-content-muted">Página @Model.PageNumber de @Model.TotalPages</p>
+            <div class="flex items-center gap-1.5">
+                @if (Model.PageNumber > 1)
+                {
+                    <button hx-get="/diagnostics/logs?page=@(Model.PageNumber - 1)@qs" hx-target="#logs-table" hx-swap="innerHTML" class="astra-btn-ghost text-xs">Anterior</button>
+                }
+                @if (Model.PageNumber < Model.TotalPages)
+                {
+                    <button hx-get="/diagnostics/logs?page=@(Model.PageNumber + 1)@qs" hx-target="#logs-table" hx-swap="innerHTML" class="astra-btn-ghost text-xs">Siguiente</button>
+                }
+            </div>
+        </div>
+    }
+}

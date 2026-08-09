@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!-- Portado de tailwind.config.js del Front para que web y app se vean iguales -->
+
+    <Color x:Key="Bg">#08090d</Color>
+    <Color x:Key="Bg2">#0a0c12</Color>
+    <Color x:Key="BgCard">#0e1119</Color>
+    <Color x:Key="BgPanel">#101521</Color>
+    <Color x:Key="BgPanel2">#141a28</Color>
+
+    <Color x:Key="Brand">#4f7cff</Color>
+    <Color x:Key="BrandBright">#6e93ff</Color>
+    <Color x:Key="BrandDeep">#2d4ed8</Color>
+
+    <Color x:Key="Accent">#3ddc97</Color>
+    <Color x:Key="Warn">#ffb454</Color>
+    <Color x:Key="Danger">#ff6b6b</Color>
+
+    <Color x:Key="Content">#e7e9f0</Color>
+    <Color x:Key="ContentSoft">#9aa3bd</Color>
+    <Color x:Key="ContentMuted">#5d6685</Color>
+    <Color x:Key="ContentFaint">#3a4258</Color>
+
+    <Color x:Key="Border">#1c2130</Color>
+
+    <SolidColorBrush x:Key="BrandBrush" Color="{StaticResource Brand}" />
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}" />
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}" />
+
+</ResourceDictionary>

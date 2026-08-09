@@ -1,0 +1,156 @@
+@model AstraSystemsRental.Front.Features.VehicleRegistry.FleetVehicleDetailVm?
+
+@{
+    var statuses = new[] { "Draft", "Active", "Maintenance", "Blocked", "Inactive", "Sold" };
+    string BadgeClass(string status) => status switch
+    {
+        "Active" => "bg-accent/15 text-accent",
+        "Maintenance" or "Draft" => "bg-warn/15 text-warn",
+        "Blocked" or "Inactive" or "Sold" => "bg-danger/15 text-danger",
+        _ => "bg-white/[0.06] text-content-soft"
+    };
+}
+
+<div id="vehicle-detail-body">
+@if (Model is null)
+{
+    <div class="astra-alert-error">No se pudo cargar el vehículo.</div>
+}
+else
+{
+    @if (!string.IsNullOrEmpty(Model.Error))
+    {
+        <div class="astra-alert-error mb-4">@Model.Error</div>
+    }
+
+    <div class="astra-panel p-6 mb-5">
+        <div class="flex items-center justify-between flex-wrap gap-3">
+            <div>
+                <span class="font-display text-2xl tracking-[0.15em]">@Model.PlateNumber</span>
+                <p class="text-sm text-content-soft mt-1">@Model.Brand @Model.Line @Model.ModelYear</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="astra-badge @BadgeClass(Model.Status)">@StatusText.Vehicle(Model.Status)</span>
+                <form hx-post="/vehicle-registry/@Model.Id/status" hx-target="#vehicle-detail" hx-swap="innerHTML" class="flex items-center gap-2">
+                    <select name="NewStatus" class="astra-input py-1.5 text-xs">
+                        @foreach (var s in statuses)
+                        {
+                            <option value="@s" selected="@(Model.Status == s)">@StatusText.Vehicle(s)</option>
+                        }
+                    </select>
+                    <button type="submit" class="astra-btn-ghost text-xs">Cambiar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div x-data="{ tab: 'info' }" class="space-y-4">
+        <div class="flex gap-1 border-b border-white/[0.07]">
+            <button @@click="tab = 'info'" :class="tab === 'info' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition">Identificación</button>
+            <a href="/maintenance/vehicle/@Model.Id" class="px-4 py-2.5 text-sm border-b-2 border-transparent text-content-soft hover:text-content transition">Mantenimiento</a>
+            <button @@click="tab = 'documents'" :class="tab === 'documents' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition">Documentos</button>
+            <button @@click="tab = 'history'" :class="tab === 'history' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition">Historial</button>
+        </div>
+
+        <div x-show="tab === 'info'" x-cloak class="astra-panel p-5 grid grid-cols-2 gap-4 text-sm">
+            <div><p class="astra-label">Clase</p><p class="text-content">@(Model.VehicleClass ?? "—")</p></div>
+            <div><p class="astra-label">Carrocería</p><p class="text-content">@(Model.BodyType ?? "—")</p></div>
+            <div><p class="astra-label">Color</p><p class="text-content">@(Model.Color ?? "—")</p></div>
+            <div><p class="astra-label">Servicio</p><p class="text-content">@(Model.ServiceType ?? "—")</p></div>
+            <div><p class="astra-label">Combustible</p><p class="text-content">@(Model.FuelType ?? "—")</p></div>
+            <div><p class="astra-label">Transmisión</p><p class="text-content">@(Model.Transmission ?? "—")</p></div>
+            <div><p class="astra-label">VIN</p><p class="text-content">@(Model.Vin ?? "—")</p></div>
+            <div><p class="astra-label">Motor</p><p class="text-content">@(Model.EngineNumber ?? "—")</p></div>
+            <div><p class="astra-label">Serie</p><p class="text-content">@(Model.SerialNumber ?? "—")</p></div>
+            <div><p class="astra-label">Chasis</p><p class="text-content">@(Model.ChassisNumber ?? "—")</p></div>
+            <div><p class="astra-label">Licencia de tránsito</p><p class="text-content">@(Model.TransitLicenseNumber ?? "—")</p></div>
+            <div><p class="astra-label">Factura de compra</p><p class="text-content">@(Model.PurchaseInvoiceNumber ?? "—")</p></div>
+            <div><p class="astra-label">Fecha de compra</p><p class="text-content">@(Model.PurchaseDate?.ToString("yyyy-MM-dd") ?? "—")</p></div>
+            <div><p class="astra-label">Valor de compra</p><p class="text-content">@(Model.PurchaseValue?.ToString("N0") ?? "—")</p></div>
+            @if (!string.IsNullOrEmpty(Model.Notes))
+            {
+                <div class="col-span-2"><p class="astra-label">Notas</p><p class="text-content">@Model.Notes</p></div>
+            }
+        </div>
+
+
+        <div x-show="tab === 'documents'" x-cloak class="space-y-4">
+            <form hx-post="/vehicle-registry/@Model.Id/documents" hx-target="#vehicle-detail" hx-swap="innerHTML"
+                  class="astra-panel p-5 grid grid-cols-2 gap-4">
+                <div>
+                    <label class="astra-label" for="doc-type">Tipo</label>
+                    <select id="doc-type" name="DocumentType" required class="astra-input">
+                        <option value="SOAT">SOAT</option>
+                        <option value="Tecnomecanica">Tecnomecánica</option>
+                        <option value="TarjetaOperacion">Tarjeta de operación</option>
+                        <option value="Poliza">Póliza</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="astra-label" for="doc-number">Número</label>
+                    <input id="doc-number" name="DocumentNumber" type="text" maxlength="60" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="doc-issued">Fecha de expedición</label>
+                    <input id="doc-issued" name="IssuedDate" type="date" class="astra-input" />
+                </div>
+                <div>
+                    <label class="astra-label" for="doc-expires">Fecha de vencimiento</label>
+                    <input id="doc-expires" name="ExpiresDate" type="date" class="astra-input" />
+                </div>
+                <div class="col-span-2 flex justify-end">
+                    <button type="submit" class="astra-btn-primary">Agregar documento</button>
+                </div>
+            </form>
+
+            <div class="astra-panel overflow-hidden">
+                @if (Model.Documents.Count == 0)
+                {
+                    <p class="p-5 text-sm text-content-muted">Sin documentos registrados.</p>
+                }
+                else
+                {
+                    <table class="w-full text-sm">
+                        <thead class="text-left text-content-soft text-xs uppercase"><tr><th class="px-5 py-3">Tipo</th><th class="px-5 py-3">Número</th><th class="px-5 py-3">Vence</th><th class="px-5 py-3">Estado</th></tr></thead>
+                        <tbody class="divide-y divide-white/[0.06]">
+                            @foreach (var doc in Model.Documents)
+                            {
+                                <tr>
+                                    <td class="px-5 py-3 text-content">@doc.DocumentType</td>
+                                    <td class="px-5 py-3 text-content-soft">@(doc.DocumentNumber ?? "—")</td>
+                                    <td class="px-5 py-3 text-content-soft">@(doc.ExpiresDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                                    <td class="px-5 py-3"><span class="astra-badge @(doc.Status == "Valid" ? "bg-accent/15 text-accent" : doc.Status == "Expired" ? "bg-danger/15 text-danger" : "bg-warn/15 text-warn")">@StatusText.Document(doc.Status)</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+
+        <div x-show="tab === 'history'" x-cloak class="astra-panel overflow-hidden">
+            @if (Model.StatusHistory.Count == 0)
+            {
+                <p class="p-5 text-sm text-content-muted">Sin cambios de estado registrados.</p>
+            }
+            else
+            {
+                <table class="w-full text-sm">
+                    <thead class="text-left text-content-soft text-xs uppercase"><tr><th class="px-5 py-3">Fecha</th><th class="px-5 py-3">Cambio</th><th class="px-5 py-3">Motivo</th></tr></thead>
+                    <tbody class="divide-y divide-white/[0.06]">
+                        @foreach (var h in Model.StatusHistory)
+                        {
+                            <tr>
+                                <td class="px-5 py-3 text-content-soft">@h.ChangedAtUtc.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td class="px-5 py-3 text-content">@(h.PreviousStatus ?? "—") &rarr; @h.NewStatus</td>
+                                <td class="px-5 py-3 text-content-soft">@(h.Reason ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}
+</div>

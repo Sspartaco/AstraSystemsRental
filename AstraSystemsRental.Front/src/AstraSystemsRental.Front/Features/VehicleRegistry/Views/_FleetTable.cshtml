@@ -1,0 +1,106 @@
+@model AstraSystemsRental.Front.Features.VehicleRegistry.FleetVehiclesPageVm
+
+@{
+    (string badge, string dot) StatusStyle(string status) => status switch
+    {
+        "Active" => ("bg-accent/15 text-accent", "bg-accent"),
+        "Maintenance" or "Draft" => ("bg-warn/15 text-warn", "bg-warn"),
+        "Blocked" or "Inactive" or "Sold" => ("bg-danger/15 text-danger", "bg-danger"),
+        _ => ("bg-white/[0.06] text-content-soft", "bg-content-muted")
+    };
+
+    string QueryFor(int page)
+    {
+        var qs = $"page={page}";
+        if (!string.IsNullOrWhiteSpace(Model.Search)) qs += $"&search={Uri.EscapeDataString(Model.Search)}";
+        if (!string.IsNullOrWhiteSpace(Model.Status)) qs += $"&status={Uri.EscapeDataString(Model.Status)}";
+        return qs;
+    }
+}
+
+@if (!string.IsNullOrEmpty(Model.Error))
+{
+    <div class="astra-alert-error">@Model.Error</div>
+}
+else if (Model.Items.Count == 0)
+{
+    <div class="astra-panel p-10 flex flex-col items-center text-center gap-3">
+        <svg class="h-10 w-10 text-content-muted/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.75 6.75A1.75 1.75 0 0 1 4.5 5h8.75a1.75 1.75 0 0 1 1.75 1.75V15H3.5a.75.75 0 0 1-.75-.75V6.75Z" />
+            <path d="M15 8.5h2.94a1.75 1.75 0 0 1 1.55.94l1.56 3a1.75 1.75 0 0 1 .2.81V15H15V8.5Z" />
+            <circle cx="7" cy="17" r="1.75" />
+            <circle cx="17.5" cy="17" r="1.75" />
+        </svg>
+        <p class="text-sm text-content-muted">No hay vehículos registrados todavía.</p>
+    </div>
+}
+else
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+        @foreach (var vehicle in Model.Items)
+        {
+            var (badgeClass, dotClass) = StatusStyle(vehicle.Status);
+            <a href="/vehicle-registry/@vehicle.Id" class="astra-card p-5 flex flex-col gap-4 group hover:border-brand/30 hover:-translate-y-0.5 transition">
+                <div class="flex items-start justify-between gap-3">
+                    <div class="h-10 w-10 rounded-lg bg-gradient-brand flex items-center justify-center shrink-0 shadow-brand/40 group-hover:scale-105 transition">
+                        <svg class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2.75 6.75A1.75 1.75 0 0 1 4.5 5h8.75a1.75 1.75 0 0 1 1.75 1.75V15H3.5a.75.75 0 0 1-.75-.75V6.75Z" />
+                            <path d="M15 8.5h2.94a1.75 1.75 0 0 1 1.55.94l1.56 3a1.75 1.75 0 0 1 .2.81V15H15V8.5Z" />
+                            <circle cx="7" cy="17" r="1.75" />
+                            <circle cx="17.5" cy="17" r="1.75" />
+                        </svg>
+                    </div>
+                    <span class="astra-badge @badgeClass shrink-0">
+                        <span class="h-1.5 w-1.5 rounded-full @dotClass"></span>
+                        @StatusText.Vehicle(vehicle.Status)
+                    </span>
+                </div>
+
+                <div>
+                    <p class="font-display text-lg tracking-[0.15em] text-content">@vehicle.PlateNumber</p>
+                    <p class="text-sm text-content-soft mt-0.5 truncate">
+                        @(string.IsNullOrEmpty(vehicle.Brand) && string.IsNullOrEmpty(vehicle.Line) ? "Sin marca/línea" : $"{vehicle.Brand} {vehicle.Line}")
+                    </p>
+                </div>
+
+                <div class="flex items-center gap-1.5 text-xs text-content-muted mt-auto pt-3 border-t border-white/[0.06]">
+                    <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
+                    </svg>
+                    @(vehicle.ModelYear?.ToString() ?? "Modelo sin definir")
+                </div>
+            </a>
+        }
+    </div>
+
+    @if (Model.TotalPages > 1)
+    {
+        <div class="flex items-center justify-between pt-2">
+            <p class="text-xs text-content-muted">Página @Model.PageNumber de @Model.TotalPages</p>
+            <div class="flex items-center gap-1.5">
+                <button type="button"
+                        class="astra-btn-ghost px-3 py-1.5 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                        hx-get="/vehicle-registry?@QueryFor(Model.PageNumber - 1)" hx-target="#fleet-table" hx-swap="innerHTML"
+                        disabled="@(Model.PageNumber <= 1 ? "disabled" : null)">
+                    Anterior
+                </button>
+                @for (var p = 1; p <= Model.TotalPages; p++)
+                {
+                    var isActive = p == Model.PageNumber;
+                    <button type="button"
+                            class="@(isActive ? "astra-btn-primary" : "astra-btn-ghost") px-3 py-1.5 text-xs min-w-[2.25rem]"
+                            hx-get="/vehicle-registry?@QueryFor(p)" hx-target="#fleet-table" hx-swap="innerHTML">
+                        @p
+                    </button>
+                }
+                <button type="button"
+                        class="astra-btn-ghost px-3 py-1.5 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+                        hx-get="/vehicle-registry?@QueryFor(Model.PageNumber + 1)" hx-target="#fleet-table" hx-swap="innerHTML"
+                        disabled="@(Model.PageNumber >= Model.TotalPages ? "disabled" : null)">
+                    Siguiente
+                </button>
+            </div>
+        </div>
+    }
+}

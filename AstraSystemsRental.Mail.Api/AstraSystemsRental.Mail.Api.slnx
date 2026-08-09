@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/AstraSystemsRental.Mail.Api/AstraSystemsRental.Mail.Api.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AstraSystemsRental.Mail.Api.Tests/AstraSystemsRental.Mail.Api.Tests.csproj" />
+  </Folder>
+</Solution>

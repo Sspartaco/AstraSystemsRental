@@ -1,0 +1,625 @@
+{
+  "name": "workshop-reservations",
+  "baseUrl": "https://localhost:8444",
+  "defaultTimeoutMs": 15000,
+  "stopOnFailure": false,
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "steps": [
+    {
+      "action": "goto",
+      "url": "/auth/login",
+      "description": "=== BLOQUE 1: AUTENTICACIÓN ==="
+    },
+    {
+      "action": "wait",
+      "selector": "#email"
+    },
+    {
+      "action": "fill",
+      "selector": "#email",
+      "value": "${PROBE_USERNAME}"
+    },
+    {
+      "action": "fill",
+      "selector": "#password",
+      "value": "${PROBE_PASSWORD}",
+      "secret": true
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "wait",
+      "selector": "nav",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance",
+      "description": "=== BLOQUE 2: ABRIR FICHA DE MANTENIMIENTO ==="
+    },
+    {
+      "action": "wait",
+      "selector": "#maintenance-vehicles",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const card = document.querySelector('#maintenance-vehicles a[href^=\"/maintenance/vehicle/\"]'); if (!card) throw new Error('No hay vehiculos en la flota'); sessionStorage.setItem('__probeVehicleUrl', card.getAttribute('href')); card.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reservas de taller'); if (!btn) throw new Error('Tab reservas no visible (nodo workshop-reservations no habilitado)'); btn.click(); console.error('PROBE_TAB_RESERVAS: ok')"
+    },
+    {
+      "action": "wait",
+      "selector": "#wr-scheduled",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque crear reserva con kilometraje')",
+      "description": "=== BLOQUE 3: CREAR RESERVA + SINERGIA CON CONTROL DE RECORRIDO ==="
+    },
+    {
+      "action": "eval",
+      "script": "const kpi = [...document.querySelectorAll('.astra-kpi')].find(k => k.textContent.includes('Kilometraje actual')); const base = kpi ? parseInt(kpi.textContent.replace(/[^0-9]/g, ''), 10) || 0 : 0; window.__probeResKm = base + 500; sessionStorage.setItem('__probeResKm', window.__probeResKm); console.error('PROBE_KM_RESERVA: ' + window.__probeResKm + ' (base KPI: ' + base + ')')",
+      "description": "El KPI 'Kilometraje actual' esta siempre visible; #mileage-readings solo existe en el tab de recorrido"
+    },
+    {
+      "action": "eval",
+      "script": "const d = new Date(); d.setDate(d.getDate() + 3); d.setHours(9, 0, 0, 0); const value = d.toISOString().slice(0,16); sessionStorage.setItem('__probeResDate', value); const el = document.querySelector('#wr-scheduled'); el.value = value; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_FECHA_RESERVA: ' + value)"
+    },
+    {
+      "action": "eval",
+      "script": "const d = new Date(); d.setDate(d.getDate() + 4); d.setHours(17, 0, 0, 0); const el = document.querySelector('#wr-end'); el.value = d.toISOString().slice(0,16); el.dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "eval",
+      "script": "window.__probeResKm = window.__probeResKm || parseInt(sessionStorage.getItem('__probeResKm'), 10); const el = document.querySelector('#wr-mileage'); el.value = window.__probeResKm; el.dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "fill",
+      "selector": "#wr-notes",
+      "value": "Reserva creada por Odiseo"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='/reservations'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_RESERVA_CREADA: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes('Reserva creada por Odiseo'))"
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()",
+      "description": "Recarga limpia: el swap htmx previo reinicia el x-data de Alpine y el tab vuelve a 'Rutina asignada'"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Historial de recorrido'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "delayMs": 400
+    },
+    {
+      "action": "eval",
+      "script": "window.__probeResKm = window.__probeResKm || parseInt(sessionStorage.getItem('__probeResKm'), 10); const text = document.querySelector('#vehicle-maintenance-body').textContent; console.error('PROBE_SINERGIA_LECTURA_AUTOMATICA: ' + (text.includes(window.__probeResKm.toLocaleString('es-CO')) && text.includes('Workshop')))",
+      "description": "VERIFICACIÓN CENTRAL: la reserva con kilometraje debe generar automáticamente una lectura Source=Workshop en el historial de recorrido"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque solapamiento')",
+      "description": "=== BLOQUE 4: RECHAZO POR SOLAPAMIENTO DE FECHAS ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()",
+      "description": "Recarga limpia: el swap htmx previo reinicia el x-data de Alpine y el tab vuelve a 'Rutina asignada'"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reservas de taller'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#wr-scheduled",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "const value = sessionStorage.getItem('__probeResDate'); const el = document.querySelector('#wr-scheduled'); el.value = value; el.dispatchEvent(new Event('input', {bubbles:true})); console.error('PROBE_FECHA_SOLAPADA: ' + value)"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='/reservations'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": ".astra-alert-error",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "WorkshopReservationOverlapValidator debe rechazar una segunda reserva activa que se solapa"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque transiciones de estado')",
+      "description": "=== BLOQUE 5: CICLO DE VIDA Pending -> InWorkshop -> Ready -> Collected ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()",
+      "description": "Recarga limpia: el swap htmx previo reinicia el x-data de Alpine y el tab vuelve a 'Rutina asignada'"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reservas de taller'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#workshop-reservations",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('#workshop-reservations button')].find(b => b.textContent.trim() === 'Marcar en taller'); if (!btn) throw new Error('Boton InWorkshop no encontrado'); btn.click(); console.error('PROBE_TRANSICION_IN_WORKSHOP: click')"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_ESTADO_IN_WORKSHOP: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes('InWorkshop'))"
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()",
+      "description": "Recarga limpia: el swap htmx previo reinicia el x-data de Alpine y el tab vuelve a 'Rutina asignada'"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reservas de taller'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "delayMs": 400
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('#workshop-reservations button')].find(b => b.textContent.trim() === 'Marcar listo'); if (!btn) throw new Error('Boton Ready no encontrado'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_ESTADO_READY: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes('Ready'))",
+      "description": "Al pasar a Ready se dispara la notificación por email vía Mail.Api (no bloqueante si falla)"
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()",
+      "description": "Recarga limpia: el swap htmx previo reinicia el x-data de Alpine y el tab vuelve a 'Rutina asignada'"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reservas de taller'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "delayMs": 400
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('#workshop-reservations button')].find(b => b.textContent.trim() === 'Marcar retirado'); if (!btn) throw new Error('Boton Collected no encontrado'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_ESTADO_COLLECTED: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes('Collected'))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque liberacion de cuota')",
+      "description": "=== BLOQUE 6: TRAS Collected LA CUOTA SE LIBERA Y PERMITE UNA RESERVA NUEVA ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()",
+      "description": "Recarga limpia: el swap htmx previo reinicia el x-data de Alpine y el tab vuelve a 'Rutina asignada'"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Reservas de taller'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#wr-scheduled",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "const d = new Date(); d.setDate(d.getDate() + 20); d.setHours(8, 0, 0, 0); const el = document.querySelector('#wr-scheduled'); el.value = d.toISOString().slice(0,16); el.dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "fill",
+      "selector": "#wr-notes",
+      "value": "Reserva posterior Odiseo"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='/reservations'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_RESERVA_POSTERIOR_OK: ' + document.querySelector('#vehicle-maintenance-body').textContent.includes('Reserva posterior Odiseo'))",
+      "description": "La reserva anterior ya está Collected (no activa), por lo que no hay solapamiento ni cuota agotada"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque traduccion de errores')",
+      "description": "=== BLOQUE 7: MENSAJES DE VALIDACION EN ESPANOL (mejora 1.1) ==="
+    },
+    {
+      "action": "eval",
+      "script": "window.location.reload()"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const btn=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()==='Reservas de taller'); btn.click()"
+    },
+    {
+      "action": "wait",
+      "delayMs": 400
+    },
+    {
+      "action": "wait",
+      "selector": "#wr-scheduled",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "description": "Reusa la misma fecha de la reserva activa para forzar el rechazo por solapamiento",
+      "script": "const v=sessionStorage.getItem('__probeResDate'); const el=document.querySelector('#wr-scheduled'); el.value=v; el.dispatchEvent(new Event('input',{bubbles:true}))"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post*='/reservations'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": ".astra-alert-error",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "expect",
+      "selector": ".astra-alert-error",
+      "text": "reserva activa",
+      "description": "El mensaje del validador debe llegar traducido, no en ingles crudo"
+    },
+    {
+      "action": "eval",
+      "description": "Verifica que NO quede rastro del mensaje original en ingles",
+      "script": "const t=document.querySelector('.astra-alert-error').textContent; if (t.includes('already has an active reservation')) throw new Error('El error sigue en ingles: '+t); console.error('PROBE_ERROR_TRADUCIDO: ' + t.trim())"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque cancelar reserva')",
+      "description": "=== BLOQUE 8: CANCELAR RESERVA (mejora 1.8) ==="
+    },
+    {
+      "action": "eval",
+      "description": "Navega a la ficha con ?tab=reservations usando la URL guardada (mejora 1.6)",
+      "script": "const url=sessionStorage.getItem('__probeVehicleUrl'); if(!url) throw new Error('No hay URL de vehiculo guardada'); const a=document.createElement('a'); a.href=url+'?tab=reservations'; document.body.appendChild(a); a.click()"
+    },
+    {
+      "action": "wait",
+      "selector": "#vehicle-maintenance-body",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "description": "El tab debe abrir directo en reservas por el query string (mejora 1.6)",
+      "script": "const visible=[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='Cancelar'); console.error('PROBE_BOTON_CANCELAR_PRESENTE: ' + visible); if(!visible) throw new Error('No hay boton Cancelar en ninguna reserva activa')"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque fotos de reserva')",
+      "description": "=== BLOQUE 9: ADJUNTAR Y VER FOTOS (mejora 1.7) ==="
+    },
+    {
+      "action": "eval",
+      "description": "El endpoint de fotos existia en la API pero era inalcanzable desde la web",
+      "script": "const form=document.querySelector(\"form[hx-post*='/photos']\"); if(!form) throw new Error('No hay formulario de subida de fotos'); const input=form.querySelector(\"input[type=file]\"); if(!input) throw new Error('No hay input de archivo'); console.error('PROBE_FORM_FOTOS_PRESENTE: accept=' + input.accept)"
+    },
+    {
+      "action": "eval",
+      "description": "Verifica que el form declare multipart, sin lo cual htmx envia el archivo vacio",
+      "script": "const form=document.querySelector(\"form[hx-post*='/photos']\"); const enc=form.getAttribute('hx-encoding'); if(enc!=='multipart/form-data') throw new Error('hx-encoding incorrecto: '+enc); console.error('PROBE_FOTOS_MULTIPART: ok')"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque pantalla global de reservas')",
+      "description": "=== BLOQUE 10: PANTALLA GLOBAL (agenda de flota + alta con selector de vehiculo + filtros) ==="
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance/reservations"
+    },
+    {
+      "action": "expect",
+      "selector": "#reservations-grid",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "expect",
+      "selector": "#fl-status",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#fl-provider",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#fl-from",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#fl-to",
+      "state": "visible"
+    },
+    {
+      "action": "eval",
+      "script": "const btn = [...document.querySelectorAll('button')].find(b => b.textContent.includes('Nueva reserva')); if (!btn) throw new Error('Boton Nueva reserva no encontrado'); btn.click(); console.error('PROBE_ABRIR_FORM_GLOBAL: ok')",
+      "description": "El boton tiene dos spans (Nueva reserva / Cerrar) por el toggle Alpine, asi que textContent no es igualdad exacta"
+    },
+    {
+      "action": "wait",
+      "delayMs": 500,
+      "description": "x-transition de Alpine dura 200ms; sin esta espera el select aun no tiene sus options accesibles"
+    },
+    {
+      "action": "wait",
+      "selector": "#gr-vehicle",
+      "state": "visible",
+      "timeoutMs": 10000
+    },
+    {
+      "action": "eval",
+      "script": "const opts = [...document.querySelector('#gr-vehicle').options].filter(o => o.value); if (opts.length === 0) throw new Error('El selector de vehiculo esta vacio'); console.error('PROBE_SELECTOR_VEHICULOS: ' + opts.length + ' opciones')",
+      "description": "El valor diferencial de esta pantalla: crear reserva eligiendo el vehiculo, sin entrar a su ficha"
+    },
+    {
+      "action": "eval",
+      "script": "const sel = document.querySelector('#gr-vehicle'); const opt = [...sel.options].find(o => o.value); sel.value = opt.value; sel.dispatchEvent(new Event('change', {bubbles:true})); sessionStorage.setItem('__probeGlobalVehicle', opt.textContent.trim().split(' ')[0]); console.error('PROBE_VEHICULO_ELEGIDO: ' + opt.textContent.trim())"
+    },
+    {
+      "action": "eval",
+      "script": "const d = new Date(); d.setDate(d.getDate() + 45); d.setHours(10, 0, 0, 0); const el = document.querySelector('#gr-scheduled'); el.value = d.toISOString().slice(0,16); el.dispatchEvent(new Event('input', {bubbles:true}))"
+    },
+    {
+      "action": "eval",
+      "script": "const d = new Date(); d.setDate(d.getDate() + 46); d.setHours(16, 0, 0, 0); const el = document.querySelector('#gr-end'); el.value = d.toISOString().slice(0,16); el.dispatchEvent(new Event('input', {bubbles:true}))",
+      "description": "Fecha de fin explicita: sin ella la reserva queda como intervalo abierto y bloquea futuras"
+    },
+    {
+      "action": "fill",
+      "selector": "#gr-notes",
+      "value": "Reserva global Odiseo"
+    },
+    {
+      "action": "eval",
+      "script": "const btn = document.querySelector(\"form[action='/maintenance/reservations'] button[type=submit]\"); if (!btn) throw new Error('Boton Crear reserva no encontrado'); btn.click()",
+      "description": "Click programatico: x-transition:enter-start deja opacity-0 y Playwright nunca considera el boton actionable"
+    },
+    {
+      "action": "wait",
+      "selector": "#reservations-grid",
+      "state": "visible",
+      "timeoutMs": 30000,
+      "description": "El click programatico no bloquea hasta completar la navegacion PRG; dar margen a la recarga"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_RESERVA_GLOBAL_CREADA: ' + document.querySelector('#reservations-grid').textContent.includes('Reserva global Odiseo'))",
+      "description": "Post-Redirect-Get: tras crear vuelve al listado sin reenvio de formulario"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque filtros')",
+      "description": "=== BLOQUE 11: FILTROS DE LA AGENDA ==="
+    },
+    {
+      "action": "eval",
+      "script": "const sel = document.querySelector('#fl-status'); sel.value = 'Cancelled'; sel.dispatchEvent(new Event('change', {bubbles:true}))"
+    },
+    {
+      "action": "wait",
+      "delayMs": 900
+    },
+    {
+      "action": "eval",
+      "script": "const text = document.querySelector('#reservations-grid').textContent; console.error('PROBE_FILTRO_CANCELLED_VACIO: ' + text.includes('No hay reservas que coincidan'))",
+      "description": "No hay reservas canceladas, el filtro debe dejar el listado vacio"
+    },
+    {
+      "action": "eval",
+      "script": "const sel = document.querySelector('#fl-status'); sel.value = ''; sel.dispatchEvent(new Event('change', {bubbles:true}))"
+    },
+    {
+      "action": "wait",
+      "delayMs": 900
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_FILTRO_LIMPIO_MUESTRA: ' + document.querySelector('#reservations-grid').textContent.includes('Reserva global Odiseo'))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque filtros server-side')",
+      "description": "=== BLOQUE 12: LOS FILTROS VIAJAN AL SERVIDOR (mejora 1.3) ==="
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance/reservations?from=2020-01-01&to=2020-12-31"
+    },
+    {
+      "action": "wait",
+      "selector": "#reservations-grid",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "description": "Antes providerId/from/to se filtraban en memoria sobre 50 registros y podian omitir resultados",
+      "script": "const t=document.querySelector('#reservations-grid').textContent; if(!t.includes('No hay reservas')) throw new Error('El rango 2020 no deberia devolver reservas'); console.error('PROBE_FILTRO_FECHAS_SERVIDOR: ok')"
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance/reservations?providerId=999999"
+    },
+    {
+      "action": "wait",
+      "selector": "#reservations-grid",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "description": "Un taller inexistente no puede devolver resultados",
+      "script": "const t=document.querySelector('#reservations-grid').textContent; if(!t.includes('No hay reservas')) throw new Error('El filtro por taller inexistente devolvio resultados'); console.error('PROBE_FILTRO_TALLER_SERVIDOR: ok')"
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance/reservations?from=2020-01-01&to=2035-12-31"
+    },
+    {
+      "action": "wait",
+      "selector": "#reservations-grid",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "description": "Un rango amplio si debe incluir las reservas creadas por el plan",
+      "script": "const t=document.querySelector('#reservations-grid').textContent; if(t.includes('No hay reservas')) throw new Error('El rango amplio deberia incluir las reservas del plan'); console.error('PROBE_FILTRO_RANGO_AMPLIO: ok')"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque rutas del sidebar')",
+      "description": "=== BLOQUE 13: LAS 3 RUTAS DEL SIDEBAR RESPONDEN ==="
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance/routines"
+    },
+    {
+      "action": "expect",
+      "selector": "#routines-grid",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "goto",
+      "url": "/maintenance"
+    },
+    {
+      "action": "expect",
+      "selector": "#vehicle-picker",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "eval",
+      "script": "const links = [...document.querySelectorAll('nav a')].map(a => a.getAttribute('href')); const need = ['/maintenance','/maintenance/routines','/maintenance/reservations']; const missing = need.filter(n => !links.includes(n)); if (missing.length) throw new Error('Faltan enlaces en el sidebar: ' + missing.join(', ')); console.error('PROBE_SIDEBAR_3_NODOS: ok')",
+      "description": "Todo nodo sembrado en access.Nodes debe tener su ruta viva"
+    }
+  ]
+}

@@ -1,0 +1,257 @@
+name: astralrental
+
+services:
+  api-mail:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Mail.Api/Dockerfile
+    image: astralrental-api-mail:latest
+    container_name: astralrental-api-mail
+    ports:
+      - "5006:8080"
+      - "5446:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - Internal__ApiKey=${INTERNAL_API_KEY}
+      - Gmail__User=${GMAIL_USER}
+      - Gmail__AppPassword=${GMAIL_APP_PASSWORD}
+      - Gmail__FromAddress=${GMAIL_FROM_ADDRESS}
+      - Gmail__FromName=${GMAIL_FROM_NAME}
+    volumes:
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+    networks:
+      - astra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/apiMail/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  api-users:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Users.Api/Dockerfile
+    image: astralrental-api-users:latest
+    container_name: astralrental-api-users
+    ports:
+      - "5001:8080"
+      - "5443:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - ConnectionStrings__Default=${USERS_CONNECTION_STRING}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PrivateKeyPath=/run/secrets/jwt-private.pem
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - Confirmation__BaseUrl=${CONFIRMATION_BASE_URL}
+      - MailApi__BaseUrl=http://api-mail:8080
+      - MailApi__InternalApiKey=${INTERNAL_API_KEY}
+      - Bootstrap__Secret=${BOOTSTRAP_SECRET}
+    volumes:
+      - ./keys/jwt-private.pem:/run/secrets/jwt-private.pem:ro
+      - ./keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - astra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/apiUsers/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  api-vehicles:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Vehicles.Api/Dockerfile
+    image: astralrental-api-vehicles:latest
+    container_name: astralrental-api-vehicles
+    ports:
+      - "5011:8080"
+      - "5451:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - ConnectionStrings__Default=${VEHICLES_CONNECTION_STRING}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - UsersApi__BaseUrl=http://api-users:8080
+    volumes:
+      - ./keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - astra
+    depends_on:
+      - api-users
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/apiVehicles/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  api-maintenance:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Maintenance.Api/Dockerfile
+    image: astralrental-api-maintenance:latest
+    container_name: astralrental-api-maintenance
+    ports:
+      - "5016:8080"
+      - "5456:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - ConnectionStrings__Default=${MAINTENANCE_CONNECTION_STRING}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - UsersApi__BaseUrl=http://api-users:8080
+      - VehiclesApi__BaseUrl=http://api-vehicles:8080
+      - MailApi__BaseUrl=http://api-mail:8080
+    volumes:
+      - ./keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+      - maintenance-uploads:/app/uploads
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - astra
+    depends_on:
+      - api-users
+      - api-vehicles
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/apiMaintenance/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  api-reports:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Reports.Api/Dockerfile
+    image: astralrental-api-reports:latest
+    container_name: astralrental-api-reports
+    ports:
+      - "5021:8080"
+      - "5461:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - VehiclesApi__BaseUrl=http://api-vehicles:8080
+      - MaintenanceApi__BaseUrl=http://api-maintenance:8080
+      - ConnectionStrings__Default=${USERS_CONNECTION_STRING}
+    volumes:
+      - ./keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - astra
+    depends_on:
+      - api-vehicles
+      - api-maintenance
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/apiReports/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  gateway:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Gateway/Dockerfile
+    image: astralrental-gateway:latest
+    container_name: astralrental-gateway
+    depends_on:
+      - api-users
+      - api-mail
+      - api-vehicles
+      - api-maintenance
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Jwt__PublicKeyPath=/run/secrets/jwt-public.pem
+      - ReverseProxy__Clusters__users-cluster__Destinations__users__Address=http://api-users:8080/
+      - ReverseProxy__Clusters__mail-cluster__Destinations__mail__Address=http://api-mail:8080/
+      - ReverseProxy__Clusters__vehicles-cluster__Destinations__vehicles__Address=http://api-vehicles:8080/
+      - ReverseProxy__Clusters__maintenance-cluster__Destinations__maintenance__Address=http://api-maintenance:8080/
+      - ReverseProxy__Clusters__reports-cluster__Destinations__reports__Address=http://api-reports:8080/
+    volumes:
+      - ./keys/jwt-public.pem:/run/secrets/jwt-public.pem:ro
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+    networks:
+      - astra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  front:
+    build:
+      context: .
+      dockerfile: AstraSystemsRental.Front/Dockerfile
+    image: astralrental-front:latest
+    container_name: astralrental-front
+    depends_on:
+      - gateway
+    ports:
+      - "5000:8080"
+      - "8444:8443"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:8080;https://+:8443
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/run/secrets/astra-dev.pfx
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${CERT_PASSWORD}
+      - Gateway__BaseUrl=http://gateway:8080
+    volumes:
+      - ./certs/astra-dev.pfx:/run/secrets/astra-dev.pfx:ro
+    networks:
+      - astra
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/auth/login"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  maintenance-uploads:
+    name: astralrental-maintenance-uploads
+
+networks:
+  astra:
+    name: astra
+    driver: bridge

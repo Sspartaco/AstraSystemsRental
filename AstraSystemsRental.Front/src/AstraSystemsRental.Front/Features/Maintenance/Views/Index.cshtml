@@ -1,0 +1,33 @@
+@model AstraSystemsRental.Front.Features.Maintenance.MaintenanceIndexVm
+@{
+    ViewData["Title"] = "Control de Recorrido";
+}
+
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl">Control de Recorrido</h2>
+            <p class="text-sm text-content-soft mt-1">Elegí un vehículo para ver su ficha de mantenimiento: rutina asignada, kilometraje, próximo servicio y reservas de taller.</p>
+        </div>
+        @if (User.Identity?.IsAuthenticated == true)
+        {
+            <a href="/maintenance/routines" class="astra-btn-ghost">Rutinas de mantenimiento</a>
+        }
+    </div>
+
+    <form hx-get="/maintenance" hx-target="#vehicle-picker" hx-swap="innerHTML"
+          hx-trigger="submit, keyup changed delay:400ms from:input[name=search]"
+          class="astra-panel p-4">
+        <div class="relative">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-content-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m21 21-4.35-4.35" />
+            </svg>
+            <input type="search" name="search" value="@Model.Search" placeholder="Buscar por placa…" class="astra-input pl-10" autocomplete="off" />
+        </div>
+    </form>
+
+    <div id="vehicle-picker">
+        @await Html.PartialAsync("_VehiclePicker", Model)
+    </div>
+</div>

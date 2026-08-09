@@ -1,0 +1,191 @@
+{
+  "name": "fleet-cotizacion",
+  "baseUrl": "https://localhost:8444",
+  "defaultTimeoutMs": 15000,
+  "stopOnFailure": false,
+  "viewport": { "width": 1440, "height": 900 },
+  "steps": [
+    {
+      "action": "goto",
+      "url": "/auth/login",
+      "description": "=== BLOQUE 1: AUTENTICACIÓN ==="
+    },
+    {
+      "action": "wait",
+      "selector": "#email"
+    },
+    {
+      "action": "fill",
+      "selector": "#email",
+      "value": "${PROBE_USERNAME}"
+    },
+    {
+      "action": "fill",
+      "selector": "#password",
+      "value": "${PROBE_PASSWORD}",
+      "secret": true
+    },
+    {
+      "action": "click",
+      "selector": "#login-submit"
+    },
+    {
+      "action": "wait",
+      "selector": "nav",
+      "state": "visible",
+      "timeoutMs": 15000
+    },
+    {
+      "action": "goto",
+      "url": "/fleet",
+      "description": "=== BLOQUE 2: CARGA DEL MÓDULO ==="
+    },
+    {
+      "action": "expect",
+      "selector": "#plate-input",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#quote-result",
+      "state": "visible",
+      "description": "Placeholder inicial: 'El resultado de la cotización aparecerá aquí.'"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque camino feliz - placa ya registrada')",
+      "description": "=== BLOQUE 3: PLACA YA REGISTRADA (PROBE_PLACA=ODS001, vehículo dado de alta manualmente antes de correr este plan; no depende del catálogo Excel importado, que no es estable entre entornos) ==="
+    },
+    {
+      "action": "fill",
+      "selector": "#plate-input",
+      "value": "${PROBE_PLACA}"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post='/fleet/quotes'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#quote-result-body",
+      "state": "visible",
+      "timeoutMs": 30000,
+      "description": "Card consolidada renderizada tras el POST inicial (el POST encadena creación de QuoteRequest + lookup de vehículo, más lento en frío)"
+    },
+    {
+      "action": "wait",
+      "selector": "#quote-result-body:has-text('Cotización completa'), #quote-result-body:has-text('Completado con fuentes no disponibles')",
+      "state": "visible",
+      "timeoutMs": 60000,
+      "description": "Polling htmx cada 1.5s hasta que el orquestador termina todas las fuentes (Fasecolda/RevistaMotor/TuCarro/AutoExpo)"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_ESTADO_FINAL: ' + document.querySelector('#quote-result-body').textContent.includes('Cotización completa'))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_CANTIDAD_FUENTES: ' + document.querySelectorAll('#quote-result-body .astra-kpi').length)",
+      "description": "Deben renderizarse las 4 cards de fuente (Fasecolda, RevistaMotor, TuCarro, AutoExpo)"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque placa no existente')",
+      "description": "=== BLOQUE 4: PLACA NO ENCONTRADA -> ALTA MANUAL ==="
+    },
+    {
+      "action": "fill",
+      "selector": "#plate-input",
+      "value": "${PROBE_PLACA_NUEVA}"
+    },
+    {
+      "action": "click",
+      "selector": "form[hx-post='/fleet/quotes'] button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#quote-result:has-text('No está en el catálogo')",
+      "state": "visible",
+      "timeoutMs": 10000,
+      "description": "El backend responde 404 VehicleNotFound y el Front ofrece completar datos"
+    },
+    {
+      "action": "expect",
+      "selector": "#mv-brand",
+      "state": "visible"
+    },
+    {
+      "action": "expect",
+      "selector": "#mv-line",
+      "state": "visible"
+    },
+    {
+      "action": "click",
+      "selector": "#quote-result button[type=submit]",
+      "description": "Enviar el formulario manual vacío para probar validación HTML"
+    },
+    {
+      "action": "eval",
+      "script": "const brand = document.querySelector('#mv-brand'); console.error('PROBE_VALIDEZ_MARCA: ' + brand.validity.valid)",
+      "description": "Marca es required; el submit vacío no debe avanzar"
+    },
+    {
+      "action": "fill",
+      "selector": "#mv-brand",
+      "value": "Toyota"
+    },
+    {
+      "action": "fill",
+      "selector": "#mv-line",
+      "value": "Corolla"
+    },
+    {
+      "action": "fill",
+      "selector": "#mv-year",
+      "value": "2020"
+    },
+    {
+      "action": "fill",
+      "selector": "#mv-class",
+      "value": "Automóvil"
+    },
+    {
+      "action": "click",
+      "selector": "#quote-result button[type=submit]"
+    },
+    {
+      "action": "wait",
+      "selector": "#quote-result-body",
+      "state": "visible",
+      "timeoutMs": 30000,
+      "description": "Al registrar el vehículo manual, encadena automáticamente la cotización sin perder el hilo (create + quote = 2 POST server-to-server)"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_PLACA_MANUAL_REGISTRADA: ' + document.querySelector('#quote-result-body').textContent.includes('${PROBE_PLACA_NUEVA}'))"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_INICIO: bloque validacion de formato')",
+      "description": "=== BLOQUE 5: FORMATO DE PLACA (fleet.js) ==="
+    },
+    {
+      "action": "goto",
+      "url": "/fleet"
+    },
+    {
+      "action": "fill",
+      "selector": "#plate-input",
+      "value": "ab-12_3!"
+    },
+    {
+      "action": "eval",
+      "script": "console.error('PROBE_PLACA_SANEADA: ' + document.querySelector('#plate-input').value)",
+      "description": "fleet.js debe forzar mayúsculas y descartar caracteres no alfanuméricos en vivo"
+    },
+    {
+      "action": "eval",
+      "script": "const el = document.querySelector('#plate-input'); console.error('PROBE_BORDE_INVALIDO: ' + el.classList.contains('border-danger/60'))"
+    }
+  ]
+}
