@@ -35,6 +35,13 @@ jobs:
       - name: Instalar workloads de MAUI
         run: dotnet workload install maui-ios maui-android --skip-sign-check
 
+      # nuget-local/ no se versiona (son binarios). El CI regenera el paquete Base
+      # desde el fuente, que es la unica fuente de verdad.
+      - name: Regenerar el paquete local AstraSystemsRental.Base
+        run: |
+          mkdir -p nuget-local
+          dotnet pack AstraSystemsRental.Base/src/AstraSystemsRental.Base/AstraSystemsRental.Base.csproj             -c Release -o nuget-local
+
       # Sin certificado de firma se compila para simulador: sirve para confirmar que
       # el proyecto compila en iOS y revisar la UI, pero NO se instala en un iPhone.
       - name: Compilar para simulador (sin firma)
