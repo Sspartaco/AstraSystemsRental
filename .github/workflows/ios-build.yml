@@ -30,8 +30,10 @@ jobs:
           dotnet-version: '10.0.x'
           dotnet-quality: preview
 
-      - name: Instalar workload de MAUI para iOS
-        run: dotnet workload install maui-ios --skip-sign-check
+      # Aunque se compile solo -f net10.0-ios, MSBuild evalua TODOS los TargetFrameworks
+      # del csproj y exige tambien el workload de Android. Por eso se instalan los dos.
+      - name: Instalar workloads de MAUI
+        run: dotnet workload install maui-ios maui-android --skip-sign-check
 
       # Sin certificado de firma se compila para simulador: sirve para confirmar que
       # el proyecto compila en iOS y revisar la UI, pero NO se instala en un iPhone.
