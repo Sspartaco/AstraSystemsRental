@@ -16,9 +16,17 @@ Además, **para instalar en un iPhone físico siempre hace falta una cuenta de A
 
 ## Opciones, de menor a mayor fricción
 
-### 1. GitHub Actions con runner macOS (recomendado para empezar)
+### 1. GitHub Actions con runner macOS ✅ FUNCIONANDO
 
-Ya está configurado en `.github/workflows/ios-build.yml`. Se dispara a mano desde la pestaña *Actions*.
+Configurado en `.github/workflows/ios-build.yml` y **verificado en verde**: compila la app para iOS y publica un artefacto de ~24 MB. Se dispara a mano desde la pestaña *Actions* o con `gh workflow run ios-build.yml`.
+
+**Cinco obstáculos reales que costó resolver** (documentados para no repetirlos):
+
+1. **`secrets` no se evalúa en un `if:` de step** → `Unrecognized named-value: 'secrets'`. Hay que promoverlo a `env` del job y que la condición mire `env`.
+2. **Faltaba el workload de Android.** Aunque se compile con `-f net10.0-ios`, MSBuild evalúa *todos* los `TargetFrameworks` del csproj → `NETSDK1147`. Solución: `dotnet workload install maui-ios maui-android`.
+3. **`nuget-local/` no se versiona** (son binarios en `.gitignore`) → `NU1301: The local source doesn't exist`. El CI regenera el paquete `Base` desde el fuente.
+4. **`dotnet pack` sin `build` previo** no encuentra la dll. Mismo gotcha ya documentado para la publicación local.
+5. **`macos-15` trae Xcode 16.4** y el SDK de .NET para iOS exige Xcode 26 → hay que usar `runs-on: macos-26`. Y **no forzar** un Xcode específico: `Xcode_26.6.0.app` está instalado pero **incompleto** (sin SDK de macOS), y `actool` falla con `exit 72`. El Xcode por defecto de la imagen es el bueno.
 
 - **Costo**: gratis en repos públicos. En repos privados los minutos de macOS consumen **10x** del cupo — el plan gratuito da 2.000 min/mes, o sea ~200 min reales de macOS.
 - **Sin secretos de firma**: produce un `.app` para simulador. Sirve para revisar que la UI compile y se vea bien, **no** se instala en un iPhone.
