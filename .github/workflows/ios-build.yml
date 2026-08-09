@@ -26,13 +26,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Seleccionar el Xcode mas reciente disponible
-        run: |
-          ls /Applications | grep -i "^Xcode" || true
-          LATEST=$(ls -d /Applications/Xcode*.app | sort -V | tail -1)
-          echo "Usando $LATEST"
-          sudo xcode-select -s "$LATEST/Contents/Developer"
-          xcodebuild -version
+      # No forzar un Xcode concreto: el runner puede tener versiones incompletas
+      # (Xcode_26.6.0 no trae el SDK de macOS y actool falla con exit 72).
+      # El Xcode por defecto de macos-26 es el que esta completo.
+      - name: Xcode en uso
+        run: xcodebuild -version
+
 
       - name: Instalar .NET 10
         uses: actions/setup-dotnet@v4
