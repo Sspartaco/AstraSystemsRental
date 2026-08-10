@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using AstraSystemsRental.Contracts;
@@ -43,7 +43,9 @@ public sealed class AstraApiClient : IAstraApiClient
         {
             var request = new HttpRequestMessage(HttpMethod.Post, path);
             if (body is not null)
-                request.Content = JsonContent.Create(body, options: JsonOptions);
+                // JsonContent.Create(body) con body declarado como object? serializa
+                // segun el tipo ESTATICO y produce "{}". Hay que pasar el tipo real.
+                request.Content = JsonContent.Create(body, body.GetType(), options: JsonOptions);
             return request;
         }, nodeKey, cancellationToken);
 
@@ -52,7 +54,9 @@ public sealed class AstraApiClient : IAstraApiClient
         {
             var request = new HttpRequestMessage(HttpMethod.Put, path);
             if (body is not null)
-                request.Content = JsonContent.Create(body, options: JsonOptions);
+                // JsonContent.Create(body) con body declarado como object? serializa
+                // segun el tipo ESTATICO y produce "{}". Hay que pasar el tipo real.
+                request.Content = JsonContent.Create(body, body.GetType(), options: JsonOptions);
             return request;
         }, nodeKey, cancellationToken);
 
