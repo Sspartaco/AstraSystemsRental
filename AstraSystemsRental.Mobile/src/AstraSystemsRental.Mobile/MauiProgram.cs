@@ -29,6 +29,7 @@ public static class MauiProgram
             Timeout = TimeSpan.FromSeconds(30)
         });
 
+        builder.Services.AddSingleton<IClientLogReporter, ClientLogReporter>();
         builder.Services.AddSingleton<IAstraApiClient, AstraApiClient>();
         builder.Services.AddSingleton<IAuthService, AuthService>();
         builder.Services.AddSingleton<ISyncService, SyncService>();

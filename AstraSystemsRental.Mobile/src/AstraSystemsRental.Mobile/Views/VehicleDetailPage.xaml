@@ -45,6 +45,88 @@
                     <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
                            IsVisible="{Binding HasError}" />
 
+                    <Label Text="{Binding SaveMessage}" TextColor="{StaticResource Accent}" FontSize="13"
+                           IsVisible="{Binding HasSaveMessage}" />
+
+                    <Button Text="{Binding EditButtonText}" Command="{Binding ToggleEditCommand}"
+                            Style="{StaticResource GhostButton}" Margin="0,4,0,0" />
+
+                    <!-- Misma idea que el asistente web, pero en una sola hoja: en el
+                         telefono, tres pasos para datos opcionales es fricción pura. -->
+                    <Border Style="{StaticResource Panel}" IsVisible="{Binding ShowEdit}">
+                        <VerticalStackLayout Spacing="11">
+
+                            <Label Text="Ficha del vehículo" FontAttributes="Bold" FontSize="15" />
+                            <Label Text="Todo es opcional. Guardá lo que tengas a mano."
+                                   Style="{StaticResource MutedLabel}" FontSize="11.5" />
+
+                            <Label Text="IDENTIFICACIÓN" Style="{StaticResource MutedLabel}"
+                                   FontSize="10" Margin="0,4,0,0" />
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
+                                <Border Grid.Column="0" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding Brand}" Placeholder="Marca" />
+                                </Border>
+                                <Border Grid.Column="1" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding Line}" Placeholder="Línea" />
+                                </Border>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
+                                <Border Grid.Column="0" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding ModelYear}" Placeholder="Modelo (año)" Keyboard="Numeric" MaxLength="4" />
+                                </Border>
+                                <Border Grid.Column="1" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding VehicleClass}" Placeholder="Clase" />
+                                </Border>
+                            </Grid>
+
+                            <Label Text="CONFIGURACIÓN TÉCNICA" Style="{StaticResource MutedLabel}"
+                                   FontSize="10" Margin="0,4,0,0" />
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
+                                <Border Grid.Column="0" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding BodyType}" Placeholder="Carrocería" />
+                                </Border>
+                                <Border Grid.Column="1" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding Color}" Placeholder="Color" />
+                                </Border>
+                            </Grid>
+
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
+                                <Border Grid.Column="0" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding FuelType}" Placeholder="Combustible" />
+                                </Border>
+                                <Border Grid.Column="1" Style="{StaticResource InputShell}">
+                                    <Entry Text="{Binding Transmission}" Placeholder="Transmisión" />
+                                </Border>
+                            </Grid>
+
+                            <Border Style="{StaticResource InputShell}">
+                                <Entry Text="{Binding ServiceType}" Placeholder="Servicio" />
+                            </Border>
+
+                            <Label Text="NUMERACIÓN" Style="{StaticResource MutedLabel}"
+                                   FontSize="10" Margin="0,4,0,0" />
+
+                            <Border Style="{StaticResource InputShell}">
+                                <Entry Text="{Binding Vin}" Placeholder="VIN" />
+                            </Border>
+
+                            <Border Style="{StaticResource InputShell}">
+                                <Entry Text="{Binding EngineNumber}" Placeholder="Número de motor" />
+                            </Border>
+
+                            <Border Style="{StaticResource InputShell}">
+                                <Entry Text="{Binding Notes}" Placeholder="Notas" />
+                            </Border>
+
+                            <Button Text="Guardar ficha" Command="{Binding SaveCommand}"
+                                    Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsNotBusy}" />
+
+                        </VerticalStackLayout>
+                    </Border>
+
                     <Label Text="Historial de recorrido" FontAttributes="Bold" Margin="0,8,0,0" />
 
                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Readings}" Spacing="8">

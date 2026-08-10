@@ -26,10 +26,13 @@ public sealed class AstraApiClient : IAstraApiClient
 
     public event EventHandler? SessionExpired;
 
-    public AstraApiClient(HttpClient http, ISessionStore session)
+    private readonly IClientLogReporter _reporter;
+
+    public AstraApiClient(HttpClient http, ISessionStore session, IClientLogReporter reporter)
     {
         _http = http;
         _session = session;
+        _reporter = reporter;
     }
 
     public Task<ApiResult<T>> GetAsync<T>(string path, string? nodeKey = null, CancellationToken cancellationToken = default)
@@ -118,10 +121,10 @@ public sealed class AstraApiClient : IAstraApiClient
 
                 using var retry = BuildRequest(factory(), nodeKey);
                 using var retryResponse = await _http.SendAsync(retry, cancellationToken);
-                return await ReadAsync<T>(retryResponse, cancellationToken);
+                return Track(await ReadAsync<T>(retryResponse, cancellationToken), retry);
             }
 
-            return await ReadAsync<T>(response, cancellationToken);
+            return Track(await ReadAsync<T>(response, cancellationToken), request);
         }
         catch (HttpRequestException)
         {
@@ -131,6 +134,24 @@ public sealed class AstraApiClient : IAstraApiClient
         {
             return ApiResult<T>.NoConnection();
         }
+    }
+
+    /// <summary>
+    /// Manda a la API cualquier respuesta fallida para que quede en la vista de
+    /// Logs. Devuelve el resultado sin tocarlo: es solo un punto de observacion.
+    /// </summary>
+    private ApiResult<T> Track<T>(ApiResult<T> result, HttpRequestMessage request)
+    {
+        if (!result.Success)
+        {
+            _reporter.ReportApiFailure(
+                request.Method.Method,
+                request.RequestUri?.PathAndQuery ?? "?",
+                result.StatusCode,
+                result.Error);
+        }
+
+        return result;
     }
 
     private HttpRequestMessage BuildRequest(HttpRequestMessage request, string? nodeKey)

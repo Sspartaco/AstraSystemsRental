@@ -411,6 +411,144 @@ public sealed class VehicleDetailViewModel : BaseViewModel
     public string NextThreshold => _next?.NextThreshold is { } t ? $"{t:N0}" : "—";
     public bool IsOverdue => _next?.IsOverdue ?? false;
 
+    private bool _showEdit;
+    private string? _brand, _line, _modelYear, _vehicleClass, _bodyType, _color;
+    private string? _serviceType, _fuelType, _transmission, _vin, _engineNumber, _notes;
+    private string? _saveMessage;
+
+    public bool ShowEdit
+    {
+        get => _showEdit;
+        private set
+        {
+            if (Set(ref _showEdit, value))
+                OnPropertyChanged(nameof(EditButtonText));
+        }
+    }
+
+    public string EditButtonText => ShowEdit ? "Cancelar" : "Completar ficha";
+
+    public string? Brand { get => _brand; set => Set(ref _brand, value); }
+    public string? Line { get => _line; set => Set(ref _line, value); }
+    public string? ModelYear { get => _modelYear; set => Set(ref _modelYear, value); }
+    public string? VehicleClass { get => _vehicleClass; set => Set(ref _vehicleClass, value); }
+    public string? BodyType { get => _bodyType; set => Set(ref _bodyType, value); }
+    public string? Color { get => _color; set => Set(ref _color, value); }
+    public string? ServiceType { get => _serviceType; set => Set(ref _serviceType, value); }
+    public string? FuelType { get => _fuelType; set => Set(ref _fuelType, value); }
+    public string? Transmission { get => _transmission; set => Set(ref _transmission, value); }
+    public string? Vin { get => _vin; set => Set(ref _vin, value); }
+    public string? EngineNumber { get => _engineNumber; set => Set(ref _engineNumber, value); }
+    public string? Notes { get => _notes; set => Set(ref _notes, value); }
+
+    public string? SaveMessage
+    {
+        get => _saveMessage;
+        private set
+        {
+            if (Set(ref _saveMessage, value))
+                OnPropertyChanged(nameof(HasSaveMessage));
+        }
+    }
+
+    public bool HasSaveMessage => !string.IsNullOrWhiteSpace(SaveMessage);
+
+    public ICommand ToggleEditCommand => new Command(() =>
+    {
+        if (!ShowEdit)
+            FillEditFields();
+
+        SaveMessage = null;
+        ShowEdit = !ShowEdit;
+    });
+
+    public ICommand SaveCommand => new Command(async () => await SaveAsync());
+
+    private void FillEditFields()
+    {
+        Brand = _vehicle?.Brand;
+        Line = _vehicle?.Line;
+        ModelYear = _vehicle?.ModelYear?.ToString();
+        VehicleClass = _vehicle?.VehicleClass;
+        BodyType = _vehicle?.BodyType;
+        Color = _vehicle?.Color;
+        ServiceType = _vehicle?.ServiceType;
+        FuelType = _vehicle?.FuelType;
+        Transmission = _vehicle?.Transmission;
+        Vin = _vehicle?.Vin;
+        EngineNumber = _vehicle?.EngineNumber;
+        Notes = _vehicle?.Notes;
+    }
+
+    private async Task SaveAsync()
+    {
+        if (IsBusy || _vehicle is null)
+            return;
+
+        short? year = null;
+
+        if (!string.IsNullOrWhiteSpace(ModelYear))
+        {
+            // El servidor acepta 1980..anio+1; avisar aca evita un viaje perdido.
+            if (!short.TryParse(ModelYear, out var parsed) || parsed < 1980 || parsed > DateTime.Now.Year + 1)
+            {
+                Error = $"El modelo debe estar entre 1980 y {DateTime.Now.Year + 1}.";
+                return;
+            }
+
+            year = parsed;
+        }
+
+        IsBusy = true;
+        Error = null;
+        SaveMessage = null;
+
+        try
+        {
+            var payload = new UpdateFleetVehicleDto
+            {
+                Brand = Trim(Brand),
+                Line = Trim(Line),
+                ModelYear = year,
+                VehicleClass = Trim(VehicleClass),
+                BodyType = Trim(BodyType),
+                Color = Trim(Color),
+                ServiceType = Trim(ServiceType),
+                FuelType = Trim(FuelType),
+                Transmission = Trim(Transmission),
+                Vin = Trim(Vin),
+                EngineNumber = Trim(EngineNumber),
+                Notes = Trim(Notes),
+                RowVersion = _vehicle.RowVersion ?? string.Empty
+            };
+
+            var result = await _api.PutAsync<FleetVehicleDto>(
+                $"/apiVehicles/fleet-vehicles/{_vehicle.Id}", payload, AppConfig.NodeFleet);
+
+            if (!result.Success)
+            {
+                Error = result.Offline
+                    ? "Sin conexión. Completar la ficha necesita red."
+                    : ErrorText.Translate(result.Error);
+                return;
+            }
+
+            ShowEdit = false;
+            SaveMessage = "Ficha actualizada.";
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+
+        // Fuera del finally: LoadAsync aborta mientras IsBusy siga en true.
+        if (Error is null)
+            await LoadAsync();
+    }
+
+    private static string? Trim(string? value)
+        => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
     public async Task LoadAsync()
     {
         if (IsBusy || !long.TryParse(VehicleId, out var id))
