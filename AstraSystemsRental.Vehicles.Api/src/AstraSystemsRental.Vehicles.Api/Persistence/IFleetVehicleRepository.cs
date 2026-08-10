@@ -8,6 +8,9 @@ public interface IFleetVehicleRepository
 {
     Task<PagedResult<FleetVehicle>> GetPagedAsync(OwnerContext owner, int pageNumber, int pageSize, string? status, string? search, CancellationToken cancellationToken);
     Task<FleetVehicle?> GetOwnedAsync(long id, OwnerContext owner, CancellationToken cancellationToken);
+
+    /// <summary>Con tracking: obligatorio para que SaveChangesAsync emita el UPDATE.</summary>
+    Task<FleetVehicle?> GetOwnedForUpdateAsync(long id, OwnerContext owner, CancellationToken cancellationToken);
     Task<bool> PlateExistsForOwnerAsync(OwnerContext owner, string plateNumber, CancellationToken cancellationToken);
     Task<int> CountForOwnerAsync(OwnerContext owner, CancellationToken cancellationToken);
     Task AddAsync(FleetVehicle vehicle, CancellationToken cancellationToken);

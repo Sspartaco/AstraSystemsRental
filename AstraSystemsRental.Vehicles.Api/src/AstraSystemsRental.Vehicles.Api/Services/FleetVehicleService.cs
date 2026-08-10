@@ -1,4 +1,4 @@
-using AstraSystemsRental.Base.Contracts;
+﻿using AstraSystemsRental.Base.Contracts;
 using AstraSystemsRental.Base.Security;
 using AstraSystemsRental.Base.Validation;
 using AstraSystemsRental.Vehicles.Api.Domain;
@@ -113,8 +113,6 @@ public sealed class FleetVehicleService(
 
     public async Task<OperationResult> UpdateAsync(long id, UpdateFleetVehicleRequest request, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"[PUT-DEBUG] id={id} brand='{request.Brand}' line='{request.Line}' color='{request.Color}' year={request.ModelYear} rv='{request.RowVersion}'");
-
         var guard = new Guard();
         ValidateOptionalFields(guard, request.ModelYear, request.PurchaseDate);
         if (guard.HasErrors)
@@ -124,7 +122,7 @@ public sealed class FleetVehicleService(
         if (membershipCheck is not null)
             return membershipCheck;
 
-        var vehicle = await repository.GetOwnedAsync(id, requestContext.Owner, cancellationToken);
+        var vehicle = await repository.GetOwnedForUpdateAsync(id, requestContext.Owner, cancellationToken);
         if (vehicle is null)
             return OperationResult.NotFound("Vehicle not found.");
 
@@ -185,7 +183,7 @@ public sealed class FleetVehicleService(
         if (!Enum.TryParse<FleetVehicleStatus>(request.NewStatus, ignoreCase: true, out var newStatus))
             return OperationResult.Fail("Invalid status.");
 
-        var vehicle = await repository.GetOwnedAsync(id, requestContext.Owner, cancellationToken);
+        var vehicle = await repository.GetOwnedForUpdateAsync(id, requestContext.Owner, cancellationToken);
         if (vehicle is null)
             return OperationResult.NotFound("Vehicle not found.");
 
@@ -229,7 +227,7 @@ public sealed class FleetVehicleService(
         if (!FleetDocumentType.All.Contains(request.DocumentType))
             return OperationResult.Fail("Invalid document type.");
 
-        var vehicle = await repository.GetOwnedAsync(id, requestContext.Owner, cancellationToken);
+        var vehicle = await repository.GetOwnedForUpdateAsync(id, requestContext.Owner, cancellationToken);
         if (vehicle is null)
             return OperationResult.NotFound("Vehicle not found.");
 

@@ -32,6 +32,18 @@ public sealed class FleetVehicleRepository(AstraVehiclesDbContext context)
             v => v.Id == id && v.OwnerType == owner.OwnerType && v.OwnerId == owner.OwnerId,
             cancellationToken);
 
+    /// <summary>
+    /// Igual que GetOwnedAsync pero CON tracking. GetFirstOrDefaultAsync usa
+    /// AsNoTracking, asi que la entidad que devuelve no la sigue el DbContext:
+    /// modificar sus propiedades no marca nada como cambiado y SaveChangesAsync
+    /// no emite ningun UPDATE. El endpoint respondia 200 sin escribir nada.
+    /// </summary>
+    public Task<FleetVehicle?> GetOwnedForUpdateAsync(long id, OwnerContext owner, CancellationToken cancellationToken)
+        => DbContext.FleetVehicles
+            .FirstOrDefaultAsync(
+                v => v.Id == id && v.OwnerType == owner.OwnerType && v.OwnerId == owner.OwnerId,
+                cancellationToken);
+
     public Task<bool> PlateExistsForOwnerAsync(OwnerContext owner, string plateNumber, CancellationToken cancellationToken)
         => AnyAsync(
             v => v.OwnerType == owner.OwnerType && v.OwnerId == owner.OwnerId && v.PlateNumber == plateNumber,
