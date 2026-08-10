@@ -72,3 +72,38 @@ En Docker (y detrás de cualquier reverse proxy) el Front habla con el Gateway d
 Al desplegar detrás de un proxy, la partición debe hacerse por identidad del usuario (o por `X-Forwarded-For` con `ForwardedHeaders` configurado), no por `RemoteIpAddress`. Con la partición actual, el límite efectivo es global para toda la instalación.
 
 **Pendiente de decisión del usuario:** subir `RateLimitPermitPerMinute`, cambiar la clave de partición, o ambas.
+
+---
+
+## Resiliencia bajo carga: qué hay y dónde están los límites
+
+Auditoría de agosto 2026, al preguntarse si el sistema aguanta más tráfico.
+
+### Lo que ya está
+
+| Patrón | Dónde | Detalle |
+|---|---|---|
+| **Rate limiting** | `AstraApiExtensions` (todas las APIs) | Ventana fija, **particionado por identidad** (`user:{id}`), no por IP. 600/min por defecto |
+| **Retry + circuit breaker** | `AddStandardResilienceHandler` (Polly) | En **todas** las APIs con llamadas salientes. Reintenta con backoff exponencial y abre el circuito ante fallos repetidos |
+| **Timeouts explícitos** | Cada `AddHttpClient` | 6s / 10s / 20s según el destino. El default de `HttpClient` son **100s**, que agota el pool de peticiones si el destino se cuelga |
+| **Caché en memoria** | `NodeCatalogService`, fuentes de cotización | Evita golpear el Gateway por datos que cambian poco |
+| **Degradación por sección** | `Reports.Api` | `FleetAvailable` / `WorkshopAvailable`: si una API cae, el panel muestra el resto en vez de fallar entero |
+| **Cola offline** | App móvil | Kilometraje, reservas y fotos se encolan sin red. **Un 4xx no se reintenta**: si el servidor evaluó y rechazó, insistir no cambia nada |
+
+⚠️ **Dos gotchas ya pagados:**
+
+1. **`UseRateLimiter()` debe ir DESPUÉS de `UseAuthentication()`.** Estaba antes, así que `context.User` siempre venía vacío y *toda la instalación caía en un único bucket* — detrás de Docker eso significa que un usuario podía agotar la cuota de todos. Falla en silencio: no hay error, solo 429 inexplicables.
+2. **Users.Api era la única API con llamadas salientes sin resiliencia** (a Mail.Api), y sin timeout. Si el servicio de correo se colgaba, el alta de usuarios se bloqueaba 100s por petición. Corregido.
+
+### Lo que NO está (y cuándo va a hacer falta)
+
+| Falta | Cuándo se vuelve necesario | Nota |
+|---|---|---|
+| **Caché distribuida (Redis)** | Más de una instancia por API | `IMemoryCache` es por proceso: con réplicas cada una tendría su copia y se desincronizan |
+| **Cola de mensajes** | Cuando el correo o los reportes pesados bloqueen la respuesta | Hoy el envío de correo es en línea dentro del alta de usuario |
+| **Paginación por cursor** | Tablas con cientos de miles de filas | `OFFSET/FETCH` degrada en páginas altas |
+| **Índices revisados bajo carga** | Antes de producción real | No se han medido planes de ejecución con volumen |
+| **Health checks con dependencias** | Orquestación real | `/health` responde estático; no verifica BD ni servicios aguas abajo |
+| **Métricas / tracing** | Diagnóstico en producción | Hoy solo hay `logs.ApplicationLogs`. No hay OpenTelemetry |
+
+**El cuello de botella real hoy no es el código: es que SQL Server corre en una sola máquina y las APIs en un solo host.** Antes de optimizar patrones conviene medir con carga real — todo lo de arriba son mitigaciones, no sustitutos de dimensionar la infraestructura.

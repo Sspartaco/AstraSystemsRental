@@ -6,6 +6,11 @@
              Shell.NavBarIsVisible="False">
 
     <Grid Background="{StaticResource GradientMesh}">
+
+        <!-- Capa de partículas: va DEBAJO del contenido y con InputTransparent
+             para que no intercepte los toques de los campos ni del botón. -->
+        <AbsoluteLayout x:Name="ParticleLayer" InputTransparent="True" CascadeInputTransparent="True" />
+
         <ScrollView>
             <VerticalStackLayout Padding="26,70,26,30" Spacing="0">
 

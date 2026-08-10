@@ -53,7 +53,13 @@ builder.Services.AddHttpClient<IMailClient, MailClient>((provider, client) =>
     var options = provider.GetRequiredService<Microsoft.Extensions.Options.IOptions<MailClientOptions>>().Value;
     if (!string.IsNullOrWhiteSpace(options.BaseUrl))
         client.BaseAddress = new Uri(options.BaseUrl);
-});
+
+    // Sin timeout, el default de HttpClient son 100s: si Mail.Api se cuelga, el
+    // alta de usuarios queda bloqueada ese tiempo y agota el pool de peticiones.
+    client.Timeout = TimeSpan.FromSeconds(10);
+    // Retry con backoff + circuit breaker: era la unica API con llamadas
+    // salientes sin resiliencia.
+}).AddStandardResilienceHandler();
 
 var app = builder.Build();
 

@@ -200,3 +200,53 @@ Bug de correctitud real: `MaintenanceController` filtraba reservas por taller y 
 Regla: si un filtro puede excluir registros, tiene que viajar como parámetro de consulta hasta el repositorio. Filtrar el `PagedResult` que ya volvió solo es válido cuando el conjunto completo cabe en la página, y eso rara vez se puede garantizar.
 
 Al agregar un filtro nuevo, la cadena completa es: endpoint (`[FromQuery]`) → interfaz de servicio → servicio → interfaz de repositorio → `queryBuilder`. Saltarse un eslabón produce exactamente este bug.
+
+---
+
+## Escribir exige tracking: `AsNoTracking` devuelve 200 sin guardar nada
+
+⚠️ **El bug más caro de esta sesión.** Costó cinco rondas de diagnóstico porque *no falla*: responde `200 OK`, devuelve la entidad con los valores nuevos, y no escribe una sola fila.
+
+`BaseRepository.GetFirstOrDefaultAsync` usa **`AsNoTracking()`**:
+
+```csharp
+public virtual async Task<T?> GetFirstOrDefaultAsync(...)
+    => await EntitySet.AsNoTracking().FirstOrDefaultAsync(predicate, ct);
+```
+
+La entidad que devuelve **no la sigue el `DbContext`**. Modificar sus propiedades no marca nada como `Modified`, así que `SaveChangesAsync()` no encuentra cambios y **no emite ningún `UPDATE`**. Sin excepción, sin log, sin pista.
+
+`FleetVehicleService.UpdateAsync`, `ChangeStatusAsync` y `AddDocumentAsync` leían así. Los tres respondían 200 sin persistir — en la web *y* en la app.
+
+**Regla: todo método que modifique y llame a `SaveChangesAsync` debe leer con tracking.**
+
+```csharp
+// LEER (listados, detalle): sin tracking, es más rápido
+public Task<FleetVehicle?> GetOwnedAsync(...)
+    => GetFirstOrDefaultAsync(...);
+
+// ESCRIBIR: con tracking, o el UPDATE nunca sale
+public Task<FleetVehicle?> GetOwnedForUpdateAsync(long id, OwnerContext owner, CancellationToken ct)
+    => DbContext.FleetVehicles.FirstOrDefaultAsync(
+        v => v.Id == id && v.OwnerType == owner.OwnerType && v.OwnerId == owner.OwnerId, ct);
+```
+
+### Cómo detectarlo rápido
+
+El síntoma es *"guardé y no pasó nada"* con la petición devolviendo éxito. La forma más rápida de confirmarlo:
+
+```bash
+# ¿el servidor recibió el PUT?
+docker logs astralrental-api-vehicles --since 5m 2>&1 | grep -E "Request (starting|finished).*PUT"
+
+# ¿emitió el UPDATE?
+docker logs astralrental-api-vehicles --since 5m 2>&1 | grep -c "UPDATE \[vehicles\]"
+```
+
+**`PUT 200` + `0 UPDATEs` = falta tracking.** Si el `UPDATE` sale pero los valores son `null`, entonces sí es el payload.
+
+⚠️ `Microsoft.AspNetCore` está en `Warning`: los logs **no muestran el método HTTP ni el tamaño del body**. Para diagnosticar hay que subirlo a `Information` temporalmente — sin eso no se distingue un `GET` de un `PUT`, ni un `PUT` con datos de uno vacío.
+
+### No culpar al cliente antes de mirar el servidor
+
+En este caso perdí dos rondas revisando la app (bindings, comandos, serialización) cuando el fallo estaba en el repositorio y afectaba **igual a la web**. Antes de tocar el cliente: **¿la fila cambió en la base?** Si no cambió y la respuesta fue 200, el problema es del backend.

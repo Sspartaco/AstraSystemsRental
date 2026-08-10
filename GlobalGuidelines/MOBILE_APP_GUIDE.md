@@ -166,3 +166,38 @@ Y navegar con `//main/dashboard`, no `//dashboard`.
 ### Zona horaria
 
 `DateTime.Now` en el emulador devuelve UTC y el saludo mostraba "Buenas noches" a las 10 AM. Para textos dependientes de la hora, fijar la zona de operación (`America/Bogota`) con fallback a la local.
+
+---
+
+## Reparto de responsabilidades: qué va en la app y qué solo en la web
+
+**Decisión del usuario, agosto 2026.** La app es para **operar**; la web es para **administrar**.
+
+| En la app (operación de campo) | Solo en la web (administración) |
+|---|---|
+| Panel | Usuarios (crear, rol, plan, activar/inhabilitar) |
+| Mi Flota + ficha del vehículo | Compañías |
+| Control de Recorrido | Planes y nodos |
+| Reservas de Taller + cámara | Logs del sistema |
+| Rutinas de Mantenimiento (consulta) | Catálogo de vehículos |
+| Mi cuenta | |
+
+El criterio: lo que se hace **parado al lado del vehículo** va en el teléfono. Lo que se hace **sentado, una vez, configurando la plataforma** va en la web. Registrar usuarios o cambiar planes desde un celular en un taller no es un caso real, y cada vista administrativa en la app es superficie que mantener y asegurar sin beneficio.
+
+**Logs del sistema quedó fuera explícitamente**: es una pantalla de diagnóstico para escritorio.
+
+---
+
+## ⚠️ MUST: toda vista nueva del Front se evalúa para la app
+
+**Cada vez que se agrega una vista al Front hay que decidir, en el mismo PR, si va a la app.** No es opcional ni "se ve después": la app se desincronizó una vez y el usuario lo detectó antes que nosotros.
+
+Checklist al agregar una vista:
+
+1. **¿Es de operación o de administración?** Usá la tabla de arriba. Si es de operación, va a la app.
+2. **Si va**: agregar `ShellContent` en `AppShell.xaml`, ViewModel, y el gating en `AppShell.ApplyVisibility`.
+3. **Si NO va**: dejarlo escrito en el PR, para que la ausencia sea una decisión y no un olvido.
+4. **Nodo nuevo** (`access.Nodes`): agregar la constante a `AppConfig` aunque la vista sea solo web — la app usa esos nodos para el gating del menú.
+5. **DTO nuevo**: va en `AstraSystemsRental.Contracts`, nunca duplicado en el Front y la app.
+
+Regla de oro: **si la web puede hacer algo con un vehículo y la app no, es un hueco.** El caso testigo: la web tenía un asistente de 3 pasos para la ficha del vehículo y la app solo la mostraba en modo lectura; el usuario no podía completar los datos desde el teléfono. Peor: la web tampoco permitía completarla *después* del alta, así que un vehículo creado solo con la placa quedaba incompleto para siempre.
