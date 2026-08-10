@@ -28,6 +28,7 @@ echo   [F] Levantar / reconstruir solo el FRONT
 echo   [A] App ANDROID: stack + emulador + instalar APK
 echo   [B] App ANDROID: igual que [A] pero recompilando el APK
 echo   [L] Permitir acceso desde la RED LOCAL (iPhone / Android real)
+echo   [I] App iPHONE: como instalarla (se compila en la Mac)
 echo   [C] Regenerar certificado HTTPS de desarrollo
 echo   [U] Ver URLs (Scalar / health / Front)
 echo   [P] Parar todos los contenedores (down)
@@ -46,6 +47,7 @@ if /I "%OPT%"=="F" goto front
 if /I "%OPT%"=="A" goto android
 if /I "%OPT%"=="B" goto android_rebuild
 if /I "%OPT%"=="L" goto lan
+if /I "%OPT%"=="I" goto ios
 if /I "%OPT%"=="C" goto cert
 if /I "%OPT%"=="U" goto urls
 if /I "%OPT%"=="P" goto stop
@@ -60,6 +62,47 @@ echo iPhone o un Android real puedan alcanzar el Gateway.
 echo Requiere permisos de administrador: Windows va a pedir confirmacion.
 echo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-NoExit','-File','%SCRIPT_DIR%allow-lan-access.ps1'"
+pause
+goto menu
+
+:ios
+cls
+echo ====================================================
+echo   App iPHONE - se compila en la Mac, no aqui
+echo ====================================================
+echo.
+echo Apple exige que el binario de iOS se compile y firme en macOS.
+echo No hay forma de generarlo desde Windows, asi que este menu solo
+echo puede decirte que ejecutar del otro lado.
+echo.
+echo   EN LA MAC, tres comandos:
+echo.
+echo     git clone https://github.com/Sspartaco/AstraSystemsRental.git
+echo     cd AstraSystemsRental
+echo     ./astralrental-ios.sh
+echo.
+echo El script comprueba Xcode y .NET, instala lo que falte, verifica el
+echo iPhone y el certificado, compila e instala. La primera vez conviene
+echo correr  ./astralrental-ios.sh --check  para ver que falta sin compilar.
+echo.
+echo ----------------------------------------------------
+echo   Lo que tiene que estar listo de ESTE lado:
+echo ----------------------------------------------------
+echo.
+echo   1. El stack levantado          -^> opcion [1]
+echo   2. El firewall abierto         -^> opcion [L]
+echo   3. iPhone en la MISMA red que este equipo
+echo.
+echo   El backend se queda aca. La Mac solo compila la app.
+echo.
+powershell -NoProfile -Command "$ip = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object { $_.IPAddress -notlike '127.*' -and $_.IPAddress -notlike '169.254.*' -and $_.InterfaceAlias -notlike '*WSL*' -and $_.InterfaceAlias -notlike '*Default Switch*' } | Select-Object -First 1).IPAddress; if ($ip) { Write-Host \"   IP de este equipo:  http://$ip`:8080\" -ForegroundColor Cyan; try { $null = Invoke-WebRequest -Uri \"http://$ip`:8080/health\" -TimeoutSec 4 -UseBasicParsing; Write-Host '   Gateway respondiendo. Todo listo de este lado.' -ForegroundColor Green } catch { Write-Host '   El Gateway NO responde: levanta el stack con la opcion [1].' -ForegroundColor Yellow } }"
+echo.
+echo   Si la IP no coincide con la que usa la app, se corrige DENTRO
+echo   de la app en 'Mi cuenta ^> Servidor', sin recompilar nada.
+echo.
+echo   Con Apple ID gratuito la app caduca a los 7 dias: para renovarla
+echo   se vuelve a ejecutar el script en la Mac.
+echo.
 pause
 goto menu
 
