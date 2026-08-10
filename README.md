@@ -2,6 +2,24 @@
 
 Fleet management platform (codalea), built as independent .NET 10 minimal-API microservices behind a YARP gateway. Each API is its own solution and shares a single reusable base package (`AstraSystemsRental.Base`) served from a local NuGet feed.
 
+---
+
+## ¿Estás en una Mac para compilar la app de iOS?
+
+**Es lo único que se hace en macOS. No levantes nada más de este repo ahí.**
+
+```bash
+./astralrental-ios.sh --no-backend-check
+```
+
+Un solo comando: comprueba el entorno, instala lo que falte, compila e instala la app en el iPhone conectado por cable. Si algo falta, se detiene y explica qué hacer.
+
+**Lee [`GlobalGuidelines/COMPILAR_IOS_EN_MAC.md`](GlobalGuidelines/COMPILAR_IOS_EN_MAC.md) antes de ejecutarlo** — tiene los requisitos previos (Xcode 26+, Apple ID en Xcode) y los errores frecuentes con su solución.
+
+Lo que la Mac **no** necesita: Docker, SQL Server, las APIs, el Front. El backend corre en otra máquina.
+
+---
+
 ## Solutions
 
 | Solution | Port | Responsibility |
@@ -10,6 +28,12 @@ Fleet management platform (codalea), built as independent .NET 10 minimal-API mi
 | `AstraSystemsRental.Gateway` | 8080 | Single entry point. YARP reverse proxy + access control (JWT, subscription window, node access). |
 | `AstraSystemsRental.Users.Api` | 5001 | Persons, users, email confirmation, login and RS256 token issuing. Owns the SQL schema. |
 | `AstraSystemsRental.Mail.Api` | 5006 | Welcome email delivery (Gmail SMTP + Razor HTML5 templates). |
+| `AstraSystemsRental.Vehicles.Api` | 5011 | Vehicle catalog, fleet registry and plate-based quotation. |
+| `AstraSystemsRental.Maintenance.Api` | 5016 | Maintenance routines, mileage tracking and workshop reservations. |
+| `AstraSystemsRental.Reports.Api` | 5021 | Composes fleet + workshop metrics into the dashboard. |
+| `AstraSystemsRental.Front` | 8444 | MVC + htmx + Tailwind web app. |
+| `AstraSystemsRental.Contracts` | — | DTOs and display text shared by the APIs, the Front and the mobile app. |
+| `AstraSystemsRental.Mobile` | — | .NET MAUI app (Android + iOS) consuming the same gateway endpoints. |
 
 ## Standardized response
 
