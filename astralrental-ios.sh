@@ -82,7 +82,13 @@ if ! xcode-select -p >/dev/null 2>&1; then
          "Instala Xcode desde la App Store, abrelo una vez para que termine de configurarse, y vuelve a ejecutar."
 fi
 
-XCODE_VER="$(xcodebuild -version 2>/dev/null | head -1 | awk '{print $2}')" || XCODE_VER=""
+# Ojo con 'set -o pipefail': si se encadena "| head -1", head cierra la tuberia
+# en cuanto tiene su linea, el proceso de la izquierda muere con SIGPIPE y la
+# tuberia entera devuelve error. La deteccion quedaba vacia de forma
+# intermitente y el script acusaba a Xcode de no responder. Por eso aca se
+# captura toda la salida primero y se recorta despues, sin tuberias.
+XCODE_RAW="$(xcodebuild -version 2>/dev/null || true)"
+XCODE_VER="$(awk 'NR == 1 { print $2 }' <<<"$XCODE_RAW")"
 XCODE_MAJOR="${XCODE_VER%%.*}"
 
 if [[ -z "$XCODE_VER" ]]; then
@@ -101,7 +107,10 @@ fi
 ok ".NET $(dotnet --version)"
 
 # El workload de iOS no viene con el SDK: sin el, el build falla con NETSDK1147.
-if ! dotnet workload list 2>/dev/null | grep -qE '^\s*maui-ios|^\s*ios'; then
+# Se captura la salida antes de filtrar: 'grep -q' cierra la tuberia al primer
+# acierto y con pipefail eso daba un falso negativo (reinstalaba lo instalado).
+WORKLOADS="$(dotnet workload list 2>/dev/null || true)"
+if ! grep -qE '^[[:space:]]*(maui-ios|ios)[[:space:]]' <<<"$WORKLOADS"; then
     step "Instalando el workload de MAUI para iOS"
     info "Solo pasa la primera vez. Puede pedir la contrasena de administrador."
     dotnet workload install maui-ios --skip-sign-check
@@ -139,7 +148,11 @@ fi
 if [[ "$TARGET" == "device" ]]; then
     step "Comprobando el certificado de firma"
 
-    if ! security find-identity -v -p codesigning 2>/dev/null | grep -q "Apple Develop"; then
+    # Misma precaucion con pipefail que arriba: se captura una vez y se filtra
+    # sobre la variable, sin tuberias que puedan morir con SIGPIPE.
+    IDENTITIES="$(security find-identity -v -p codesigning 2>/dev/null || true)"
+
+    if ! grep -q "Apple Develop" <<<"$IDENTITIES"; then
         warn "No hay ningun certificado 'Apple Development' en el llavero."
         echo
         echo "  ${BOLD}Que hacer (una sola vez):${RESET}"
@@ -154,8 +167,7 @@ if [[ "$TARGET" == "device" ]]; then
              "Sigue los pasos de arriba y vuelve a ejecutar este script."
     fi
 
-    IDENTITY="$(security find-identity -v -p codesigning 2>/dev/null \
-        | grep "Apple Develop" | head -1 | sed 's/.*"\(.*\)".*/\1/')"
+    IDENTITY="$(awk -F'"' '/Apple Develop/ { print $2; exit }' <<<"$IDENTITIES")"
     ok "$IDENTITY"
 fi
 
@@ -225,12 +237,16 @@ if [[ -n "$SERVER_URL" ]]; then
     fi
 fi
 
+# -t:Run REEMPLAZA el target por defecto en vez de sumarse a el, asi que por si
+# solo nunca compila: el SDK de iOS corta con "The app must be built before the
+# arguments to launch the app using mlaunch can be computed". Hay que pedir los
+# dos targets, en orden.
 if [[ "$TARGET" == "simulator" ]]; then
     step "Compilando y abriendo en el simulador"
     dotnet build "$MOBILE_CSPROJ" \
         -f net10.0-ios -c Release \
         -p:RuntimeIdentifier=iossimulator-arm64 \
-        -t:Run --nologo
+        -t:Build,Run --nologo
 else
     step "Compilando e instalando en el iPhone"
     info "La primera vez tarda varios minutos."
@@ -243,7 +259,7 @@ else
     )
     [[ -n "$DEVICE_ID" ]] && BUILD_ARGS+=(-p:_DeviceName="$DEVICE_ID")
 
-    if ! dotnet build "${BUILD_ARGS[@]}" -t:Run --nologo; then
+    if ! dotnet build "${BUILD_ARGS[@]}" -t:Build,Run --nologo; then
         echo
         echo "${YELLOW}${BOLD}La compilacion fallo.${RESET} Causas mas frecuentes:"
         echo
