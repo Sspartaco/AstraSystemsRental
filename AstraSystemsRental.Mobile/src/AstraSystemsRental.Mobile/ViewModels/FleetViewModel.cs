@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AstraSystemsRental.Contracts.Display;
 using AstraSystemsRental.Contracts.Fleet;
@@ -64,7 +64,7 @@ public sealed class FleetViewModel : BaseViewModel
     }
 
     public string PageLabel => $"Página {_page} de {_totalPages}";
-    public bool IsEmpty => !IsBusy && Items.Count == 0;
+    public override bool IsEmpty => !IsBusy && Items.Count == 0;
 
     public async Task LoadAsync()
     {

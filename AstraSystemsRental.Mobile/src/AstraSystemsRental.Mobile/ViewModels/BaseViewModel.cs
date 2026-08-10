@@ -20,11 +20,23 @@ public abstract class BaseViewModel : INotifyPropertyChanged
             {
                 OnPropertyChanged(nameof(IsNotBusy));
                 OnPropertyChanged(nameof(IsRefreshing));
+
+                // IsEmpty se define como "!IsBusy && sin items" en varios
+                // ViewModels. Sin notificarlo aca queda evaluado con el IsBusy
+                // viejo y el estado vacio nunca aparece: la vista se queda en
+                // blanco, sin lista y sin mensaje.
+                OnPropertyChanged(nameof(IsEmpty));
             }
         }
     }
 
     public bool IsNotBusy => !IsBusy;
+
+    /// <summary>
+    /// Estado vacio de las listas. Se declara aca para poder notificarlo cuando
+    /// cambia IsBusy; los ViewModels con lista lo redefinen con su coleccion.
+    /// </summary>
+    public virtual bool IsEmpty => false;
 
     /// <summary>
     /// Estado del gesto "tirar para refrescar", separado de IsBusy a proposito.

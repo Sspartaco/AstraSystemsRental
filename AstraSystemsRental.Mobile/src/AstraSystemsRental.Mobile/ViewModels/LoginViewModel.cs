@@ -1,3 +1,4 @@
+﻿using AstraSystemsRental.Contracts.Display;
 using System.Windows.Input;
 using AstraSystemsRental.Mobile.Services;
 
@@ -134,7 +135,9 @@ public sealed class LoginViewModel : BaseViewModel
             {
                 Error = result.Offline
                     ? "Sin conexión con el servidor. Revisá tu red."
-                    : result.Error ?? "No se pudo iniciar sesión.";
+                    // Sin Translate, mensajes como "Invalid credentials." llegaban
+                    // en ingles crudo justo en la primera pantalla de la app.
+                    : ErrorText.Translate(result.Error);
                 return;
             }
 

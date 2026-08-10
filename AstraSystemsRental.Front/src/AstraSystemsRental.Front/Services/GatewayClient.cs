@@ -1,3 +1,4 @@
+using AstraSystemsRental.Contracts.Display;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -253,14 +254,13 @@ public sealed class GatewayClient(HttpClient httpClient, ILogger<GatewayClient> 
         }
     }
 
-    private static string Translate(string? error) => error switch
-    {
-        "Invalid credentials." => "Credenciales inválidas.",
-        "Account is not confirmed." => "La cuenta no está confirmada.",
-        "Subscription has expired." => "La suscripción ha vencido.",
-        null or "" => "Credenciales inválidas.",
-        _ => error
-    };
+    // Antes tenia 3 casos propios y un "_ => error" que dejaba pasar en ingles
+    // los otros 65 mensajes de las APIs. Ahora usa el mismo diccionario que la
+    // app: una sola fuente de verdad para las traducciones.
+    private static string Translate(string? error)
+        => string.IsNullOrWhiteSpace(error)
+            ? "Correo o contraseña incorrectos."
+            : ErrorText.Translate(error);
 
     private sealed record Envelope(bool Success, EnvelopeData? Data, string[]? Errors);
     private sealed record EnvelopeData(string? AccessToken, string? TokenType, string? Role, string? Plan);

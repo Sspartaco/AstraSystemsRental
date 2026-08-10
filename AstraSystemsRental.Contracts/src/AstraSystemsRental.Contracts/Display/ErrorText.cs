@@ -54,6 +54,64 @@ public static partial class ErrorText
 
     private static readonly Dictionary<string, string> Exact = new(StringComparer.Ordinal)
     {
+        // --- Sesion y cuenta ---
+        ["Invalid credentials."] = "Correo o contraseña incorrectos.",
+        ["Account is not confirmed."] = "Tu cuenta todavía no está confirmada. Revisá el correo de activación.",
+        ["The account is no longer active."] = "Esta cuenta está inhabilitada. Contactá al administrador.",
+        ["Subscription has expired."] = "Tu suscripción venció. Renovala para seguir usando la plataforma.",
+        ["No active subscription for the current context."] = "No hay una suscripción activa para esta cuenta.",
+        ["The refresh token is invalid or expired."] = "Tu sesión expiró. Ingresá de nuevo.",
+        ["A refresh token is required."] = "Tu sesión expiró. Ingresá de nuevo.",
+        ["Invalid or expired confirmation token."] = "El enlace de confirmación no es válido o ya venció.",
+        ["Invalid or missing internal API key."] = "Error de configuración interna. Contactá al administrador.",
+
+        // --- Usuarios ---
+        ["A user with this email already exists."] = "Ya existe un usuario con ese correo.",
+        ["User not found."] = "No se encontró el usuario.",
+        ["User profile not found"] = "No se encontró el perfil del usuario.",
+        ["Role not found."] = "No se encontró el rol indicado.",
+        ["Default role is not configured."] = "Falta configurar el rol por defecto. Contactá al administrador.",
+
+        // --- Companias ---
+        ["Company not found."] = "No se encontró la compañía.",
+        ["A company with this document number already exists."] = "Ya existe una compañía con ese número de documento.",
+        ["Already a member of this company."] = "Ya sos miembro de esta compañía.",
+        ["The user is already a member of this company."] = "Ese usuario ya es miembro de la compañía.",
+        ["Membership not found."] = "No se encontró la membresía.",
+        ["Cannot remove the last owner. Transfer ownership first."] =
+            "No podés quitar al último propietario. Transferí la propiedad primero.",
+        ["New owner must already be a member of this company."] =
+            "El nuevo propietario ya debe ser miembro de la compañía.",
+        ["Invitation not found."] = "No se encontró la invitación.",
+        ["Invalid or expired invitation."] = "La invitación no es válida o ya venció.",
+        ["This invitation was not issued for the current account."] =
+            "Esta invitación fue emitida para otra cuenta.",
+        ["No account exists for the invited email yet."] =
+            "Todavía no existe una cuenta con ese correo. La persona debe registrarse primero.",
+
+        // --- Planes y nodos ---
+        ["Plan not found."] = "No se encontró el plan.",
+        ["Plan not found or inactive."] = "El plan no existe o está inactivo.",
+        ["A plan with this code already exists."] = "Ya existe un plan con ese código.",
+        ["Default plan is not configured."] = "Falta configurar el plan por defecto. Contactá al administrador.",
+        ["A node with this key already exists."] = "Ya existe un módulo con esa clave.",
+        ["Node not found in catalog."] = "No se encontró el módulo en el catálogo.",
+
+        // --- Vehiculos ---
+        ["PlateNumber must be a valid Colombian plate (e.g. ABC123)."] =
+            "La placa debe tener el formato colombiano, por ejemplo ABC123.",
+        ["Vehicle not found for the given plate."] = "No se encontró un vehículo con esa placa.",
+        ["VehicleNotFound"] = "No se encontró el vehículo.",
+        ["Quote request not found."] = "No se encontró la solicitud de cotización.",
+        ["Invalid status."] = "El estado indicado no es válido.",
+
+        // --- Bootstrap (primer superusuario) ---
+        ["A SuperUser already exists. Bootstrap is disabled."] =
+            "Ya existe un superusuario: el arranque inicial está deshabilitado.",
+        ["Provided bootstrap secret does not match."] = "La clave de arranque no coincide.",
+        ["Bootstrap secret is not configured or is too short (min 24 chars)."] =
+            "La clave de arranque no está configurada o es demasiado corta.",
+
         ["A reading with the same date and value already exists."] =
             "Ya existe una lectura con la misma fecha y el mismo valor.",
         ["The reading is not consistent with the vehicle history."] =

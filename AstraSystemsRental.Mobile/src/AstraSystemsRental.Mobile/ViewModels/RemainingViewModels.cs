@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
 using AstraSystemsRental.Contracts.Auth;
 using AstraSystemsRental.Contracts.Display;
@@ -20,7 +20,7 @@ public sealed class RoutinesViewModel : BaseViewModel
 
     public ObservableCollection<MaintenanceRoutineDto> Items { get; } = [];
     public ICommand LoadCommand { get; }
-    public bool IsEmpty => !IsBusy && Items.Count == 0;
+    public override bool IsEmpty => !IsBusy && Items.Count == 0;
 
     public async Task LoadAsync()
     {
@@ -336,7 +336,7 @@ public sealed class UsersViewModel : BaseViewModel
 
     public ObservableCollection<UserRow> Items { get; } = [];
     public ICommand LoadCommand { get; }
-    public bool IsEmpty => !IsBusy && Items.Count == 0;
+    public override bool IsEmpty => !IsBusy && Items.Count == 0;
 
     public async Task LoadAsync()
     {

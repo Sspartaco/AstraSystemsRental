@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Windows.Input;
 using AstraSystemsRental.Contracts.Display;
@@ -101,7 +101,7 @@ public sealed class ReservationsViewModel : BaseViewModel
         set => Set(ref _showCreate, value);
     }
 
-    public bool IsEmpty => !IsBusy && Items.Count == 0;
+    public override bool IsEmpty => !IsBusy && Items.Count == 0;
 
     public async Task LoadAsync()
     {

@@ -16,7 +16,19 @@
                            IsVisible="{Binding HasError}" />
 
                     <Border Style="{StaticResource Panel}" IsVisible="{Binding IsEmpty}">
-                        <Label Text="Sin rutinas configuradas." Style="{StaticResource MutedLabel}" HorizontalOptions="Center" />
+                        <VerticalStackLayout Spacing="12" Padding="0,22">
+                            <Border Style="{StaticResource IconBadge}" WidthRequest="58" HeightRequest="58"
+                                    StrokeShape="RoundRectangle 18" HorizontalOptions="Center">
+                                <Path Data="{x:Static local:Icons.Routine}" Stroke="{StaticResource BrandBright}"
+                                      StrokeThickness="1.7" Fill="Transparent" HeightRequest="26" WidthRequest="26"
+                                      Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <Label Text="Todavía no tenés rutinas" FontAttributes="Bold" FontSize="15"
+                                   HorizontalOptions="Center" />
+                            <Label HorizontalOptions="Center" HorizontalTextAlignment="Center"
+                                   Style="{StaticResource MutedLabel}" FontSize="12.5" Margin="20,0"
+                                   Text="Las rutinas definen cada cuántos kilómetros toca mantenimiento. Se crean desde la web y aparecen acá." />
+                        </VerticalStackLayout>
                     </Border>
 
                     <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="8">
