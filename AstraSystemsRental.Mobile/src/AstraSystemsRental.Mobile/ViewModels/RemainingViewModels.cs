@@ -72,6 +72,9 @@ public sealed class ProfileViewModel : BaseViewModel
         _queue = queue;
         LoadCommand = new Command(async () => await LoadAsync());
         LogoutCommand = new Command(async () => await LogoutAsync());
+        SaveServerCommand = new Command(SaveServer);
+        ResetServerCommand = new Command(ResetServer);
+        _serverUrl = AppConfig.GatewayBaseUrl;
         SyncCommand = new Command(async () => await SyncAsync());
         DiscardCommand = new Command<PendingOperation>(async op => await DiscardAsync(op));
     }
@@ -83,6 +86,33 @@ public sealed class ProfileViewModel : BaseViewModel
     public ICommand LogoutCommand { get; }
     public ICommand SyncCommand { get; }
     public ICommand DiscardCommand { get; }
+    public ICommand SaveServerCommand { get; }
+    public ICommand ResetServerCommand { get; }
+
+    private string _serverUrl = string.Empty;
+    private string? _serverMessage;
+
+    /// <summary>
+    /// Permite apuntar la app a otro Gateway sin recompilar: util al cambiar de red
+    /// o al pasar de la IP local a una URL publica.
+    /// </summary>
+    public string ServerUrl
+    {
+        get => _serverUrl;
+        set => Set(ref _serverUrl, value);
+    }
+
+    public string? ServerMessage
+    {
+        get => _serverMessage;
+        private set
+        {
+            if (Set(ref _serverMessage, value))
+                OnPropertyChanged(nameof(HasServerMessage));
+        }
+    }
+
+    public bool HasServerMessage => !string.IsNullOrWhiteSpace(ServerMessage);
 
     public string FullName => _profile?.FullName ?? "—";
     public string Email => _profile?.Email ?? "—";
@@ -155,6 +185,28 @@ public sealed class ProfileViewModel : BaseViewModel
 
         await _queue.DiscardAsync(operation.Id);
         await ReloadConflictsAsync();
+    }
+
+    private void SaveServer()
+    {
+        var url = ServerUrl?.Trim() ?? string.Empty;
+
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var parsed)
+            || (parsed.Scheme != Uri.UriSchemeHttp && parsed.Scheme != Uri.UriSchemeHttps))
+        {
+            ServerMessage = "Ingresá una URL válida, por ejemplo http://192.168.1.50:8080";
+            return;
+        }
+
+        Preferences.Default.Set(AppConfig.GatewayOverrideKey, url.TrimEnd('/'));
+        ServerMessage = "Servidor guardado. Cerrá y volvé a abrir la app para aplicarlo.";
+    }
+
+    private void ResetServer()
+    {
+        Preferences.Default.Remove(AppConfig.GatewayOverrideKey);
+        ServerUrl = AppConfig.DefaultGatewayUrl;
+        ServerMessage = "Restablecido al servidor por defecto.";
     }
 
     private async Task LogoutAsync()

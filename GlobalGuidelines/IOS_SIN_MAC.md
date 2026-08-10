@@ -77,6 +77,28 @@ Falta únicamente el paso que exige macOS: compilar y firmar.
 
 ## Antes de instalar en un iPhone real
 
-`AppConfig.GatewayBaseUrl` apunta a `http://10.0.2.2:8080`, que **solo funciona en el emulador de Android**. Para un iPhone hay que cambiarlo a la IP de la red local o a la URL pública del Gateway.
+### ¿Hay que hacer públicas las APIs? No.
+
+La pregunta natural es si el backend tiene que salir a internet. **No hace falta**: alcanza con que el iPhone y el equipo estén en la misma red local.
+
+Docker ya publica los puertos en **todas** las interfaces, así que el Gateway responde en la IP de red del equipo sin tocar una línea de backend. Lo único que lo bloquea es el firewall de Windows:
+
+```
+.\allow-lan-access.ps1        # como administrador (o la opción [L] de astralrental-local.cmd)
+```
+
+Crea la regla `AstraSystems Gateway (LAN)` para 8080/8443, **solo en el perfil Privado**. Si la red actual figura como Pública la regla no aplica — el script lo avisa y muestra el comando para cambiarla.
+
+Verificá desde Safari en el iPhone: `http://<ip-del-equipo>:8080/health` debe devolver `{"status":"healthy"...}`.
+
+Dos cosas que fallan aunque el firewall esté bien:
+- **Aislamiento de clientes** en redes de invitados: los dispositivos no se ven entre sí. Hay que usar la red normal.
+- **La IP del equipo cambia** con DHCP. Por eso la app permite editarla en caliente.
+
+### Configurar la dirección en la app
+
+`AppConfig.GatewayBaseUrl` ya no es una constante: en el emulador de Android resuelve `10.0.2.2` (alias interno hacia el host, **inexistente en un dispositivo físico**) y en cualquier dispositivo real usa `AppConfig.LanHost`.
+
+Además, ***Mi cuenta → Servidor*** permite escribir otra URL sin recompilar; se guarda en `Preferences` y tiene prioridad sobre todo lo demás. Es la vía práctica para el iPhone: instalás una vez y ajustás la dirección desde el teléfono cuando cambie la red.
 
 `NSAllowsArbitraryLoads` está en `true` en el `Info.plist` porque el Gateway local es HTTP. **Apple rechaza apps con esa bandera en la App Store sin justificación**, así que hay que quitarla al pasar a HTTPS.

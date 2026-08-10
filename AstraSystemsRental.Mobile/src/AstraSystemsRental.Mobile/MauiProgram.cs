@@ -59,10 +59,41 @@ public static class MauiProgram
 public static class AppConfig
 {
     /// <summary>
-    /// 10.0.2.2 es el host de la maquina de desarrollo visto desde el emulador de Android.
-    /// En un dispositivo real hay que apuntar a la IP de la red local o a la URL publica.
+    /// IP de la maquina de desarrollo en la red local (Wi-Fi de la casa/oficina).
+    /// La usan los dispositivos fisicos: iPhone, Android real y el simulador de iOS.
+    /// Cambiar si cambia la IP del equipo (ipconfig / Get-NetIPAddress).
     /// </summary>
-    public const string GatewayBaseUrl = "http://10.0.2.2:8080";
+    public const string LanHost = "192.168.40.100";
+
+    private const int GatewayPort = 8080;
+
+    /// <summary>
+    /// El emulador de Android no ve la red local igual que un telefono: 10.0.2.2 es un
+    /// alias interno hacia el host. Un iPhone (o cualquier dispositivo fisico) necesita
+    /// la IP real del equipo, y por eso ambos casos se resuelven por separado.
+    /// Se puede sobreescribir en tiempo de ejecucion desde Mi cuenta.
+    /// </summary>
+    public static string GatewayBaseUrl
+    {
+        get
+        {
+            var custom = Preferences.Default.Get(GatewayOverrideKey, string.Empty);
+
+            if (!string.IsNullOrWhiteSpace(custom))
+                return custom;
+
+            var host = DeviceInfo.Current.Platform == DevicePlatform.Android
+                       && DeviceInfo.Current.DeviceType == DeviceType.Virtual
+                ? "10.0.2.2"
+                : LanHost;
+
+            return $"http://{host}:{GatewayPort}";
+        }
+    }
+
+    public const string GatewayOverrideKey = "astra.gateway.url";
+
+    public static string DefaultGatewayUrl => $"http://{LanHost}:{GatewayPort}";
 
     public const string NodeFleet = "vehicle-registry";
     public const string NodeTracking = "maintenance-tracking";

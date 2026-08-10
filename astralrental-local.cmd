@@ -27,6 +27,7 @@ echo   [7] Ver logs (todos o de un servicio)
 echo   [F] Levantar / reconstruir solo el FRONT
 echo   [A] App ANDROID: stack + emulador + instalar APK
 echo   [B] App ANDROID: igual que [A] pero recompilando el APK
+echo   [L] Permitir acceso desde la RED LOCAL (iPhone / Android real)
 echo   [C] Regenerar certificado HTTPS de desarrollo
 echo   [U] Ver URLs (Scalar / health / Front)
 echo   [P] Parar todos los contenedores (down)
@@ -44,10 +45,22 @@ if /I "%OPT%"=="7" goto logs
 if /I "%OPT%"=="F" goto front
 if /I "%OPT%"=="A" goto android
 if /I "%OPT%"=="B" goto android_rebuild
+if /I "%OPT%"=="L" goto lan
 if /I "%OPT%"=="C" goto cert
 if /I "%OPT%"=="U" goto urls
 if /I "%OPT%"=="P" goto stop
 if /I "%OPT%"=="0" exit /b 0
+goto menu
+
+:lan
+echo.
+echo === Permitir acceso desde la red local ===
+echo Abre el puerto 8080 del firewall (solo en redes privadas) para que tu
+echo iPhone o un Android real puedan alcanzar el Gateway.
+echo Requiere permisos de administrador: Windows va a pedir confirmacion.
+echo.
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-NoExit','-File','%SCRIPT_DIR%allow-lan-access.ps1'"
+pause
 goto menu
 
 :android

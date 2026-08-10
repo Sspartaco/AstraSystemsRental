@@ -100,6 +100,32 @@
                     <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
                            IsVisible="{Binding HasError}" />
 
+                    <Grid ColumnDefinitions="Auto,*" Margin="2,8,0,0">
+                        <Path Grid.Column="0" Data="{x:Static local:Icons.Fleet}" Stroke="{StaticResource ContentSoft}"
+                              StrokeThickness="1.7" HeightRequest="16" WidthRequest="16" Aspect="Uniform"
+                              VerticalOptions="Center" />
+                        <Label Grid.Column="1" Text="Servidor" Style="{StaticResource SectionLabel}"
+                               FontSize="15" Margin="9,0,0,0" VerticalOptions="Center" />
+                    </Grid>
+
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="10">
+                            <Label Style="{StaticResource MutedLabel}" FontSize="11.5"
+                                   Text="Dirección del Gateway. Cambiala si el equipo tiene otra IP o si usás una URL pública." />
+                            <Border Style="{StaticResource InputShell}">
+                                <Entry Text="{Binding ServerUrl}" Placeholder="http://192.168.1.50:8080" Keyboard="Url" />
+                            </Border>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Button Grid.Column="0" Text="Guardar" Command="{Binding SaveServerCommand}"
+                                        Style="{StaticResource PrimaryButton}" HeightRequest="42" FontSize="13" />
+                                <Button Grid.Column="1" Text="Restablecer" Command="{Binding ResetServerCommand}"
+                                        Style="{StaticResource GhostButton}" HeightRequest="42" FontSize="13" />
+                            </Grid>
+                            <Label Text="{Binding ServerMessage}" IsVisible="{Binding HasServerMessage}"
+                                   TextColor="{StaticResource Accent}" FontSize="11.5" />
+                        </VerticalStackLayout>
+                    </Border>
+
                     <Button Text="Cerrar sesión" Command="{Binding LogoutCommand}"
                             Style="{StaticResource DangerButton}" Margin="0,12,0,0" />
 

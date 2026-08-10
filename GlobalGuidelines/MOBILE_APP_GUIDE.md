@@ -62,9 +62,27 @@ Permisos en `Platforms/Android/AndroidManifest.xml`: `CAMERA`, `READ_MEDIA_IMAGE
 
 ## Configuración de red
 
-`AppConfig.GatewayBaseUrl = "http://10.0.2.2:8080"` — `10.0.2.2` es el host de desarrollo **visto desde el emulador de Android**. En un teléfono real hay que cambiarlo por la IP de la red local o la URL pública.
+`AppConfig.GatewayBaseUrl` se resuelve en tres niveles, en este orden:
 
-`usesCleartextTraffic="true"` está activo porque el Gateway local es HTTP. **Quitarlo al pasar a HTTPS en producción.**
+1. **Override guardado por el usuario** en *Mi cuenta → Servidor*. Se persiste en `Preferences` bajo la clave `astra.gateway.url` y gana siempre. Permite cambiar de red o apuntar a una URL pública **sin recompilar**.
+2. **Emulador de Android** → `http://10.0.2.2:8080`. `10.0.2.2` es un alias interno del emulador hacia el host; **no existe en un teléfono real**. Se detecta con `DeviceInfo.Current.DeviceType == DeviceType.Virtual`.
+3. **Dispositivo físico** (iPhone, Android real, simulador de iOS) → `http://{AppConfig.LanHost}:8080`, la IP del equipo de desarrollo en la red local. Está como constante en `MauiProgram.cs` y hay que actualizarla si cambia la IP (`Get-NetIPAddress`).
+
+### Para probar en un iPhone o Android físico
+
+**No hace falta exponer las APIs a internet.** Docker ya publica los puertos en todas las interfaces, así que el Gateway responde en la IP de red del equipo. Lo único que bloquea es el firewall de Windows:
+
+```
+.\allow-lan-access.ps1        # como administrador (o la opción [L] de astralrental-local.cmd)
+```
+
+Crea la regla `AstraSystems Gateway (LAN)` para los puertos 8080/8443, **limitada al perfil Privado** — no aplica en redes públicas. El script también lista las IPs del equipo y avisa si la red actual está marcada como pública (en ese caso la regla no aplica y hay que cambiar el perfil de la red).
+
+Verificación desde el navegador del teléfono: `http://<ip>:8080/health` debe devolver `{"status":"healthy"...}`. Si responde ahí, la app conecta.
+
+El teléfono y el equipo tienen que estar en **la misma red**; muchas redes de invitados tienen aislamiento de clientes y bloquean esto aunque el firewall esté bien.
+
+`usesCleartextTraffic="true"` está activo porque el Gateway local es HTTP. **Quitarlo al pasar a HTTPS en producción.** En iOS el equivalente es `NSAllowsArbitraryLoads` en el `Info.plist`, que **Apple rechaza en la App Store sin justificación**.
 
 ---
 
