@@ -16,9 +16,36 @@ Además, **para instalar en un iPhone físico siempre hace falta una cuenta de A
 
 ## Opciones, de menor a mayor fricción
 
+### 0. Tenés una Mac a mano → `astralrental-ios.sh` ✅ EL CAMINO CORTO
+
+Si hay una Mac disponible, esto es lo más simple y **no requiere la cuenta de 99 USD/año**: un Apple ID gratuito basta para instalar en tu propio iPhone (con el límite de los 7 días).
+
+En la Mac:
+
+```bash
+git clone https://github.com/Sspartaco/AstraSystemsRental.git
+cd AstraSystemsRental
+./astralrental-ios.sh
+```
+
+El script hace todo de punta a punta: comprueba Xcode y .NET, instala el workload `maui-ios` si falta, regenera el paquete local `Base` (que no se versiona), verifica que haya un iPhone conectado y un certificado de firma, prueba que el Gateway responda, compila e instala.
+
+Cuando algo falta no compila a medias: se detiene y dice exactamente qué hacer (cómo agregar el Apple ID en Xcode, qué tocar si el bundle id está tomado, cómo confiar en el certificado desde el iPhone).
+
+| Opción | Para qué |
+|---|---|
+| *(sin argumentos)* | Compila e instala en el iPhone conectado por cable |
+| `--check` | Solo diagnostica el entorno, sin compilar |
+| `--simulator` | Corre en el simulador de iOS, sin necesidad de teléfono ni certificado |
+| `--server http://IP:8080` | Apunta la app a otro Gateway |
+
+**El backend sigue en la máquina Windows.** El script comprueba que responda y avisa si no; el iPhone y esa máquina tienen que estar en la misma red, con `allow-lan-access.ps1` ya ejecutado del lado de Windows. La dirección también se puede corregir desde la app en *Mi cuenta → Servidor*, sin recompilar.
+
 ### 1. GitHub Actions con runner macOS ✅ FUNCIONANDO
 
 Configurado en `.github/workflows/ios-build.yml` y **verificado en verde**: compila la app para iOS y publica un artefacto de ~24 MB. Se dispara a mano desde la pestaña *Actions* o con `gh workflow run ios-build.yml`.
+
+⚠️ **Sin secretos de firma cargados, ese artefacto NO se instala en un iPhone.** Contiene `AstraSystemsRental.Mobile.app` compilado para `iossimulator-arm64`, que solo corre en el simulador de Xcode. No es un `.ipa`. Sirve para confirmar que el proyecto compila en iOS, nada más.
 
 **Cinco obstáculos reales que costó resolver** (documentados para no repetirlos):
 

@@ -1,0 +1,9 @@
+* text=auto
+
+# Los scripts de shell DEBEN quedar con LF: con CRLF, bash en macOS/Linux
+# falla con "bad interpreter: No such file or directory".
+*.sh text eol=lf
+
+# Los .cmd/.ps1 solo corren en Windows y esperan CRLF.
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
