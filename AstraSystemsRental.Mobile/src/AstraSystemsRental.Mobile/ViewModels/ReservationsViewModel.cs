@@ -213,9 +213,7 @@ public sealed class ReservationsViewModel : BaseViewModel
             ShowCreate = false;
             Mileage = null;
 
-            if (_sync.IsOnline)
-                await LoadAsync();
-            else
+            if (!_sync.IsOnline)
                 Error = "Guardado sin conexión. Se enviará al recuperar la red.";
         }
         catch (InvalidOperationException ex)
@@ -226,6 +224,11 @@ public sealed class ReservationsViewModel : BaseViewModel
         {
             IsBusy = false;
         }
+
+        // Fuera del try por la misma razon que en FleetViewModel: LoadAsync
+        // aborta si IsBusy sigue en true y la recarga se perdia en silencio.
+        if (Error is null && _sync.IsOnline)
+            await LoadAsync();
     }
 
     private async Task ChangeStatusAsync(ReservationItem? item, string? newStatus)

@@ -143,12 +143,17 @@ public sealed class FleetViewModel : BaseViewModel
             NewPlate = string.Empty;
             ShowCreate = false;
             _page = 1;
-            await LoadAsync();
         }
         finally
         {
             IsBusy = false;
         }
+
+        // Fuera del try: LoadAsync aborta si IsBusy sigue en true, asi que
+        // recargar dentro del bloque descartaba la lista en silencio y el
+        // vehiculo recien creado no aparecia.
+        if (Error is null)
+            await LoadAsync();
     }
 
     private static async Task OpenAsync(VehicleListItem? item)
