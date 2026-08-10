@@ -113,6 +113,8 @@ public sealed class FleetVehicleService(
 
     public async Task<OperationResult> UpdateAsync(long id, UpdateFleetVehicleRequest request, CancellationToken cancellationToken)
     {
+        Console.WriteLine($"[PUT-DEBUG] id={id} brand='{request.Brand}' line='{request.Line}' color='{request.Color}' year={request.ModelYear} rv='{request.RowVersion}'");
+
         var guard = new Guard();
         ValidateOptionalFields(guard, request.ModelYear, request.PurchaseDate);
         if (guard.HasErrors)
