@@ -124,8 +124,18 @@ public sealed class ProfileViewModel : BaseViewModel
     public bool BiometricAvailable
     {
         get => _biometricAvailable;
-        private set => Set(ref _biometricAvailable, value);
+        private set
+        {
+            if (Set(ref _biometricAvailable, value))
+            {
+                OnPropertyChanged(nameof(BiometricUnavailable));
+                OnPropertyChanged(nameof(BiometricDescription));
+                OnPropertyChanged(nameof(BiometricTitle));
+            }
+        }
     }
+
+    public string BiometricTitle => BiometricAvailable ? BiometricLabel : "Desbloqueo biométrico";
 
     public string BiometricLabel
     {
@@ -133,11 +143,23 @@ public sealed class ProfileViewModel : BaseViewModel
         private set
         {
             if (Set(ref _biometricLabel, value))
+            {
                 OnPropertyChanged(nameof(BiometricDescription));
+                OnPropertyChanged(nameof(BiometricTitle));
+            }
         }
     }
 
-    public string BiometricDescription => $"Entrá con {BiometricLabel} sin escribir tu contraseña.";
+    public string BiometricDescription => BiometricAvailable
+        ? $"Entrá con {BiometricLabel} sin escribir tu contraseña."
+        : "Este dispositivo no tiene huella ni reconocimiento facial configurado. Registralo en Ajustes del sistema para poder activarlo.";
+
+    /// <summary>
+    /// La seccion se muestra SIEMPRE, aunque no haya sensor: si se ocultara por
+    /// completo el usuario no tendria forma de saber que la funcion existe ni
+    /// por que no aparece.
+    /// </summary>
+    public bool BiometricUnavailable => !BiometricAvailable;
 
     /// <summary>
     /// Activarlo exige superar el prompt: si el usuario no puede autenticarse

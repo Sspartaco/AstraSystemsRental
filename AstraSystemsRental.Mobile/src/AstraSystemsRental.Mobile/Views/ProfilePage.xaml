@@ -100,7 +100,7 @@
                     <Label Text="{Binding Error}" TextColor="{StaticResource Danger}" FontSize="13"
                            IsVisible="{Binding HasError}" />
 
-                    <Grid ColumnDefinitions="Auto,*" Margin="2,8,0,0" IsVisible="{Binding BiometricAvailable}">
+                    <Grid ColumnDefinitions="Auto,*" Margin="2,8,0,0">
                         <Path Grid.Column="0" Data="{x:Static local:Icons.User}" Stroke="{StaticResource ContentSoft}"
                               StrokeThickness="1.7" HeightRequest="16" WidthRequest="16" Aspect="Uniform"
                               VerticalOptions="Center" />
@@ -108,17 +108,24 @@
                                FontSize="15" Margin="9,0,0,0" VerticalOptions="Center" />
                     </Grid>
 
-                    <Border Style="{StaticResource Card}" IsVisible="{Binding BiometricAvailable}">
-                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                            <VerticalStackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
-                                <Label Text="{Binding BiometricLabel}" FontSize="14" />
-                                <Label Text="{Binding BiometricDescription}" Style="{StaticResource MutedLabel}"
-                                       FontSize="11.5" />
-                            </VerticalStackLayout>
-                            <Switch Grid.Column="1" IsToggled="{Binding BiometricEnabled}"
-                                    OnColor="{StaticResource Brand}" ThumbColor="White"
-                                    VerticalOptions="Center" />
-                        </Grid>
+                    <Border Style="{StaticResource Card}">
+                        <VerticalStackLayout Spacing="9">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <VerticalStackLayout Grid.Column="0" Spacing="3" VerticalOptions="Center">
+                                    <Label Text="{Binding BiometricTitle}" FontSize="14" />
+                                    <Label Text="{Binding BiometricDescription}" Style="{StaticResource MutedLabel}"
+                                           FontSize="11.5" />
+                                </VerticalStackLayout>
+                                <Switch Grid.Column="1" IsToggled="{Binding BiometricEnabled}"
+                                        IsVisible="{Binding BiometricAvailable}"
+                                        OnColor="{StaticResource Brand}" ThumbColor="White"
+                                        VerticalOptions="Center" />
+                            </Grid>
+
+                            <Label IsVisible="{Binding BiometricUnavailable}" FontSize="11"
+                                   TextColor="{StaticResource ContentFaint}"
+                                   Text="Muchos emuladores no traen sensor. En un teléfono real basta con tener la huella o el rostro registrados." />
+                        </VerticalStackLayout>
                     </Border>
 
                     <Grid ColumnDefinitions="Auto,*" Margin="2,8,0,0">
