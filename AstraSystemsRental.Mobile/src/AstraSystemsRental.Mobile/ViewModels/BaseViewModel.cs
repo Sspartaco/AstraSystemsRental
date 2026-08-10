@@ -17,11 +17,36 @@ public abstract class BaseViewModel : INotifyPropertyChanged
         set
         {
             if (Set(ref _isBusy, value))
+            {
                 OnPropertyChanged(nameof(IsNotBusy));
+                OnPropertyChanged(nameof(IsRefreshing));
+            }
         }
     }
 
     public bool IsNotBusy => !IsBusy;
+
+    /// <summary>
+    /// Estado del gesto "tirar para refrescar", separado de IsBusy a proposito.
+    /// Con RefreshView.IsRefreshing enlazado directo a IsBusy el spinner se
+    /// quedaba girando para siempre: el gesto ponia IsBusy en true, y entonces
+    /// el "if (IsBusy) return" del inicio de LoadAsync abortaba la carga sin
+    /// llegar nunca al finally que lo vuelve a poner en false.
+    ///
+    /// El setter ignora el true que manda el control (la carga la dispara su
+    /// Command) y solo honra el false, para poder cortar la animacion.
+    /// </summary>
+    public bool IsRefreshing
+    {
+        get => _isBusy;
+        set
+        {
+            if (!value && _isBusy)
+                IsBusy = false;
+            else
+                OnPropertyChanged();
+        }
+    }
 
     public string? Error
     {

@@ -6,7 +6,7 @@
              Title="Panel">
 
     <Grid Background="{StaticResource GradientMesh}">
-        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+        <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding LoadCommand}">
             <ScrollView>
                 <VerticalStackLayout x:Name="Root" Padding="16,10,16,24" Spacing="14">
 

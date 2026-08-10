@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
@@ -7,7 +7,7 @@
 
     <Grid Background="{StaticResource GradientMesh}">
 
-        <RefreshView IsRefreshing="{Binding IsBusy}" Command="{Binding LoadCommand}">
+        <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding LoadCommand}">
             <ScrollView>
                 <VerticalStackLayout Padding="16" Spacing="12">
 
@@ -48,20 +48,61 @@
                     <Label Text="{Binding SaveMessage}" TextColor="{StaticResource Accent}" FontSize="13"
                            IsVisible="{Binding HasSaveMessage}" />
 
-                    <Button Text="{Binding EditButtonText}" Command="{Binding ToggleEditCommand}"
-                            Style="{StaticResource GhostButton}" Margin="0,4,0,0" />
+                    <!-- Tarjeta de completitud: da una razón visible para abrir la
+                         ficha. Un botón suelto no dice cuánto falta. -->
+                    <Border Style="{StaticResource Card}" IsVisible="{Binding ShowEdit, Converter={StaticResource InverseBool}}">
+                        <VerticalStackLayout Spacing="10">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Style="{StaticResource IconBadge}">
+                                    <Path Data="{x:Static local:Icons.Check}" Stroke="{StaticResource BrandBright}"
+                                          StrokeThickness="2" HeightRequest="16" WidthRequest="16" Aspect="Uniform"
+                                          HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Margin="12,0,0,0" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="Ficha del vehículo" FontAttributes="Bold" FontSize="14" />
+                                    <Label Text="{Binding CompletionHint}" Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="2" Text="{Binding CompletionLabel}" FontSize="11"
+                                       TextColor="{StaticResource ContentMuted}" VerticalOptions="Center" />
+                            </Grid>
+
+                            <ProgressBar Progress="{Binding CompletionProgress}"
+                                         ProgressColor="{StaticResource BrandBright}" HeightRequest="3" />
+
+                            <Button Text="Completar ficha" Command="{Binding ToggleEditCommand}"
+                                    Style="{StaticResource GhostButton}" HeightRequest="40" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
 
                     <!-- Misma idea que el asistente web, pero en una sola hoja: en el
                          telefono, tres pasos para datos opcionales es fricción pura. -->
-                    <Border Style="{StaticResource Panel}" IsVisible="{Binding ShowEdit}">
-                        <VerticalStackLayout Spacing="11">
+                    <Border x:Name="EditSheet" Style="{StaticResource Panel}" IsVisible="{Binding ShowEdit}">
+                        <VerticalStackLayout Spacing="12">
 
-                            <Label Text="Ficha del vehículo" FontAttributes="Bold" FontSize="15" />
-                            <Label Text="Todo es opcional. Guardá lo que tengas a mano."
-                                   Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Border Grid.Column="0" Style="{StaticResource IconBadge}">
+                                    <Path Data="{x:Static local:Icons.Truck}" Fill="{StaticResource BrandBright}"
+                                          HeightRequest="17" WidthRequest="17" Aspect="Uniform"
+                                          HorizontalOptions="Center" VerticalOptions="Center" />
+                                </Border>
+                                <VerticalStackLayout Grid.Column="1" Margin="12,0,0,0" VerticalOptions="Center" Spacing="2">
+                                    <Label Text="{Binding Plate}" FontAttributes="Bold" FontSize="15" />
+                                    <Label Text="Todo es opcional. Guardá lo que tengas."
+                                           Style="{StaticResource MutedLabel}" FontSize="11.5" />
+                                </VerticalStackLayout>
+                                <Button Grid.Column="2" Text="✕" Command="{Binding ToggleEditCommand}"
+                                        Style="{StaticResource GhostButton}" WidthRequest="40" HeightRequest="40"
+                                        FontSize="15" Padding="0" />
+                            </Grid>
 
-                            <Label Text="IDENTIFICACIÓN" Style="{StaticResource MutedLabel}"
-                                   FontSize="10" Margin="0,4,0,0" />
+                            <BoxView HeightRequest="1" Color="#12FFFFFF" />
+
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                                <Path Grid.Column="0" Data="{x:Static local:Icons.Truck}" Fill="{StaticResource ContentMuted}"
+                                      HeightRequest="13" WidthRequest="13" Aspect="Uniform" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="IDENTIFICACIÓN" Style="{StaticResource MutedLabel}"
+                                       FontSize="10" CharacterSpacing="1" VerticalOptions="Center" />
+                            </Grid>
 
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
                                 <Border Grid.Column="0" Style="{StaticResource InputShell}">
@@ -81,8 +122,13 @@
                                 </Border>
                             </Grid>
 
-                            <Label Text="CONFIGURACIÓN TÉCNICA" Style="{StaticResource MutedLabel}"
-                                   FontSize="10" Margin="0,4,0,0" />
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,4,0,0">
+                                <Path Grid.Column="0" Data="{x:Static local:Icons.Wrench}" Stroke="{StaticResource ContentMuted}"
+                                      StrokeThickness="1.7" Fill="Transparent" HeightRequest="13" WidthRequest="13"
+                                      Aspect="Uniform" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="CONFIGURACIÓN TÉCNICA" Style="{StaticResource MutedLabel}"
+                                       FontSize="10" CharacterSpacing="1" VerticalOptions="Center" />
+                            </Grid>
 
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="9">
                                 <Border Grid.Column="0" Style="{StaticResource InputShell}">
@@ -106,8 +152,13 @@
                                 <Entry Text="{Binding ServiceType}" Placeholder="Servicio" />
                             </Border>
 
-                            <Label Text="NUMERACIÓN" Style="{StaticResource MutedLabel}"
-                                   FontSize="10" Margin="0,4,0,0" />
+                            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Margin="0,4,0,0">
+                                <Path Grid.Column="0" Data="{x:Static local:Icons.Routine}" Stroke="{StaticResource ContentMuted}"
+                                      StrokeThickness="1.7" Fill="Transparent" HeightRequest="13" WidthRequest="13"
+                                      Aspect="Uniform" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="NUMERACIÓN" Style="{StaticResource MutedLabel}"
+                                       FontSize="10" CharacterSpacing="1" VerticalOptions="Center" />
+                            </Grid>
 
                             <Border Style="{StaticResource InputShell}">
                                 <Entry Text="{Binding Vin}" Placeholder="VIN" />
@@ -122,7 +173,8 @@
                             </Border>
 
                             <Button Text="Guardar ficha" Command="{Binding SaveCommand}"
-                                    Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsNotBusy}" />
+                                    Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsNotBusy}"
+                                    Margin="0,4,0,0" />
 
                         </VerticalStackLayout>
                     </Border>

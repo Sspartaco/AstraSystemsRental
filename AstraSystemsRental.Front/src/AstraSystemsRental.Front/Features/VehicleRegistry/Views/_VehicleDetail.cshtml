@@ -52,25 +52,77 @@ else
             <button @@click="tab = 'history'" :class="tab === 'history' ? 'border-brand text-content' : 'border-transparent text-content-soft'" class="px-4 py-2.5 text-sm border-b-2 transition">Historial</button>
         </div>
 
-        <div x-show="tab === 'info'" x-cloak class="astra-panel p-5 grid grid-cols-2 gap-4 text-sm">
-            <div><p class="astra-label">Clase</p><p class="text-content">@(Model.VehicleClass ?? "—")</p></div>
-            <div><p class="astra-label">Carrocería</p><p class="text-content">@(Model.BodyType ?? "—")</p></div>
-            <div><p class="astra-label">Color</p><p class="text-content">@(Model.Color ?? "—")</p></div>
-            <div><p class="astra-label">Servicio</p><p class="text-content">@(Model.ServiceType ?? "—")</p></div>
-            <div><p class="astra-label">Combustible</p><p class="text-content">@(Model.FuelType ?? "—")</p></div>
-            <div><p class="astra-label">Transmisión</p><p class="text-content">@(Model.Transmission ?? "—")</p></div>
-            <div><p class="astra-label">VIN</p><p class="text-content">@(Model.Vin ?? "—")</p></div>
-            <div><p class="astra-label">Motor</p><p class="text-content">@(Model.EngineNumber ?? "—")</p></div>
-            <div><p class="astra-label">Serie</p><p class="text-content">@(Model.SerialNumber ?? "—")</p></div>
-            <div><p class="astra-label">Chasis</p><p class="text-content">@(Model.ChassisNumber ?? "—")</p></div>
-            <div><p class="astra-label">Licencia de tránsito</p><p class="text-content">@(Model.TransitLicenseNumber ?? "—")</p></div>
-            <div><p class="astra-label">Factura de compra</p><p class="text-content">@(Model.PurchaseInvoiceNumber ?? "—")</p></div>
-            <div><p class="astra-label">Fecha de compra</p><p class="text-content">@(Model.PurchaseDate?.ToString("yyyy-MM-dd") ?? "—")</p></div>
-            <div><p class="astra-label">Valor de compra</p><p class="text-content">@(Model.PurchaseValue?.ToString("N0") ?? "—")</p></div>
-            @if (!string.IsNullOrEmpty(Model.Notes))
-            {
-                <div class="col-span-2"><p class="astra-label">Notas</p><p class="text-content">@Model.Notes</p></div>
-            }
+        <div x-show="tab === 'info'" x-cloak x-data="{ editing: false }">
+
+            <div x-show="!editing" class="astra-panel p-5">
+                <div class="flex items-center justify-between mb-4">
+                    <p class="text-sm text-content-soft">Ficha del vehículo</p>
+                    <button type="button" @@click="editing = true" class="astra-btn-ghost text-xs px-3 py-1.5">
+                        Completar ficha
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><p class="astra-label">Marca</p><p class="text-content">@(Model.Brand ?? "—")</p></div>
+                    <div><p class="astra-label">Línea</p><p class="text-content">@(Model.Line ?? "—")</p></div>
+                    <div><p class="astra-label">Modelo (año)</p><p class="text-content">@(Model.ModelYear?.ToString() ?? "—")</p></div>
+                    <div><p class="astra-label">Clase</p><p class="text-content">@(Model.VehicleClass ?? "—")</p></div>
+                    <div><p class="astra-label">Carrocería</p><p class="text-content">@(Model.BodyType ?? "—")</p></div>
+                    <div><p class="astra-label">Color</p><p class="text-content">@(Model.Color ?? "—")</p></div>
+                    <div><p class="astra-label">Servicio</p><p class="text-content">@(Model.ServiceType ?? "—")</p></div>
+                    <div><p class="astra-label">Combustible</p><p class="text-content">@(Model.FuelType ?? "—")</p></div>
+                    <div><p class="astra-label">Transmisión</p><p class="text-content">@(Model.Transmission ?? "—")</p></div>
+                    <div><p class="astra-label">VIN</p><p class="text-content">@(Model.Vin ?? "—")</p></div>
+                    <div><p class="astra-label">Motor</p><p class="text-content">@(Model.EngineNumber ?? "—")</p></div>
+                    <div><p class="astra-label">Serie</p><p class="text-content">@(Model.SerialNumber ?? "—")</p></div>
+                    <div><p class="astra-label">Chasis</p><p class="text-content">@(Model.ChassisNumber ?? "—")</p></div>
+                    <div><p class="astra-label">Licencia de tránsito</p><p class="text-content">@(Model.TransitLicenseNumber ?? "—")</p></div>
+                    <div><p class="astra-label">Factura de compra</p><p class="text-content">@(Model.PurchaseInvoiceNumber ?? "—")</p></div>
+                    <div><p class="astra-label">Fecha de compra</p><p class="text-content">@(Model.PurchaseDate?.ToString("yyyy-MM-dd") ?? "—")</p></div>
+                    <div><p class="astra-label">Valor de compra</p><p class="text-content">@(Model.PurchaseValue?.ToString("N0") ?? "—")</p></div>
+                    @if (!string.IsNullOrEmpty(Model.Notes))
+                    {
+                        <div class="col-span-2"><p class="astra-label">Notas</p><p class="text-content">@Model.Notes</p></div>
+                    }
+                </div>
+            </div>
+
+            <form x-show="editing" x-cloak
+                  hx-post="/vehicle-registry/@Model.Id/edit"
+                  hx-target="#vehicle-detail" hx-swap="innerHTML"
+                  class="astra-panel p-5 space-y-4">
+
+                <input type="hidden" name="RowVersion" value="@Model.RowVersion" />
+
+                <div class="flex items-center justify-between">
+                    <p class="text-sm text-content-soft">Todo es opcional. Guardá lo que tengas a mano.</p>
+                    <button type="button" @@click="editing = false" class="astra-btn-ghost text-xs px-3 py-1.5">Cancelar</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div><label class="astra-label">Marca</label><input name="Brand" value="@Model.Brand" class="astra-input" /></div>
+                    <div><label class="astra-label">Línea</label><input name="Line" value="@Model.Line" class="astra-input" /></div>
+                    <div><label class="astra-label">Modelo (año)</label><input name="ModelYear" type="number" min="1980" max="@(DateTime.Now.Year + 1)" value="@Model.ModelYear" class="astra-input" /></div>
+                    <div><label class="astra-label">Clase</label><input name="VehicleClass" value="@Model.VehicleClass" class="astra-input" /></div>
+                    <div><label class="astra-label">Carrocería</label><input name="BodyType" value="@Model.BodyType" class="astra-input" /></div>
+                    <div><label class="astra-label">Color</label><input name="Color" value="@Model.Color" class="astra-input" /></div>
+                    <div><label class="astra-label">Servicio</label><input name="ServiceType" value="@Model.ServiceType" class="astra-input" /></div>
+                    <div><label class="astra-label">Combustible</label><input name="FuelType" value="@Model.FuelType" class="astra-input" /></div>
+                    <div><label class="astra-label">Transmisión</label><input name="Transmission" value="@Model.Transmission" class="astra-input" /></div>
+                    <div><label class="astra-label">VIN</label><input name="Vin" value="@Model.Vin" class="astra-input" /></div>
+                    <div><label class="astra-label">Motor</label><input name="EngineNumber" value="@Model.EngineNumber" class="astra-input" /></div>
+                    <div><label class="astra-label">Serie</label><input name="SerialNumber" value="@Model.SerialNumber" class="astra-input" /></div>
+                    <div><label class="astra-label">Chasis</label><input name="ChassisNumber" value="@Model.ChassisNumber" class="astra-input" /></div>
+                    <div><label class="astra-label">Licencia de tránsito</label><input name="TransitLicenseNumber" value="@Model.TransitLicenseNumber" class="astra-input" /></div>
+                    <div><label class="astra-label">Factura de compra</label><input name="PurchaseInvoiceNumber" value="@Model.PurchaseInvoiceNumber" class="astra-input" /></div>
+                    <div><label class="astra-label">Fecha de compra</label><input name="PurchaseDate" type="date" value="@(Model.PurchaseDate?.ToString("yyyy-MM-dd"))" class="astra-input" /></div>
+                    <div><label class="astra-label">Valor de compra</label><input name="PurchaseValue" type="number" step="0.01" value="@Model.PurchaseValue" class="astra-input" /></div>
+                    <div class="col-span-2"><label class="astra-label">Notas</label><input name="Notes" value="@Model.Notes" class="astra-input" /></div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="astra-btn-primary text-sm px-5 py-2">Guardar ficha</button>
+                </div>
+            </form>
         </div>
 
 

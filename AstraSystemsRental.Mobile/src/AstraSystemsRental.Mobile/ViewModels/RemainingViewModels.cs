@@ -382,6 +382,15 @@ public sealed class VehicleDetailViewModel : BaseViewModel
     {
         _api = api;
         LoadCommand = new Command(async () => await LoadAsync());
+        SaveCommand = new Command(async () => await SaveAsync());
+        ToggleEditCommand = new Command(() =>
+        {
+            if (!ShowEdit)
+                FillEditFields();
+
+            SaveMessage = null;
+            ShowEdit = !ShowEdit;
+        });
     }
 
     public ICommand LoadCommand { get; }
@@ -453,16 +462,35 @@ public sealed class VehicleDetailViewModel : BaseViewModel
 
     public bool HasSaveMessage => !string.IsNullOrWhiteSpace(SaveMessage);
 
-    public ICommand ToggleEditCommand => new Command(() =>
+    /// <summary>
+    /// Cuantos de los 12 campos de la ficha estan cargados. Da una razon visible
+    /// para completarla: sin esto, "Completar ficha" no dice cuanto falta ni si
+    /// vale la pena abrirlo.
+    /// </summary>
+    public int FilledCount => new[]
     {
-        if (!ShowEdit)
-            FillEditFields();
+        _vehicle?.Brand, _vehicle?.Line, _vehicle?.ModelYear?.ToString(), _vehicle?.VehicleClass,
+        _vehicle?.BodyType, _vehicle?.Color, _vehicle?.ServiceType, _vehicle?.FuelType,
+        _vehicle?.Transmission, _vehicle?.Vin, _vehicle?.EngineNumber, _vehicle?.Notes
+    }.Count(v => !string.IsNullOrWhiteSpace(v));
 
-        SaveMessage = null;
-        ShowEdit = !ShowEdit;
-    });
+    public const int TotalFields = 12;
 
-    public ICommand SaveCommand => new Command(async () => await SaveAsync());
+    public double CompletionProgress => (double)FilledCount / TotalFields;
+    public string CompletionLabel => $"{FilledCount} de {TotalFields} datos";
+    public bool IsComplete => FilledCount == TotalFields;
+
+    public string CompletionHint => FilledCount switch
+    {
+        0 => "Todavía no cargaste ningún dato.",
+        TotalFields => "Ficha completa.",
+        _ => $"Faltan {TotalFields - FilledCount} por completar."
+    };
+
+    // Con "=>" cada acceso devolvia un Command NUEVO: el binding se quedaba con
+    // una instancia distinta de la que reaccionaba, y el boton no hacia nada.
+    public ICommand ToggleEditCommand { get; }
+    public ICommand SaveCommand { get; }
 
     private void FillEditFields()
     {
@@ -582,7 +610,12 @@ public sealed class VehicleDetailViewModel : BaseViewModel
             foreach (var reading in readingsResult.Data?.Items ?? [])
                 Readings.Add(reading);
 
-            foreach (var name in new[] { nameof(Detail), nameof(Status), nameof(CurrentMileage), nameof(RoutineName), nameof(NextThreshold), nameof(IsOverdue) })
+            foreach (var name in new[]
+                     {
+                         nameof(Detail), nameof(Status), nameof(CurrentMileage), nameof(RoutineName),
+                         nameof(NextThreshold), nameof(IsOverdue), nameof(FilledCount),
+                         nameof(CompletionProgress), nameof(CompletionLabel), nameof(CompletionHint), nameof(IsComplete)
+                     })
                 OnPropertyChanged(name);
         }
         finally

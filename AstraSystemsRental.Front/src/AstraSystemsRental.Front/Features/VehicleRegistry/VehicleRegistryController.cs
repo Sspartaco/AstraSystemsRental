@@ -28,6 +28,18 @@ public sealed record CreateVehicleForm(
     string? PurchaseInvoiceNumber, DateOnly? PurchaseDate, decimal? PurchaseValue, string? Notes);
 
 public sealed record ChangeStatusForm(string NewStatus, string? Reason);
+
+/// <summary>
+/// Completar la ficha de un vehiculo ya registrado. Antes solo se podian cargar
+/// estos datos en el alta: si se guardaba solo con la placa, quedaban vacios
+/// para siempre porque el detalle era de solo lectura.
+/// </summary>
+public sealed record EditVehicleForm(
+    string? VehicleClass, string? Brand, string? Line, short? ModelYear,
+    string? BodyType, string? ServiceType, string? FuelType, string? Transmission, string? Color,
+    string? Vin, string? EngineNumber, string? SerialNumber, string? ChassisNumber, string? TransitLicenseNumber,
+    string? PurchaseInvoiceNumber, DateOnly? PurchaseDate, decimal? PurchaseValue, string? Notes,
+    string RowVersion);
 public sealed record DocumentForm(string DocumentType, string? DocumentNumber, DateOnly? IssuedDate, DateOnly? ExpiresDate, string? Notes);
 
 public sealed class VehicleRegistryController(IGatewayClient gateway, ISessionService session, ICurrentUser currentUser) : Controller
@@ -106,6 +118,51 @@ public sealed class VehicleRegistryController(IGatewayClient gateway, ISessionSe
 
         return PartialView("_VehicleDetail", await LoadDetail(id, null, cancellationToken));
     }
+
+    [HttpPost("/vehicle-registry/{id:long}/edit")]
+    public async Task<IActionResult> Edit(long id, [FromForm] EditVehicleForm form, CancellationToken cancellationToken)
+    {
+        var token = session.GetToken();
+        string? error = null;
+
+        if (!string.IsNullOrEmpty(token))
+        {
+            var companyId = session.GetActiveCompanyId();
+            var response = await gateway.SendForDataAsync(HttpMethod.Put, $"/apiVehicles/fleet-vehicles/{id}", token,
+                new
+                {
+                    vehicleClass = Empty(form.VehicleClass),
+                    brand = Empty(form.Brand),
+                    line = Empty(form.Line),
+                    modelYear = form.ModelYear,
+                    bodyType = Empty(form.BodyType),
+                    serviceType = Empty(form.ServiceType),
+                    fuelType = Empty(form.FuelType),
+                    transmission = Empty(form.Transmission),
+                    color = Empty(form.Color),
+                    vin = Empty(form.Vin),
+                    engineNumber = Empty(form.EngineNumber),
+                    serialNumber = Empty(form.SerialNumber),
+                    chassisNumber = Empty(form.ChassisNumber),
+                    transitLicenseNumber = Empty(form.TransitLicenseNumber),
+                    purchaseInvoiceNumber = Empty(form.PurchaseInvoiceNumber),
+                    purchaseDate = form.PurchaseDate,
+                    purchaseValue = form.PurchaseValue,
+                    notes = Empty(form.Notes),
+                    rowVersion = form.RowVersion
+                },
+                NodeKey, companyId, cancellationToken);
+
+            if (!response.IsSuccess)
+                error = TranslateError(response.Errors.FirstOrDefault());
+        }
+
+        return PartialView("_VehicleDetail", await LoadDetail(id, error, cancellationToken));
+    }
+
+    // Un input vacio del formulario llega como "" y sobrescribiria el dato con
+    // una cadena vacia en vez de dejarlo como estaba.
+    private static string? Empty(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
 
     [HttpPost("/vehicle-registry/{id:long}/documents")]
     public async Task<IActionResult> AddDocument(long id, [FromForm] DocumentForm form, CancellationToken cancellationToken)
