@@ -12,6 +12,7 @@
 #   --server http://IP:8080   direccion del Gateway (por defecto la del csproj)
 #   --simulator               correr en el simulador en vez del iPhone
 #   --check                   solo diagnosticar, sin compilar
+#   --no-backend-check        no comprobar el Gateway (util si esta apagado)
 #
 set -euo pipefail
 
@@ -28,13 +29,15 @@ MIN_XCODE_MAJOR=26
 SERVER_URL=""
 TARGET="device"
 CHECK_ONLY=0
+SKIP_BACKEND=0
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --server)    SERVER_URL="${2:-}"; shift 2 ;;
-        --simulator) TARGET="simulator"; shift ;;
-        --check)     CHECK_ONLY=1; shift ;;
-        -h|--help)   sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --server)            SERVER_URL="${2:-}"; shift 2 ;;
+        --simulator)         TARGET="simulator"; shift ;;
+        --check)             CHECK_ONLY=1; shift ;;
+        --no-backend-check)  SKIP_BACKEND=1; shift ;;
+        -h|--help)   sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Opcion desconocida: $1 (usa --help)"; exit 1 ;;
     esac
 done
@@ -176,7 +179,10 @@ fi
 step "Comprobando el backend"
 info "Gateway: $GATEWAY"
 
-if curl -fsS -m 5 "${GATEWAY}/health" >/dev/null 2>&1; then
+if [[ $SKIP_BACKEND -eq 1 ]]; then
+    info "omitido (--no-backend-check)"
+    info "La app quedara apuntando a $GATEWAY; se puede cambiar desde 'Mi cuenta > Servidor'."
+elif curl -fsS -m 5 "${GATEWAY}/health" >/dev/null 2>&1; then
     ok "el Gateway responde"
 else
     warn "el Gateway NO responde en $GATEWAY"
