@@ -1,10 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net10.0-android</TargetFrameworks>
-    <!-- iOS solo se agrega cuando se compila en macOS (local o CI en la nube).
-         En Windows no existe el toolchain de Apple, asi que se omite el target. -->
-    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
+    <!-- Cada plataforma solo declara el target que puede compilar:
+           Windows/Linux -> android   (no existe el toolchain de Apple)
+           macOS         -> ios       (la Mac de este repo solo compila iOS)
+         En macOS se omite android a proposito: el restore evalua TODOS los
+         target frameworks, asi que con android declarado falla con NETSDK1147
+         pidiendo su workload, aunque el build pida solo -f net10.0-ios.
+         Para compilar android en una Mac que si tenga ese workload:
+           dotnet build ... -p:IncludeAndroidTarget=true
+         Ojo: esto NO se puede resolver pasando -p:TargetFrameworks por linea
+         de comandos. Seria una propiedad global, se propagaria a los proyectos
+         referenciados y rompe AstraSystemsRental.Contracts con NETSDK1005. -->
+    <IncludeAndroidTarget Condition="'$(IncludeAndroidTarget)' == '' And !$([MSBuild]::IsOSPlatform('osx'))">true</IncludeAndroidTarget>
+    <IncludeAndroidTarget Condition="'$(IncludeAndroidTarget)' == ''">false</IncludeAndroidTarget>
+
+    <TargetFrameworks Condition="'$(IncludeAndroidTarget)' == 'true'">net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx')) And '$(TargetFrameworks)' == ''">net10.0-ios</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx')) And '$(TargetFrameworks)' != 'net10.0-ios'">$(TargetFrameworks);net10.0-ios</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>AstraSystemsRental.Mobile</RootNamespace>
     <UseMaui>true</UseMaui>
