@@ -65,6 +65,9 @@
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="vm:VehicleListItem">
                                     <Border Style="{StaticResource Card}" Padding="14">
+                                        <Border.Behaviors>
+                                            <local:TapFeedbackBehavior />
+                                        </Border.Behaviors>
                                         <Border.GestureRecognizers>
                                             <TapGestureRecognizer
                                                 Command="{Binding Source={RelativeSource AncestorType={x:Type vm:FleetViewModel}}, Path=OpenCommand}"

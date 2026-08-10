@@ -21,6 +21,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<ISessionStore, SessionStore>();
         builder.Services.AddSingleton<IOfflineQueue, OfflineQueue>();
+        builder.Services.AddSingleton<IBiometricService, BiometricService>();
 
         builder.Services.AddSingleton(sp => new HttpClient
         {

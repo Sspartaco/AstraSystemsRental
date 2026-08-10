@@ -9,6 +9,7 @@ public interface IAuthService
 {
     bool IsAuthenticated { get; }
     Task<ApiResult<AuthTokensDto>> LoginAsync(string email, string password, CancellationToken cancellationToken = default);
+    Task<bool> RestoreSessionAsync(CancellationToken cancellationToken = default);
     Task LogoutAsync(CancellationToken cancellationToken = default);
     Task<IReadOnlyList<NodeDto>> GetNodesAsync(CancellationToken cancellationToken = default);
     bool HasNode(string nodeKey);
@@ -109,6 +110,28 @@ public sealed class AuthService(
         _nodes = [];
         _allowedNodes = new HashSet<string>(StringComparer.Ordinal);
         await session.ClearAsync();
+    }
+
+    /// <summary>
+    /// Reanuda una sesion guardada sin pedir credenciales. Se apoya en /users/me:
+    /// si el access token expiro, el propio AstraApiClient lo renueva con el
+    /// refresh token antes de reintentar, asi que un 200 confirma que la sesion
+    /// sigue viva del lado del servidor.
+    /// </summary>
+    public async Task<bool> RestoreSessionAsync(CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(session.Current?.RefreshToken))
+            return false;
+
+        var result = await api.GetAsync<UserProfileDto>("/apiUsers/users/me", cancellationToken: cancellationToken);
+
+        // Sin red no se invalida la sesion: se deja entrar y la app opera en
+        // modo offline, igual que si la conexion se cayera estando dentro.
+        if (!result.Success && !result.Offline)
+            return false;
+
+        RestoreClaims();
+        return true;
     }
 
     public async Task<IReadOnlyList<NodeDto>> GetNodesAsync(CancellationToken cancellationToken = default)

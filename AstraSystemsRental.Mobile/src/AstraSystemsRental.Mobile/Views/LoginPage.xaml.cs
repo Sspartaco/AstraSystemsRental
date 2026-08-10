@@ -20,14 +20,19 @@ public partial class LoginPage : ContentPage
 
         LogoOrb.Opacity = 0;
         LogoOrb.Scale = 0.8;
+        LogoRing.Rotation = -160;
         BrandTitle.Opacity = 0;
         BrandSub.Opacity = 0;
         LoginCard.Opacity = 0;
         LoginCard.TranslationY = 18;
+        Footer.Opacity = 0;
 
+        // El anillo se acomoda girando mientras el orbe aparece: da la sensacion
+        // de que el monograma se "arma" en vez de aparecer de golpe.
         await Task.WhenAll(
             LogoOrb.FadeTo(1, 320, Easing.CubicOut),
-            LogoOrb.ScaleTo(1, 380, Easing.SpringOut));
+            LogoOrb.ScaleTo(1, 380, Easing.SpringOut),
+            LogoRing.RotateTo(-20, 620, Easing.CubicOut));
 
         await Task.WhenAll(
             BrandTitle.FadeTo(1, 220, Easing.CubicOut),
@@ -36,5 +41,12 @@ public partial class LoginPage : ContentPage
         await Task.WhenAll(
             LoginCard.FadeTo(1, 280, Easing.CubicOut),
             LoginCard.TranslateTo(0, 0, 320, Easing.CubicOut));
+
+        await Footer.FadeTo(1, 300, Easing.CubicOut);
+
+        // Despues de la animacion: el prompt del sistema tapa la pantalla, y
+        // lanzarlo antes deja la tarjeta a medio aparecer al volver de el.
+        if (BindingContext is LoginViewModel vm)
+            await vm.InitializeAsync();
     }
 }

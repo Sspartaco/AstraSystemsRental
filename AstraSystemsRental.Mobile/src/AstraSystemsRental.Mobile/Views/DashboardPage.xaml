@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:AstraSystemsRental.Mobile"
@@ -52,7 +52,7 @@
 
                     <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="11" RowSpacing="11">
 
-                        <Border Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
+                        <Border x:Name="Kpi1" Grid.Row="0" Grid.Column="0" Style="{StaticResource Card}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Grid.Column="0" Text="VEHÍCULOS ACTIVOS" Style="{StaticResource KpiLabel}" />
@@ -66,7 +66,7 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
+                        <Border x:Name="Kpi2" Grid.Row="0" Grid.Column="1" Style="{StaticResource Card}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Grid.Column="0" Text="EN TALLER" Style="{StaticResource KpiLabel}" />
@@ -80,7 +80,7 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
+                        <Border x:Name="Kpi3" Grid.Row="1" Grid.Column="0" Style="{StaticResource Card}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Grid.Column="0" Text="DOCS. VENCIDOS" Style="{StaticResource KpiLabel}" />
@@ -93,7 +93,7 @@
                             </VerticalStackLayout>
                         </Border>
 
-                        <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
+                        <Border x:Name="Kpi4" Grid.Row="1" Grid.Column="1" Style="{StaticResource Card}">
                             <VerticalStackLayout Spacing="6">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <Label Grid.Column="0" Text="COBERTURA" Style="{StaticResource KpiLabel}" />

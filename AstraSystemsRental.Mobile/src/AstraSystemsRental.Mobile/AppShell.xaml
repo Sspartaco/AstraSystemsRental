@@ -17,23 +17,35 @@
     <Shell.FlyoutHeader>
         <Grid HeightRequest="150" BackgroundColor="{StaticResource Bg}">
             <Border Style="{StaticResource BrandOrb}" HorizontalOptions="Start" VerticalOptions="Center"
-                    Margin="20,0,0,0" WidthRequest="52" HeightRequest="52">
-                <Path Data="{x:Static local:Icons.Truck}" Fill="White" HeightRequest="26" WidthRequest="26"
-                      Aspect="Uniform" HorizontalOptions="Center" VerticalOptions="Center" />
+                    Margin="20,0,0,0" WidthRequest="52" HeightRequest="52" StrokeShape="RoundRectangle 16">
+                <Grid>
+                    <Path Data="{x:Static local:Icons.MonogramRing}" Stroke="#59FFFFFF" StrokeThickness="1.4"
+                          Fill="Transparent" HeightRequest="32" WidthRequest="32" Aspect="Uniform" Rotation="-20"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Path Data="{x:Static local:Icons.Monogram}" Stroke="White" StrokeThickness="2.1"
+                          Fill="Transparent" HeightRequest="24" WidthRequest="24" Aspect="Uniform"
+                          HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
             </Border>
             <VerticalStackLayout VerticalOptions="Center" Margin="88,0,0,0" Spacing="2">
                 <Label Text="AstraSystems" FontSize="20" FontAttributes="Bold" TextColor="{StaticResource Content}" />
                 <Label Text="Gestión de flota" FontSize="12" TextColor="{StaticResource ContentMuted}" />
             </VerticalStackLayout>
+            <Label Text="created by codalea" FontSize="10" TextColor="{StaticResource ContentFaint}"
+                   HorizontalOptions="Start" VerticalOptions="End" Margin="22,0,0,12" />
         </Grid>
     </Shell.FlyoutHeader>
 
+    <!-- El icono se deriva del titulo con un convertidor: Shell no expone un
+         binding directo al FlyoutIcon desde la plantilla sin duplicar recursos. -->
     <Shell.ItemTemplate>
         <DataTemplate>
-            <Grid ColumnDefinitions="20,*" HeightRequest="52" Padding="20,0">
-                <BoxView Grid.Column="0" WidthRequest="4" HeightRequest="4" CornerRadius="2"
-                         Color="{StaticResource BrandBright}" VerticalOptions="Center" HorizontalOptions="Start" />
-                <Label Grid.Column="1" Text="{Binding Title}" FontSize="14.5" Margin="10,0,0,0"
+            <Grid ColumnDefinitions="30,*" HeightRequest="52" Padding="20,0">
+                <Path Grid.Column="0" Data="{Binding Title, Converter={StaticResource MenuIcon}}"
+                      Stroke="{StaticResource BrandBright}" StrokeThickness="1.7" Fill="Transparent"
+                      HeightRequest="18" WidthRequest="18" Aspect="Uniform"
+                      VerticalOptions="Center" HorizontalOptions="Start" />
+                <Label Grid.Column="1" Text="{Binding Title}" FontSize="14.5" Margin="12,0,0,0"
                        TextColor="{StaticResource Content}" VerticalOptions="Center" />
             </Grid>
         </DataTemplate>
@@ -47,30 +59,30 @@
 
     <!-- Las pestañas viven DENTRO de un FlyoutItem: asi el menu lateral siempre
          puede volver aca, en vez de reemplazar la barra y dejar al usuario atrapado. -->
-    <FlyoutItem x:Name="MainItem" Title="Inicio" Route="main">
-        <Tab Title="Panel" Route="dashboard">
+    <FlyoutItem x:Name="MainItem" Title="Inicio" Route="main" Icon="menu_home.png">
+        <Tab Title="Panel" Route="dashboard" Icon="tab_dashboard.png">
             <ShellContent ContentTemplate="{DataTemplate views:DashboardPage}" />
         </Tab>
-        <Tab Title="Flota" Route="fleet">
+        <Tab Title="Flota" Route="fleet" Icon="tab_fleet.png">
             <ShellContent ContentTemplate="{DataTemplate views:FleetPage}" />
         </Tab>
-        <Tab Title="Recorrido" Route="tracking">
+        <Tab Title="Recorrido" Route="tracking" Icon="tab_tracking.png">
             <ShellContent ContentTemplate="{DataTemplate views:TrackingPage}" />
         </Tab>
-        <Tab Title="Taller" Route="reservations">
+        <Tab Title="Taller" Route="reservations" Icon="tab_workshop.png">
             <ShellContent ContentTemplate="{DataTemplate views:ReservationsPage}" />
         </Tab>
     </FlyoutItem>
 
-    <FlyoutItem x:Name="RoutinesItem" Title="Rutinas de Mantenimiento" Route="routines">
+    <FlyoutItem x:Name="RoutinesItem" Title="Rutinas de Mantenimiento" Route="routines" Icon="menu_routine.png">
         <ShellContent ContentTemplate="{DataTemplate views:RoutinesPage}" />
     </FlyoutItem>
 
-    <FlyoutItem x:Name="UsersItem" Title="Usuarios" Route="users">
+    <FlyoutItem x:Name="UsersItem" Title="Usuarios" Route="users" Icon="menu_users.png">
         <ShellContent ContentTemplate="{DataTemplate views:UsersPage}" />
     </FlyoutItem>
 
-    <FlyoutItem x:Name="ProfileItem" Title="Mi cuenta" Route="profile">
+    <FlyoutItem x:Name="ProfileItem" Title="Mi cuenta" Route="profile" Icon="menu_profile.png">
         <ShellContent ContentTemplate="{DataTemplate views:ProfilePage}" />
     </FlyoutItem>
 

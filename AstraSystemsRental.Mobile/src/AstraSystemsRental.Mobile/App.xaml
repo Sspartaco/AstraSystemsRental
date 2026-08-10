@@ -12,6 +12,7 @@
 
             <local:InverseBoolConverter x:Key="InverseBool" />
             <local:StatusColorConverter x:Key="StatusColor" />
+            <local:MenuIconConverter x:Key="MenuIcon" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

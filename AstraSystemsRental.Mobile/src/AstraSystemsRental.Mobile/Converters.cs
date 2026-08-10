@@ -29,3 +29,24 @@ public sealed class StatusColorConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }
+
+/// <summary>
+/// Mapea el titulo de cada item del menu lateral a su icono. Shell no permite
+/// enlazar el FlyoutIcon desde la plantilla, y duplicar los trazos en XAML los
+/// dejaria desincronizados de Icons.cs.
+/// </summary>
+public sealed class MenuIconConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value as string switch
+        {
+            "Inicio" => Icons.Dashboard,
+            "Rutinas de Mantenimiento" => Icons.Routine,
+            "Usuarios" => Icons.Group,
+            "Mi cuenta" => Icons.User,
+            _ => Icons.Dashboard
+        };
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}

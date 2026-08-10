@@ -9,12 +9,19 @@
         <ScrollView>
             <VerticalStackLayout Padding="26,70,26,30" Spacing="0">
 
-                <!-- Logo: el mismo orbe con gradiente que la web usa en el sidebar -->
-                <Border x:Name="LogoOrb" Style="{StaticResource BrandOrb}" WidthRequest="66" HeightRequest="66"
-                        StrokeShape="RoundRectangle 20" HorizontalOptions="Center" Opacity="0">
-                    <Path Data="{x:Static local:Icons.Truck}" Fill="White"
-                          HeightRequest="32" WidthRequest="32" Aspect="Uniform"
-                          HorizontalOptions="Center" VerticalOptions="Center" />
+                <!-- Monograma: la "A" de Astra dentro del orbe de marca, con el
+                     anillo orbital detras. El anillo gira al entrar. -->
+                <Border x:Name="LogoOrb" Style="{StaticResource BrandOrb}" WidthRequest="76" HeightRequest="76"
+                        StrokeShape="RoundRectangle 24" HorizontalOptions="Center" Opacity="0">
+                    <Grid>
+                        <Path x:Name="LogoRing" Data="{x:Static local:Icons.MonogramRing}"
+                              Stroke="#59FFFFFF" StrokeThickness="1.3" Fill="Transparent"
+                              HeightRequest="46" WidthRequest="46" Aspect="Uniform" Rotation="-20"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                        <Path Data="{x:Static local:Icons.Monogram}" Stroke="White" StrokeThickness="2.1"
+                              Fill="Transparent" HeightRequest="34" WidthRequest="34" Aspect="Uniform"
+                              HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Grid>
                 </Border>
 
                 <Label x:Name="BrandTitle" Text="AstraSystems" FontSize="30" FontAttributes="Bold"
@@ -74,14 +81,36 @@
                                 Style="{StaticResource PrimaryButton}" IsEnabled="{Binding IsNotBusy}"
                                 Margin="0,4,0,0" />
 
+                        <Grid ColumnDefinitions="*,Auto,*" ColumnSpacing="12" Margin="0,6,0,2"
+                              IsVisible="{Binding CanUseBiometric}">
+                            <BoxView Grid.Column="0" HeightRequest="1" Color="#12FFFFFF" VerticalOptions="Center" />
+                            <Label Grid.Column="1" Text="o" Style="{StaticResource MutedLabel}" FontSize="11" />
+                            <BoxView Grid.Column="2" HeightRequest="1" Color="#12FFFFFF" VerticalOptions="Center" />
+                        </Grid>
+
+                        <Button Command="{Binding BiometricCommand}" IsVisible="{Binding CanUseBiometric}"
+                                IsEnabled="{Binding IsNotBusy}" Style="{StaticResource GhostButton}"
+                                ContentLayout="Left,10" ImageSource="tab_face.png"
+                                Text="{Binding BiometricLabel, StringFormat='Entrar con {0}'}" />
+
                         <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"
                                            HeightRequest="22" />
 
                     </VerticalStackLayout>
                 </Border>
 
-                <Label Text="Plataforma de gestión de flota" Style="{StaticResource MutedLabel}"
-                       FontSize="11" HorizontalOptions="Center" Margin="0,26,0,0" />
+                <VerticalStackLayout x:Name="Footer" Spacing="7" Margin="0,26,0,0" Opacity="0">
+                    <Label Text="Plataforma de gestión de flota" Style="{StaticResource MutedLabel}"
+                           FontSize="11" HorizontalOptions="Center" />
+
+                    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="5" HorizontalOptions="Center">
+                        <Label Grid.Column="0" Text="created by" FontSize="10.5" VerticalOptions="Center"
+                               TextColor="{StaticResource ContentFaint}" />
+                        <Label Grid.Column="1" Text="codalea" FontSize="11" FontAttributes="Bold"
+                               VerticalOptions="Center" CharacterSpacing="0.6"
+                               TextColor="{StaticResource BrandBright}" />
+                    </Grid>
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>

@@ -41,6 +41,9 @@
   <ItemGroup>
     <MauiIcon Include="Resources/AppIcon/appicon.svg" ForegroundFile="Resources/AppIcon/appiconfg.svg" Color="#08090d" />
     <MauiSplashScreen Include="Resources/Splash/splash.svg" Color="#08090d" BaseSize="128,128" />
+    <!-- Los SVG se convierten a PNG en build. Son los mismos trazos de Icons.cs,
+         que a su vez vienen de los iconos de la web. -->
+    <MauiImage Include="Resources/Images/*.svg" />
     <MauiFont Include="Resources/Fonts/*" />
   </ItemGroup>
 
@@ -49,6 +52,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <PackageReference Include="sqlite-net-pcl" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" />
+    <PackageReference Include="Plugin.Fingerprint" />
   </ItemGroup>
 
   <ItemGroup>

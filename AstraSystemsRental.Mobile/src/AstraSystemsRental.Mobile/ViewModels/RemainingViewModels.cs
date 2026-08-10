@@ -61,15 +61,17 @@ public sealed class ProfileViewModel : BaseViewModel
     private readonly IAuthService _auth;
     private readonly ISyncService _sync;
     private readonly IOfflineQueue _queue;
+    private readonly IBiometricService _biometric;
 
     private UserProfileDto? _profile;
 
-    public ProfileViewModel(IAstraApiClient api, IAuthService auth, ISyncService sync, IOfflineQueue queue)
+    public ProfileViewModel(IAstraApiClient api, IAuthService auth, ISyncService sync, IOfflineQueue queue, IBiometricService biometric)
     {
         _api = api;
         _auth = auth;
         _sync = sync;
         _queue = queue;
+        _biometric = biometric;
         LoadCommand = new Command(async () => await LoadAsync());
         LogoutCommand = new Command(async () => await LogoutAsync());
         SaveServerCommand = new Command(SaveServer);
@@ -114,6 +116,63 @@ public sealed class ProfileViewModel : BaseViewModel
 
     public bool HasServerMessage => !string.IsNullOrWhiteSpace(ServerMessage);
 
+    private bool _biometricAvailable;
+    private bool _biometricEnabled;
+    private string _biometricLabel = "Face ID";
+    private bool _applyingBiometric;
+
+    public bool BiometricAvailable
+    {
+        get => _biometricAvailable;
+        private set => Set(ref _biometricAvailable, value);
+    }
+
+    public string BiometricLabel
+    {
+        get => _biometricLabel;
+        private set
+        {
+            if (Set(ref _biometricLabel, value))
+                OnPropertyChanged(nameof(BiometricDescription));
+        }
+    }
+
+    public string BiometricDescription => $"Entrá con {BiometricLabel} sin escribir tu contraseña.";
+
+    /// <summary>
+    /// Activarlo exige superar el prompt: si el usuario no puede autenticarse
+    /// ahora, tampoco podria entrar despues y quedaria fuera de la app.
+    /// </summary>
+    public bool BiometricEnabled
+    {
+        get => _biometricEnabled;
+        set
+        {
+            if (_applyingBiometric || value == _biometricEnabled)
+                return;
+
+            _ = ApplyBiometricAsync(value);
+        }
+    }
+
+    private async Task ApplyBiometricAsync(bool enabled)
+    {
+        if (enabled && !await _biometric.AuthenticateAsync($"Confirmá tu identidad para activar {BiometricLabel}"))
+        {
+            // Revierte el switch en la vista sin volver a disparar el setter.
+            _applyingBiometric = true;
+            OnPropertyChanged(nameof(BiometricEnabled));
+            _applyingBiometric = false;
+            return;
+        }
+
+        await _biometric.SetEnabledAsync(enabled);
+
+        _applyingBiometric = true;
+        Set(ref _biometricEnabled, enabled, nameof(BiometricEnabled));
+        _applyingBiometric = false;
+    }
+
     public string FullName => _profile?.FullName ?? "—";
     public string Email => _profile?.Email ?? "—";
     public string Role => StatusText.Role(_profile?.RoleCode);
@@ -145,6 +204,14 @@ public sealed class ProfileViewModel : BaseViewModel
 
             foreach (var node in await _auth.GetNodesAsync())
                 Nodes.Add(node);
+
+            var kind = await _biometric.GetAvailableAsync();
+            BiometricAvailable = kind != BiometricKind.None;
+            BiometricLabel = _biometric.Label(kind);
+
+            _applyingBiometric = true;
+            Set(ref _biometricEnabled, _biometric.IsEnabled, nameof(BiometricEnabled));
+            _applyingBiometric = false;
 
             await ReloadConflictsAsync();
             NotifyAll();
@@ -211,6 +278,9 @@ public sealed class ProfileViewModel : BaseViewModel
 
     private async Task LogoutAsync()
     {
+        // Cerrar sesion invalida el refresh token: dejar la biometria activa
+        // haria que el proximo arranque intente desbloquear una sesion muerta.
+        await _biometric.SetEnabledAsync(false);
         await _auth.LogoutAsync();
 
         if (Shell.Current is AppShell shell)

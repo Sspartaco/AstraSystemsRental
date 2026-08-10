@@ -1,4 +1,4 @@
-using Microsoft.Maui.Controls.Shapes;
+﻿using Microsoft.Maui.Controls.Shapes;
 
 namespace AstraSystemsRental.Mobile;
 
@@ -46,4 +46,16 @@ public static class Icons
 
     public static readonly Geometry Wrench = Parse("M14.7 6.3a4 4 0 0 0 5 5l-9.4 9.4a2.1 2.1 0 0 1-3-3Z");
 
+
+    /// <summary>
+    /// Monograma de marca: la "A" de Astra cruzada por un anillo orbital.
+    /// Reemplaza al camion generico, que no decia nada de la marca.
+    /// </summary>
+    public static readonly Geometry Monogram = Parse("M12 4.6 L18.4 19.2 M12 4.6 L5.6 19.2 M8.4 14.4 H15.6");
+
+    /// <summary>Anillo orbital del monograma; va detras de la "A", inclinado.</summary>
+    public static readonly Geometry MonogramRing = Parse("M2 13 a10 4.2 0 1 0 20 0 a10 4.2 0 1 0 -20 0 Z");
+
+    /// <summary>Dos personas: distingue "Usuarios" (gestion) de "Mi cuenta" (perfil propio).</summary>
+    public static readonly Geometry Group = Parse("M9 11.5 a3.2 3.2 0 1 0 0-6.4 a3.2 3.2 0 0 0 0 6.4 Z M2.8 19.6 v-1.1 a4.6 4.6 0 0 1 4.6-4.6 h3.2 a4.6 4.6 0 0 1 4.6 4.6 v1.1 M16.4 5.4 a3.1 3.1 0 0 1 0 6 M17.6 13.9 a4.6 4.6 0 0 1 3.6 4.5 v1.2");
 }

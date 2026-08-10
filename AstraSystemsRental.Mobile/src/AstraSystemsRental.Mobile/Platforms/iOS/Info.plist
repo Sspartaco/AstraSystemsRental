@@ -28,6 +28,11 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>AstraSystems guarda las fotos que tomás para las reservas de taller.</string>
 
+	<!-- Obligatorio para invocar Face ID: sin esta clave iOS mata la app al
+	     primer intento de autenticacion, sin mensaje de error util. -->
+	<key>NSFaceIDUsageDescription</key>
+	<string>AstraSystems usa Face ID para que entres a tu sesión sin escribir la contraseña.</string>
+
 	<!-- Solo necesario mientras el Gateway corra en HTTP local. Quitar al pasar a HTTPS. -->
 	<key>NSAppTransportSecurity</key>
 	<dict>
