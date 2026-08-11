@@ -13,6 +13,9 @@ For AI assistants and developers. Índice de estándares transversales a Front +
 | [FRONT_UI_PATTERNS.md](FRONT_UI_PATTERNS.md) | Cards vs. tablas, paginación, Post-Redirect-Get, helper JSON, htmx, spinners. |
 | [ODISEO_TESTING_GUIDE.md](ODISEO_TESTING_GUIDE.md) | Convención de test plans E2E (Probe/Odiseo/SAGA), gotchas reales del motor y de escritura de planes. |
 | [DOMAIN_VALIDATION_PATTERNS.md](DOMAIN_VALIDATION_PATTERNS.md) | `Guard` extendido, validador de dominio puro invocado desde múltiples flujos. |
+| [MOBILE_APP_GUIDE.md](MOBILE_APP_GUIDE.md) | App .NET MAUI: **reparto app/web**, toolchain, offline selectivo, cámara, empaque del APK. |
+| [COMPILAR_IOS_EN_MAC.md](COMPILAR_IOS_EN_MAC.md) | Compilar e instalar la app en un iPhone desde una Mac. Autocontenida. |
+| [IOS_SIN_MAC.md](IOS_SIN_MAC.md) | Alternativas cuando no hay Mac: CI, Mac en la nube, costos y límites. |
 
 ---
 
@@ -25,6 +28,9 @@ For AI assistants and developers. Índice de estándares transversales a Front +
 5. **Cero comentarios en código.**
 6. **Cards en grid para listados, nunca tablas HTML** — ver `FRONT_UI_PATTERNS.md`.
 7. **Test plan Odiseo obligatorio al cerrar una vista o feature nueva**, corrido en modo real (no solo `--dry-run`) contra la UI — ver `ODISEO_TESTING_GUIDE.md`.
+8. **Toda vista nueva del Front se evalúa para la app en el MISMO PR.** Si es de operación (algo que se hace parado al lado del vehículo) va a la app; si es administrativa (usuarios, compañías, planes, logs) se queda solo en la web — pero la decisión se escribe. La app ya se desincronizó una vez y el usuario lo detectó antes que nosotros. Ver `MOBILE_APP_GUIDE.md`.
+9. **Leer con tracking todo lo que se vaya a escribir.** `GetFirstOrDefaultAsync` de `BaseRepository` usa `AsNoTracking()`: modificar esa entidad y llamar a `SaveChangesAsync` devuelve **200 OK sin emitir un solo `UPDATE`**. Ver `BACKEND_SERVICE_BLUEPRINT.md`.
+10. **Ningún mensaje de error llega al usuario en inglés.** Todo texto que se muestre pasa por `ErrorText.Translate` (en `Contracts`, compartido por web y app). Un `_ => error` al final de un `switch` de traducción es un bug esperando salir.
 
 ---
 
@@ -37,5 +43,22 @@ dotnet test <proyecto>.Tests.csproj        # si el proyecto tiene tests
 # correr el plan Odiseo correspondiente en modo real (no --dry-run) y confirmar 0 fallos
 ```
 
-- `MOBILE_APP_GUIDE.md` — app .NET MAUI Android: toolchain (ojo con el JDK), offline selectivo, cámara, empaque del APK.
-- `IOS_SIN_MAC.md` — cómo llevar la app a un iPhone sin comprar una Mac: opciones, costos y el límite que no se puede evadir.
+### Si se tocó una vista o un endpoint
+
+- [ ] **¿La vista va también a la app?** Decidir con la tabla de `MOBILE_APP_GUIDE.md`. Si va: `AppShell.xaml` + ViewModel + gating en `ApplyVisibility`. Si no va: dejarlo escrito en el PR.
+- [ ] **¿Se escribe en la base?** Confirmar que la lectura previa usa tracking (`GetOwnedForUpdateAsync`, no `GetOwnedAsync`), y **verificar en la BD que la fila cambió** — no alcanza con un 200.
+- [ ] **¿Hay mensajes de error nuevos?** Agregarlos a `ErrorText` en `Contracts`, o van a salir en inglés.
+- [ ] **¿DTO nuevo?** Va en `AstraSystemsRental.Contracts`, nunca duplicado entre Front y app.
+- [ ] **¿Nodo nuevo?** Agregar la constante a `AppConfig` de la app aunque la vista sea solo web: la app los usa para el gating del menú.
+
+---
+
+## Recompilar la app tras tocar el backend
+
+Si el cambio es solo de servidor, **el APK no se recompila** — la app consume los
+mismos endpoints. Solo hace falta regenerarlo al tocar `AstraSystemsRental.Mobile`
+o `Contracts`:
+
+```bash
+dotnet publish AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj -f net10.0-android -c Release
+```

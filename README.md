@@ -20,6 +20,14 @@ Lo que la Mac **no** necesita: Docker, SQL Server, las APIs, el Front. El backen
 
 ---
 
+## Antes de tocar código
+
+Lee **[`GlobalGuidelines/00_README.md`](GlobalGuidelines/00_README.md)** — índice de estándares y las 10 reglas de oro. Tres que se rompen seguido:
+
+- **Toda vista nueva del Front se evalúa para la app en el mismo PR.** Operación → va a la app; administración (usuarios, compañías, planes, logs) → solo web. La decisión se escribe, no se omite.
+- **Leer con tracking lo que se vaya a escribir.** `AsNoTracking` devuelve `200 OK` sin emitir el `UPDATE`; falla en silencio.
+- **Ningún error llega al usuario en inglés** — todo pasa por `ErrorText.Translate`, en `Contracts`, compartido por web y app.
+
 ## Estructura del repo
 
 ```
