@@ -54,7 +54,7 @@ Cada acción del Front debe validar `HasNode("vehicle-registry")` y cada llamada
 
 El dominio pertenece a `AstraSystemsRental.Vehicles.Api`; no se debe crear una dependencia hacia el proyecto legado. Debe seguir el patrón actual de Minimal API, `OperationResult`, EF Core, `BaseRepository`, JWT RS256 y scripts SQL idempotentes.
 
-Los scripts del módulo deben ejecutarse desde `run.ps1 reset-db` después de los esquemas de `users`, `subscriptions`, `access`, `companies` y del esquema actual `vehicles`.
+Los scripts del módulo deben ejecutarse desde `scripts/run.ps1 reset-db` después de los esquemas de `users`, `subscriptions`, `access`, `companies` y del esquema actual `vehicles`.
 
 ## Modelo de datos propuesto
 

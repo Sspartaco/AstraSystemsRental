@@ -16,7 +16,7 @@ Además, **para instalar en un iPhone físico siempre hace falta una cuenta de A
 
 ## Opciones, de menor a mayor fricción
 
-### 0. Tenés una Mac a mano → `astralrental-ios.sh` ✅ EL CAMINO CORTO
+### 0. Tenés una Mac a mano → `scripts/astralrental-ios.sh` ✅ EL CAMINO CORTO
 
 Si hay una Mac disponible, esto es lo más simple y **no requiere la cuenta de 99 USD/año**: un Apple ID gratuito basta para instalar en tu propio iPhone (con el límite de los 7 días).
 
@@ -25,7 +25,7 @@ En la Mac:
 ```bash
 git clone https://github.com/Sspartaco/AstraSystemsRental.git
 cd AstraSystemsRental
-./astralrental-ios.sh
+./scripts/astralrental-ios.sh
 ```
 
 El script hace todo de punta a punta: comprueba Xcode y .NET, instala el workload `maui-ios` si falta, regenera el paquete local `Base` (que no se versiona), verifica que haya un iPhone conectado y un certificado de firma, prueba que el Gateway responda, compila e instala.
@@ -39,7 +39,7 @@ Cuando algo falta no compila a medias: se detiene y dice exactamente qué hacer 
 | `--simulator` | Corre en el simulador de iOS, sin necesidad de teléfono ni certificado |
 | `--server http://IP:8080` | Apunta la app a otro Gateway |
 
-**El backend sigue en la máquina Windows.** El script comprueba que responda y avisa si no; el iPhone y esa máquina tienen que estar en la misma red, con `allow-lan-access.ps1` ya ejecutado del lado de Windows. La dirección también se puede corregir desde la app en *Mi cuenta → Servidor*, sin recompilar.
+**El backend sigue en la máquina Windows.** El script comprueba que responda y avisa si no; el iPhone y esa máquina tienen que estar en la misma red, con `scripts/allow-lan-access.ps1` ya ejecutado del lado de Windows. La dirección también se puede corregir desde la app en *Mi cuenta → Servidor*, sin recompilar.
 
 ### 1. GitHub Actions con runner macOS ✅ FUNCIONANDO
 
@@ -111,7 +111,7 @@ La pregunta natural es si el backend tiene que salir a internet. **No hace falta
 Docker ya publica los puertos en **todas** las interfaces, así que el Gateway responde en la IP de red del equipo sin tocar una línea de backend. Lo único que lo bloquea es el firewall de Windows:
 
 ```
-.\allow-lan-access.ps1        # como administrador (o la opción [L] de astralrental-local.cmd)
+.\scripts\allow-lan-access.ps1   # como administrador (o la opción [L] de astralrental-local.cmd)
 ```
 
 Crea la regla `AstraSystems Gateway (LAN)` para 8080/8443, **solo en el perfil Privado**. Si la red actual figura como Pública la regla no aplica — el script lo avisa y muestra el comando para cambiarla.

@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 chcp 65001 >nul
 
 set SCRIPT_DIR=%~dp0
-set RUN=%SCRIPT_DIR%run.ps1
+set RUN=%SCRIPT_DIR%scripts\run.ps1
 set PS=powershell -NoProfile -ExecutionPolicy Bypass -File "%RUN%"
 set DOCKER_BUILDKIT=1
 set COMPOSE_DOCKER_CLI_BUILD=1
@@ -61,7 +61,7 @@ echo Abre el puerto 8080 del firewall (solo en redes privadas) para que tu
 echo iPhone o un Android real puedan alcanzar el Gateway.
 echo Requiere permisos de administrador: Windows va a pedir confirmacion.
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-NoExit','-File','%SCRIPT_DIR%allow-lan-access.ps1'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process powershell -Verb RunAs -ArgumentList '-NoProfile','-ExecutionPolicy','Bypass','-NoExit','-File','%SCRIPT_DIR%scripts\allow-lan-access.ps1'"
 pause
 goto menu
 
@@ -79,11 +79,11 @@ echo   EN LA MAC, tres comandos:
 echo.
 echo     git clone https://github.com/Sspartaco/AstraSystemsRental.git
 echo     cd AstraSystemsRental
-echo     ./astralrental-ios.sh
+echo     ./scripts/astralrental-ios.sh
 echo.
 echo El script comprueba Xcode y .NET, instala lo que falte, verifica el
 echo iPhone y el certificado, compila e instala. La primera vez conviene
-echo correr  ./astralrental-ios.sh --check  para ver que falta sin compilar.
+echo correr  ./scripts/astralrental-ios.sh --check  para ver que falta sin compilar.
 echo.
 echo ----------------------------------------------------
 echo   Lo que tiene que estar listo de ESTE lado:
@@ -116,7 +116,7 @@ echo   3. Instala el APK y abre la app
 echo.
 echo La app apunta a http://10.0.2.2:8080, que es como el emulador ve al host.
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%run-emulator.ps1"
+powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\run-emulator.ps1"
 pause
 goto menu
 
@@ -126,7 +126,7 @@ echo === App Android: recompilar APK e instalar ===
 echo Igual que [A], pero recompila la app en Release antes de instalarla.
 echo Usalo despues de tocar codigo de AstraSystemsRental.Mobile.
 echo.
-powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%run-emulator.ps1" -Rebuild
+powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%scripts\run-emulator.ps1" -Rebuild
 pause
 goto menu
 

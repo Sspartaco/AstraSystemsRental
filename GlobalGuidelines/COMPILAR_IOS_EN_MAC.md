@@ -62,13 +62,13 @@ Sin confiar, el script no detecta el dispositivo.
 ```bash
 git clone https://github.com/Sspartaco/AstraSystemsRental.git
 cd AstraSystemsRental
-./astralrental-ios.sh --no-backend-check
+./scripts/astralrental-ios.sh --no-backend-check
 ```
 
 Conviene correr primero el diagnóstico, que no compila nada:
 
 ```bash
-./astralrental-ios.sh --check
+./scripts/astralrental-ios.sh --check
 ```
 
 Repetirlo hasta que diga *"Entorno listo"*.
@@ -113,8 +113,8 @@ La primera vez que abras la app, iOS dirá **"Desarrollador no confiable"**:
 | `requires Xcode 26.x` | Xcode desactualizado. Actualizar desde la App Store |
 | `NETSDK1147` / falta workload | El script lo instala solo; si falla: `dotnet workload install maui-ios --skip-sign-check` |
 | `NU1301: local source doesn't exist` | Falta `nuget-local/`. El script lo regenera; si falla, ver la nota de abajo |
-| `permission denied` al ejecutar | `bash astralrental-ios.sh` |
-| `bad interpreter: No such file` | El script llegó con finales de línea CRLF. `.gitattributes` lo previene; si pasa: `sed -i '' 's/\r$//' astralrental-ios.sh` |
+| `permission denied` al ejecutar | `bash scripts/astralrental-ios.sh` |
+| `bad interpreter: No such file` | El script llegó con finales de línea CRLF. `.gitattributes` lo previene; si pasa: `sed -i '' 's/\r$//' scripts/astralrental-ios.sh` |
 | La app abre pero no inicia sesión | Es esperado si el backend no está accesible. Ver la sección siguiente |
 
 ### Nota sobre el paquete Base
@@ -136,7 +136,7 @@ dotnet pack  AstraSystemsRental.Base/src/AstraSystemsRental.Base/AstraSystemsRen
 La app no tiene datos propios: consume las APIs a través del Gateway. Instalarla funciona sin backend, pero **no se puede ni iniciar sesión** hasta que:
 
 1. El stack de Docker esté levantado en la máquina Windows
-2. Esa máquina haya ejecutado `allow-lan-access.ps1` (abre el firewall en los puertos 8080/8443, solo en perfil Privado)
+2. Esa máquina haya ejecutado `scripts/allow-lan-access.ps1` (abre el firewall en los puertos 8080/8443, solo en perfil Privado)
 3. El iPhone y esa máquina estén en **la misma red**
 
 Dos cosas que fallan aunque el firewall esté bien:

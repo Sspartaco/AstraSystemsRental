@@ -4,7 +4,7 @@
 #
 #   git clone https://github.com/Sspartaco/AstraSystemsRental.git
 #   cd AstraSystemsRental
-#   ./astralrental-ios.sh
+#   ./scripts/astralrental-ios.sh
 #
 # Comprueba el entorno, instala lo que falte, compila y despliega al iPhone
 # conectado por cable. Sin argumentos hace todo de punta a punta.
@@ -16,7 +16,9 @@
 #
 set -euo pipefail
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# El script vive en scripts/: la raiz del repo esta un nivel arriba. Todas las
+# rutas de proyectos que usa abajo son relativas a esa raiz.
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_DIR"
 
 MOBILE_CSPROJ="AstraSystemsRental.Mobile/src/AstraSystemsRental.Mobile/AstraSystemsRental.Mobile.csproj"

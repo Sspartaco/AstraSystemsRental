@@ -14,7 +14,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$root = Split-Path -Parent $MyInvocation.MyCommand.Path
+# El script vive en scripts/, pero docker-compose.yml y .env estan en la raiz:
+# hay que subir un nivel o todos los comandos de compose fallan.
+$root = Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path)
 Set-Location $root
 
 if (-not (Test-Path ".env")) {

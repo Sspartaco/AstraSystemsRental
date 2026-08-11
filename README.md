@@ -9,7 +9,7 @@ Fleet management platform (codalea), built as independent .NET 10 minimal-API mi
 **Es lo único que se hace en macOS. No levantes nada más de este repo ahí.**
 
 ```bash
-./astralrental-ios.sh --no-backend-check
+./scripts/astralrental-ios.sh --no-backend-check
 ```
 
 Un solo comando: comprueba el entorno, instala lo que falte, compila e instala la app en el iPhone conectado por cable. Si algo falta, se detiene y explica qué hacer.
@@ -19,6 +19,24 @@ Un solo comando: comprueba el entorno, instala lo que falte, compila e instala l
 Lo que la Mac **no** necesita: Docker, SQL Server, las APIs, el Front. El backend corre en otra máquina.
 
 ---
+
+## Estructura del repo
+
+```
+AstraSystemsRental.*/     Las 10 soluciones (6 APIs, Gateway, Front, Contracts, Mobile)
+GlobalGuidelines/         Guías vigentes: arquitectura, blueprint, UI, app móvil, testing
+docs/ai-context/          Contexto histórico por feature
+docs/planes/              Planes ya ejecutados (referencia)
+scripts/                  Utilidades del entorno local — ver scripts/README.md
+certs/ keys/              Certificados y llaves de desarrollo (NO versionados)
+nuget-local/              Paquete Base compilado (NO versionado, se regenera)
+
+astralrental-local.cmd    ← punto de entrada: menú del entorno local
+docker-compose.yml        Los 6 servicios + Front
+```
+
+**Empezá por `astralrental-local.cmd`**: levanta el stack, resetea la BD, arranca
+el emulador Android y muestra cómo compilar para iPhone.
 
 ## Solutions
 
@@ -61,10 +79,10 @@ One database `AstraSystemsRental`, three schemas (`users`, `subscriptions`, `acc
 ```powershell
 # From the repo root
 Copy-Item .env.example .env   # then fill in SA_PASSWORD, Gmail credentials, INTERNAL_API_KEY
-./run.ps1 up                  # builds and starts sql + gateway + users + mail
-./run.ps1 reset-db            # applies the SQL schema and seed to the sql container
-./run.ps1 logs gateway        # tail a service
-./run.ps1 down                # stop everything
+./scripts/run.ps1 up                  # builds and starts sql + gateway + users + mail
+./scripts/run.ps1 reset-db            # applies the SQL schema and seed to the sql container
+./scripts/run.ps1 logs gateway        # tail a service
+./scripts/run.ps1 down                # stop everything
 ```
 
 The gateway is reachable at `http://localhost:8080`. Each API also has its own `run.ps1`/`docker-compose.yml` for running in isolation.

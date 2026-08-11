@@ -17,7 +17,7 @@ Cada carpeta de primer nivel es un proyecto .NET **standalone**, con su propio `
 | `AstraSystemsRental.Vehicles.Api` | 5011 | Cotización de vehículos por placa (ver `03-feature-vehiculos-placas.md`) |
 | `AstraSystemsRental.Front` | 5000 (HTTP) / 8444 (HTTPS) | MVC server-rendered, la UI que usa la gente |
 
-**Regla para levantar todo:** `./run.ps1 up` (usa `docker-compose.yml`). Copia `.env.example` a `.env` en el primer uso si no existe.
+**Regla para levantar todo:** `./scripts/run.ps1 up` (usa `docker-compose.yml`). Copia `.env.example` a `.env` en el primer uso si no existe.
 
 ## `AstraSystemsRental.Base` — la librería compartida
 
@@ -103,7 +103,7 @@ Desenvuelve automáticamente el envelope `{success, data, errors, traceId}` de l
 
 ## Users.Api — dueña de identidad y catálogo
 
-Puerto 5001. Esquemas SQL: `users`, `subscriptions`, `access`, `companies` (todos en la misma base `AstraSystemsRental`). Scripts idempotentes en `AstraSystemsRental.Users.Api/SolutionItems/db/`, ejecutados en el orden que define `run.ps1 reset-db`.
+Puerto 5001. Esquemas SQL: `users`, `subscriptions`, `access`, `companies` (todos en la misma base `AstraSystemsRental`). Scripts idempotentes en `AstraSystemsRental.Users.Api/SolutionItems/db/`, ejecutados en el orden que define `scripts/run.ps1 reset-db`.
 
 Endpoints relevantes: `AuthEndpoints` (login/registro/confirmación), `CatalogEndpoints` (CRUD de nodos/planes/roles, ver doc 02), `CompanyEndpoints`, `UserEndpoints`.
 
@@ -116,8 +116,8 @@ Ejemplo real: `Cli/SeedSuperUserCommand.cs` (`dotnet run -- seed-superuser --ema
 
 ## Cómo correr y depurar localmente
 
-- **Todo en Docker**: `./run.ps1 up` — construye y levanta los 6 servicios.
-- **Reset de BD**: `./run.ps1 reset-db` — aplica los scripts SQL de Users.Api en orden contra SQL Server local (usa `SQLCMD.EXE`, ruta hardcodeada en el script: `C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\SQLCMD.EXE`).
+- **Todo en Docker**: `./scripts/run.ps1 up` — construye y levanta los 6 servicios.
+- **Reset de BD**: `./scripts/run.ps1 reset-db` — aplica los scripts SQL de Users.Api en orden contra SQL Server local (usa `SQLCMD.EXE`, ruta hardcodeada en el script: `C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\SQLCMD.EXE`).
 - **Rebuild de un solo servicio**: `docker compose up -d --build {nombre-servicio}` (ej. `api-vehicles`).
 - **Logs**: `docker logs {nombre-contenedor} --tail N` (contenedores se llaman `astralrental-{servicio}`, ej. `astralrental-api-vehicles`).
 - **Compilar sin Docker** (rápido, para detectar errores de compilación antes de reconstruir imagen): `dotnet build {ruta}/{proyecto}.csproj -v quiet` desde la raíz del repo.

@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     Levanta el emulador de Android, instala el APK y abre la app.
@@ -19,12 +19,15 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# El script vive en scripts/: la raiz del repo esta un nivel arriba.
+$RepoRoot = Split-Path -Parent $PSScriptRoot
+
 $Sdk = "$env:LOCALAPPDATA\Android\Sdk"
 $Emulator = "$Sdk\emulator\emulator.exe"
 $Adb = "$Sdk\platform-tools\adb.exe"
 $AvdManager = "$Sdk\cmdline-tools\latest\bin\avdmanager.bat"
 $SystemImage = "system-images;android-35;google_apis;x86_64"
-$Apk = "$PSScriptRoot\AstraSystemsRental.Mobile\src\AstraSystemsRental.Mobile\bin\Release\net10.0-android\publish\app.codalea.astrasystems-Signed.apk"
+$Apk = "$RepoRoot\AstraSystemsRental.Mobile\src\AstraSystemsRental.Mobile\bin\Release\net10.0-android\publish\app.codalea.astrasystems-Signed.apk"
 
 if (-not $env:JAVA_HOME) {
     $env:JAVA_HOME = "C:\Program Files\Microsoft\jdk-17.0.20.8-hotspot"
@@ -52,7 +55,7 @@ elseif ($SkipDocker) {
 else {
     Write-Host "   El Gateway no responde. Levantando el stack..." -ForegroundColor Yellow
 
-    Push-Location $PSScriptRoot
+    Push-Location $RepoRoot
     try {
         docker compose up -d --build
         if ($LASTEXITCODE -ne 0) {
@@ -106,7 +109,7 @@ Write-Host "   Emulador listo." -ForegroundColor Green
 
 if ($Rebuild) {
     Write-Host "4. Recompilando el APK..." -ForegroundColor Cyan
-    dotnet publish "$PSScriptRoot\AstraSystemsRental.Mobile\src\AstraSystemsRental.Mobile\AstraSystemsRental.Mobile.csproj" `
+    dotnet publish "$RepoRoot\AstraSystemsRental.Mobile\src\AstraSystemsRental.Mobile\AstraSystemsRental.Mobile.csproj" `
         -f net10.0-android -c Release --nologo
 }
 

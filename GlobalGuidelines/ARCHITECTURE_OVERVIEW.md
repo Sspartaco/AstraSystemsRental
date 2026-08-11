@@ -28,7 +28,7 @@ Dos consecuencias de diseño a respetar al extenderlo:
 - **Las llamadas van directas entre contenedores** (`http://api-vehicles:8080`), nunca a través del Gateway. Esto evita el rate limit compartido descrito abajo. El cliente reenvía `Authorization` y `X-Astra-Company`, y fija el `X-Astra-Node` que corresponde a la API destino.
 - **Degradación por sección, no total**: `DashboardResponse` lleva `FleetAvailable`/`WorkshopAvailable`. Si una fuente cae, esa sección viene null y el resto del panel sigue funcionando. Nunca hacer que una fuente caída rompa la pantalla entera.
 
-Al agregar una API nueva: siguiente puerto libre en la numeración (5001, 5006, 5011, 5016, ...), nuevo `{nombre}-route`/`{nombre}-cluster` en `Gateway/appsettings.json`, nuevo servicio en `docker-compose.yml`, scripts SQL agregados a `run.ps1 reset-db` en orden.
+Al agregar una API nueva: siguiente puerto libre en la numeración (5001, 5006, 5011, 5016, ...), nuevo `{nombre}-route`/`{nombre}-cluster` en `Gateway/appsettings.json`, nuevo servicio en `docker-compose.yml`, scripts SQL agregados a `scripts/run.ps1 reset-db` en orden.
 
 ---
 
