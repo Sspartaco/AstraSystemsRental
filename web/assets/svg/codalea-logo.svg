@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 32" fill="none" role="img" aria-label="Codalea">
+  <defs>
+    <linearGradient id="codGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#21D4FD"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(0, 4)">
+    <polygon points="12,0 20,4 20,12 12,16 4,12 4,4" stroke="url(#codGrad)" stroke-width="1.5" fill="none"/>
+    <polygon points="12,4 17,7 17,11 12,14 7,11 7,7" fill="url(#codGrad)" opacity="0.6"/>
+    <line x1="12" y1="0" x2="12" y2="16" stroke="url(#codGrad)" stroke-width="0.8" opacity="0.4"/>
+    <line x1="4" y1="4" x2="20" y2="12" stroke="url(#codGrad)" stroke-width="0.8" opacity="0.4"/>
+    <line x1="20" y1="4" x2="4" y2="12" stroke="url(#codGrad)" stroke-width="0.8" opacity="0.4"/>
+  </g>
+  <text x="28" y="21" font-family="Inter, sans-serif" font-weight="600" font-size="14" fill="#E2E8F0" letter-spacing="0.5">codalea</text>
+</svg>

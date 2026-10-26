@@ -1,0 +1,60 @@
+name: Sitio web
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/sitio-web.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sitio-web
+  cancel-in-progress: false
+
+jobs:
+  publicar:
+    name: www.codalea.com.co
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Pruebas de la función del formulario
+        working-directory: web/api
+        run: |
+          npm ci
+          npm test
+
+      - name: Archivos a publicar
+        run: |
+          mkdir publicar
+          cp web/*.html web/robots.txt web/sitemap.xml web/staticwebapp.config.json publicar/
+          cp -r web/css web/js web/assets publicar/
+
+      - uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: upload
+          app_location: publicar
+          api_location: web/api
+          output_location: ""
+          skip_app_build: true
+
+      - name: Verificación
+        run: |
+          for i in $(seq 1 24); do
+            inicio=$(curl -s -o /dev/null -w "%{http_code}" https://brave-stone-007edcd10.3.azurestaticapps.net/)
+            api=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d '{}' https://brave-stone-007edcd10.3.azurestaticapps.net/api/solicitud)
+            echo "inicio $inicio · formulario sin datos $api"
+            if [ "$inicio" = "200" ] && [ "$api" = "400" ]; then exit 0; fi
+            sleep 5
+          done
+          exit 1

@@ -1,0 +1,16 @@
+{
+  "name": "codalea-sitio-api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/functions/*.js",
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@azure/functions": "4.16.5",
+    "nodemailer": "10.0.13"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

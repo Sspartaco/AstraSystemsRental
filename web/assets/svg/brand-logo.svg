@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 80" fill="none" role="img" aria-label="AstraSystems">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#829EFF"/>
+      <stop offset="45%" stop-color="#5C80FF"/>
+      <stop offset="100%" stop-color="#3452D6"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.5" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <g>
+    <rect x="10" y="18" width="44" height="44" rx="13" fill="url(#logoGrad)"/>
+    <g transform="translate(20 28)" stroke="#FFFFFF" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none">
+      <path d="M1.4 3.4A1.4 1.4 0 0 1 2.8 2h7a1.4 1.4 0 0 1 1.4 1.4V10H2.2a.6.6 0 0 1-.6-.6Z"/>
+      <path d="M11.2 4.8h2.35a1.4 1.4 0 0 1 1.24.75l1.25 2.4a1.4 1.4 0 0 1 .16.65V10h-5Z"/>
+      <circle cx="5.2" cy="12.4" r="1.5"/>
+      <circle cx="13.4" cy="12.4" r="1.5"/>
+      <path d="M6.7 12.4h5.2"/>
+    </g>
+
+    <text x="70" y="45" font-family="'Space Grotesk', Inter, sans-serif" font-weight="700" font-size="25" fill="#FFFFFF" letter-spacing="-0.4">Astra<tspan fill="url(#logoGrad)" filter="url(#glow)">Systems</tspan></text>
+    <text x="71" y="62" font-family="Inter, sans-serif" font-weight="400" font-size="9.5" fill="#6F7A94" letter-spacing="3.4">GESTION DE FLOTA</text>
+  </g>
+</svg>
