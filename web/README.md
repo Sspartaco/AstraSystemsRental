@@ -1,12 +1,12 @@
 # Sitio público de Codalea
 
-Sitio de `www.codalea.com.co`: presenta los dos productos de Codalea, AstraSystems (flotas y alquiler de vehículos) y Codalea Comercio (talleres y comercios). HTML, CSS y JavaScript sin build; el contenido está escrito en las páginas, así que se lee completo aunque JavaScript no cargue.
+Sitio de `www.codalea.com.co`: presenta los dos productos de Codalea, AstraSystems (flotas y alquiler de vehículos) y el producto de talleres y comercios, cuyo nombre (hoy Merx) no se escribe en las páginas: se usa `{{producto}}` y se llena al publicar. HTML, CSS y JavaScript sin build; el contenido está escrito en las páginas, así que se lee completo aunque JavaScript no cargue.
 
 ## Estructura
 
 ```
 web/
-├── index.html              Portada, AstraSystems, Codalea Comercio, cómo trabajamos y contacto
+├── index.html              Portada, AstraSystems, {{producto}}, cómo trabajamos y contacto
 ├── privacidad.html         Política de tratamiento de datos (Ley 1581 de 2012)
 ├── terminos.html           Términos de uso del sitio
 ├── 404.html                Página no encontrada
@@ -36,7 +36,7 @@ Pruebas: `cd web/api && npm install && npm test`.
 
 ## Capturas
 
-Las capturas de Codalea Comercio (`assets/img/comercio/`) se toman del ambiente local con el negocio de demostración, en tema oscuro. Las de AstraSystems están en `assets/img/product/`. No usar datos de clientes reales.
+Las capturas del producto de talleres (`assets/img/comercio/`) se toman del ambiente local con el negocio de demostración, en tema oscuro. Las de AstraSystems están en `assets/img/product/`. No usar datos de clientes reales.
 
 ## Desarrollo local
 
@@ -49,3 +49,7 @@ El formulario necesita la función; en local responde error y muestra las altern
 ## Publicación
 
 `.github/workflows/sitio-web.yml` publica en Azure Static Web Apps (`codalea-sitio`) cada push a `main` que toque `web/`. Solo se publican los archivos del sitio; esta guía y los documentos internos quedan fuera.
+
+## Nombre del producto
+
+El nombre vive en un solo lugar: el parámetro `nombreProducto` del Bicep del producto (repositorio gestion-comercial-mvp), que la app publica en `https://app.codalea.com.co/marca.json`. `node web/herramientas/marca.mjs [carpeta]` copia el sitio a `publicar/` reemplazando `{{producto}}` y `{{consola}}`, y genera `web/api/src/marca.json` para el formulario. Si la app no responde usa `web/marca.json` como respaldo; `MARCA_PRODUCTO` lo fuerza. El workflow lo corre en cada publicación y una vez al día, así que un cambio de nombre en el producto llega solo al sitio. Para ver el sitio en local, abre `publicar/` después de correr el script.

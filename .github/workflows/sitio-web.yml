@@ -7,6 +7,8 @@ on:
       - "web/**"
       - ".github/workflows/sitio-web.yml"
   workflow_dispatch:
+  schedule:
+    - cron: "0 11 * * *"
 
 permissions:
   contents: read
@@ -33,11 +35,10 @@ jobs:
           npm ci
           npm test
 
-      - name: Archivos a publicar
+      - name: Archivos a publicar con la marca del producto
         run: |
-          mkdir publicar
-          cp web/*.html web/robots.txt web/sitemap.xml web/staticwebapp.config.json publicar/
-          cp -r web/css web/js web/assets publicar/
+          node web/herramientas/marca.mjs publicar
+          if grep -rl "{{producto}}\|{{consola}}" publicar; then echo "Quedaron marcadores sin reemplazar"; exit 1; fi
 
       - uses: Azure/static-web-apps-deploy@v1
         with:

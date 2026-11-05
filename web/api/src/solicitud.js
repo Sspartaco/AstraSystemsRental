@@ -1,4 +1,5 @@
-const PRODUCTOS = ['AstraSystems', 'Codalea Comercio', 'Los dos'];
+const { producto: PRODUCTO } = require('./marca.json');
+const PRODUCTOS = ['AstraSystems', PRODUCTO, 'Los dos'];
 const CANALES = ['Correo', 'WhatsApp', 'Llamada'];
 const LIMITES = { nombre: 120, empresa: 160, correo: 160, telefono: 30, tamano: 80, mensaje: 2000 };
 const VENTANA_MS = 10 * 60 * 1000;

@@ -4,6 +4,7 @@
   "private": true,
   "main": "src/functions/*.js",
   "scripts": {
+    "pretest": "node ../herramientas/marca.mjs --solo-api",
     "test": "node --test"
   },
   "dependencies": {

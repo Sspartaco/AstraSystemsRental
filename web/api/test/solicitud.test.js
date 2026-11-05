@@ -1,8 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { validar, armarCorreo, crearLimitador, MAXIMO_POR_VENTANA } = require('../src/solicitud');
+const { producto: PRODUCTO } = require('../src/marca.json');
 
-const valido = { nombre: 'Ana', empresa: 'Motos Ana', correo: 'ana@ejemplo.co', producto: 'Codalea Comercio', canal: 'WhatsApp', autorizaDatos: true };
+const valido = { nombre: 'Ana', empresa: 'Motos Ana', correo: 'ana@ejemplo.co', producto: PRODUCTO, canal: 'WhatsApp', autorizaDatos: true };
 
 test('acepta una solicitud completa', () => {
   assert.deepStrictEqual(validar(valido).errores, []);
@@ -29,7 +30,7 @@ test('el correo escapa el HTML que escribe el visitante', () => {
   const correo = armarCorreo(datos, new Date('2026-10-26T15:00:00Z'));
   assert.ok(!correo.html.includes('<script>'));
   assert.ok(correo.html.includes('&lt;script&gt;'));
-  assert.strictEqual(correo.asunto, 'Solicitud de Codalea Comercio · Motos Ana');
+  assert.strictEqual(correo.asunto, `Solicitud de ${PRODUCTO} · Motos Ana`);
 });
 
 test('limita los envíos por conexión', () => {
