@@ -11,9 +11,9 @@
   --astra: #6b8fff;
   --astra-fuerte: #4f7cff;
   --astra-suave: rgba(107, 143, 255, 0.12);
-  --comercio: #4cc3d3;
-  --comercio-fuerte: #22a6b9;
-  --comercio-suave: rgba(76, 195, 211, 0.12);
+  --comercio: #00d7ff;
+  --comercio-fuerte: #0066cc;
+  --comercio-suave: rgba(0, 215, 255, 0.12);
   --bien: #3ddc97;
   --error: #ff7a7a;
   --foco: #ffd166;
@@ -91,7 +91,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .boton--claro:hover { box-shadow: 0 10px 30px -10px rgba(255, 255, 255, .45); }
 .boton--astra { background: var(--astra-fuerte); color: #fff; }
 .boton--astra:hover { box-shadow: 0 12px 34px -12px var(--astra-fuerte); }
-.boton--comercio { background: var(--comercio); color: #04161a; }
+.boton--comercio { background: var(--comercio); color: #0b1424; }
 .boton--comercio:hover { box-shadow: 0 12px 34px -12px var(--comercio); }
 .boton[disabled] { opacity: .6; cursor: progress; transform: none; }
 
@@ -116,7 +116,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   position: absolute; inset: 0; z-index: -1;
   background:
     radial-gradient(48% 42% at 18% 8%, rgba(107, 143, 255, .16), transparent 70%),
-    radial-gradient(42% 40% at 88% 22%, rgba(76, 195, 211, .12), transparent 70%),
+    radial-gradient(42% 40% at 88% 22%, rgba(0, 215, 255, .12), transparent 70%),
     linear-gradient(var(--fondo), var(--fondo));
 }
 .portada__fondo::after {
@@ -156,7 +156,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .producto--astra::before { background: linear-gradient(90deg, transparent, var(--astra), transparent); }
 .producto--comercio::before { background: linear-gradient(90deg, transparent, var(--comercio), transparent); }
 .producto--astra:hover { border-color: rgba(107, 143, 255, .45); }
-.producto--comercio:hover { border-color: rgba(76, 195, 211, .45); }
+.producto--comercio:hover { border-color: rgba(0, 215, 255, .45); }
 .producto__vista { display: block; aspect-ratio: 16 / 8.4; overflow: hidden; border-bottom: 1px solid var(--linea); }
 .producto__vista img { width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform .6s cubic-bezier(.16,1,.3,1); }
 .producto:hover .producto__vista img { transform: scale(1.025); }
@@ -164,6 +164,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .producto--astra .producto__segmento { color: var(--astra); }
 .producto--comercio .producto__segmento { color: var(--comercio); }
 .producto__nombre { font-family: var(--display); font-stretch: 85%; font-size: clamp(1.9rem, 3.4vw, 2.6rem); line-height: 1; letter-spacing: -.01em; }
+.producto__nombre img { display: inline-block; vertical-align: -0.12em; width: .92em; height: .92em; }
 .producto__texto { color: var(--texto-2); }
 .producto__puntos { display: flex; flex-wrap: wrap; gap: .5rem; }
 .producto__puntos li { font-size: .8125rem; padding: .35rem .7rem; border-radius: 999px; border: 1px solid var(--linea-fuerte); color: var(--texto-2); }
@@ -231,7 +232,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .llamado h3 { font-family: var(--display); font-stretch: 88%; font-size: clamp(1.5rem, 3vw, 2.1rem); line-height: 1.05; }
 .llamado p { margin-top: .5rem; color: var(--texto-2); max-width: 56ch; }
 .llamado--astra { background: linear-gradient(120deg, var(--astra-suave), transparent 60%), var(--fondo-2); border-color: rgba(107,143,255,.25); }
-.llamado--comercio { background: linear-gradient(120deg, var(--comercio-suave), transparent 60%), var(--fondo-2); border-color: rgba(76,195,211,.25); }
+.llamado--comercio { background: linear-gradient(120deg, var(--comercio-suave), transparent 60%), var(--fondo-2); border-color: rgba(0, 215, 255,.25); }
 .llamado__acciones { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1.25rem; }
 
 .pilares { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(1rem, 2.5vw, 1.5rem); }
@@ -240,7 +241,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pilares h3 { font-family: var(--display); font-stretch: 90%; font-size: 1.35rem; line-height: 1.1; }
 .pilares p:not(.pilares__numero) { color: var(--texto-2); font-size: .9375rem; }
 
-.capitulo--contacto { background: radial-gradient(50% 60% at 0% 0%, rgba(107,143,255,.08), transparent 70%), radial-gradient(50% 60% at 100% 100%, rgba(76,195,211,.07), transparent 70%); }
+.capitulo--contacto { background: radial-gradient(50% 60% at 0% 0%, rgba(107,143,255,.08), transparent 70%), radial-gradient(50% 60% at 100% 100%, rgba(0, 215, 255,.07), transparent 70%); }
 .contacto { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(2rem, 6vw, 5rem); align-items: start; }
 .contacto .capitulo__numero { padding-top: 0; margin-bottom: 1rem; }
 .canales { margin-top: 2rem; display: grid; gap: .75rem; }
